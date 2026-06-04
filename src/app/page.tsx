@@ -36,18 +36,18 @@ export default async function DashboardPage() {
   const limite7DiasUTC = new Date(hojeUTC);
   limite7DiasUTC.setUTCDate(hojeUTC.getUTCDate() + 7);
 
-  // Buscar empréstimos ATIVOS
-  const emprestimosAtivos = await prisma.emprestimo.findMany({
-    where: { status: "ativo" },
-    include: { cliente: true, parcelas: true, parceiro: true },
-    orderBy: { data_vencimento: "asc" },
-  });
-
-  // Buscar empréstimos QUITADOS para calcular ganhos reais
-  const emprestimosQuitados = await prisma.emprestimo.findMany({
-    where: { status: "quitado" },
-    include: { parcelas: true, parceiro: true },
-  });
+  // Buscar empréstimos ATIVOS e QUITADOS simultaneamente para maior velocidade (Promise.all)
+  const [emprestimosAtivos, emprestimosQuitados] = await Promise.all([
+    prisma.emprestimo.findMany({
+      where: { status: "ativo" },
+      include: { cliente: true, parcelas: true, parceiro: true },
+      orderBy: { data_vencimento: "asc" },
+    }),
+    prisma.emprestimo.findMany({
+      where: { status: "quitado" },
+      include: { parcelas: true, parceiro: true },
+    })
+  ]);
 
   // ────────────────────────────────────────────────────────
   // MÉTRICAS DE CARTEIRA ATIVA
