@@ -8,6 +8,7 @@ export default function PerfilPage() {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Poll status from the companion service
   const fetchStatus = async () => {
@@ -16,10 +17,12 @@ export default function PerfilPage() {
       const data = await res.json();
       setStatus(data.status || "disconnected");
       setQrCode(data.qr || null);
-    } catch (err) {
+      if (data.error) setErrorMessage(`${data.error} (${data.url || ''})`);
+    } catch (err: any) {
       console.error("WhatsApp companion service offline", err);
       setStatus("disconnected");
       setQrCode(null);
+      setErrorMessage(err.message || "Erro desconhecido");
     } finally {
       setLoading(false);
     }
@@ -166,6 +169,11 @@ export default function PerfilPage() {
                   <p className="text-sm text-slate-550 dark:text-emerald-400/80">
                     Certifique-se de que o companion runner está em execução ou reinicie as conexões locais.
                   </p>
+                  {errorMessage && (
+                    <p className="text-xs text-red-400 font-mono mt-2" id="whatsapp-error-msg">
+                      {errorMessage}
+                    </p>
+                  )}
                   <button
                     onClick={fetchStatus}
                     className="flex items-center space-x-1.5 bg-emerald-50 text-[#064e3b] dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-250 dark:border-emerald-800/80 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-100 transition-colors mx-auto"

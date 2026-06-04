@@ -8,6 +8,6 @@ export async function GET() {
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json({ status: "disconnected", error: error.message || "Offline" }, { status: 500 });
+    return NextResponse.json({ status: "disconnected", error: error.message || "Offline", url: WHATSAPP_API }, { status: 500 });
   }
 }
