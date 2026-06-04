@@ -1,0 +1,1962 @@
+[
+    {
+        "id": "7fb747f6-1514-4d3f-9def-95e9885936ec",
+        "cliente_id": "5e760a86-815d-47e6-ac0e-505df22c8af3",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-06-02",
+        "data_vencimento": "2026-07-02",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T16:38:44.952658+00:00",
+        "updated_at": "2026-06-02T16:38:44.952658+00:00",
+        "clientes": {
+            "id": "5e760a86-815d-47e6-ac0e-505df22c8af3",
+            "nome": "Julio César Xavier ",
+            "cidade": "Bauru",
+            "telefone": "5514998338325"
+        }
+    },
+    {
+        "id": "80e96e2d-1840-4fb4-a17c-6dd263f15e44",
+        "cliente_id": "21e31760-6b74-4aea-9e3f-724567c84fd8",
+        "valor_emprestado": 600.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-06",
+        "data_vencimento": "2026-06-06",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T10:07:25.425808+00:00",
+        "updated_at": "2026-06-02T10:07:25.425808+00:00",
+        "clientes": {
+            "id": "21e31760-6b74-4aea-9e3f-724567c84fd8",
+            "nome": "Luana tairini Pereira Lourenço ",
+            "cidade": "Bauru",
+            "telefone": "5514991459399"
+        }
+    },
+    {
+        "id": "aef4c83d-1231-4375-b8cd-1a7a78c836c6",
+        "cliente_id": "00d68b8c-6eea-40d3-bd48-ec84f4a67a45",
+        "valor_emprestado": 300.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-06-02",
+        "data_vencimento": "2026-06-05",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T10:03:37.705958+00:00",
+        "updated_at": "2026-06-02T10:03:37.705958+00:00",
+        "clientes": {
+            "id": "00d68b8c-6eea-40d3-bd48-ec84f4a67a45",
+            "nome": "Daniela Cristina Fernandes ",
+            "cidade": "Bauru",
+            "telefone": "5514981773959"
+        }
+    },
+    {
+        "id": "bb04c0e1-06a9-40b8-881a-4bcd939c8f92",
+        "cliente_id": "b0b5f35b-d0ef-4f2c-a651-5c46d52eec6a",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-28",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T09:43:50.388741+00:00",
+        "updated_at": "2026-06-02T09:43:50.388741+00:00",
+        "clientes": {
+            "id": "b0b5f35b-d0ef-4f2c-a651-5c46d52eec6a",
+            "nome": "Darlene Araújo pinho ",
+            "cidade": "Bauru",
+            "telefone": "5515998499877"
+        }
+    },
+    {
+        "id": "0a48c896-f50e-4aff-a000-3c9967628d82",
+        "cliente_id": "8c9371c7-af03-4f2a-b99a-d0dd6a17eab0",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-05",
+        "data_vencimento": "2026-06-05",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T09:37:39.76979+00:00",
+        "updated_at": "2026-06-02T09:37:39.76979+00:00",
+        "clientes": {
+            "id": "8c9371c7-af03-4f2a-b99a-d0dd6a17eab0",
+            "nome": "Pablo Richard de sales Ferrari ",
+            "cidade": "Bauru",
+            "telefone": "5514991520024"
+        }
+    },
+    {
+        "id": "33812c86-5ffe-4c9a-ba69-6780c0ceaac0",
+        "cliente_id": "cfa03db4-7243-466a-a8f2-cda6f135ed5d",
+        "valor_emprestado": 2000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-28",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T09:31:35.950077+00:00",
+        "updated_at": "2026-06-02T09:31:35.950077+00:00",
+        "clientes": {
+            "id": "cfa03db4-7243-466a-a8f2-cda6f135ed5d",
+            "nome": "Priscila Gonçalves Ferreira ",
+            "cidade": "Bauru",
+            "telefone": "5514998667517"
+        }
+    },
+    {
+        "id": "8e38e544-08ae-433e-9387-eb58cd3520d5",
+        "cliente_id": "ca61b21d-d8e5-4b2d-8de5-e19058037f16",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 2.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-03",
+        "data_vencimento": "2026-06-03",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T09:25:09.001273+00:00",
+        "updated_at": "2026-06-02T09:25:09.001273+00:00",
+        "clientes": {
+            "id": "ca61b21d-d8e5-4b2d-8de5-e19058037f16",
+            "nome": "Gilmar José Ribeiro ",
+            "cidade": "Bauru",
+            "telefone": "5514997459474"
+        }
+    },
+    {
+        "id": "eed320ef-bd45-4d7e-ab1e-a28cbf61e292",
+        "cliente_id": "5b155ed2-06ba-4a99-bf6a-e0832d19b68a",
+        "valor_emprestado": 1300.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-28",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:36:53.470416+00:00",
+        "updated_at": "2026-06-02T02:36:53.470416+00:00",
+        "clientes": {
+            "id": "5b155ed2-06ba-4a99-bf6a-e0832d19b68a",
+            "nome": "Cleuber candido de souza ",
+            "cidade": "Bauru",
+            "telefone": "5514997480801"
+        }
+    },
+    {
+        "id": "92e5d813-6617-409d-b00d-5e6cbf340822",
+        "cliente_id": "5b155ed2-06ba-4a99-bf6a-e0832d19b68a",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-18",
+        "data_vencimento": "2026-06-18",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:34:59.856392+00:00",
+        "updated_at": "2026-06-02T02:34:59.856392+00:00",
+        "clientes": {
+            "id": "5b155ed2-06ba-4a99-bf6a-e0832d19b68a",
+            "nome": "Cleuber candido de souza ",
+            "cidade": "Bauru",
+            "telefone": "5514997480801"
+        }
+    },
+    {
+        "id": "7bf70a10-0c40-4e88-9b93-2ccf6c716653",
+        "cliente_id": "e54d230a-8b51-4851-b9b4-14bb161356d0",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-11",
+        "data_vencimento": "2026-06-11",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:29:43.225912+00:00",
+        "updated_at": "2026-06-02T02:29:43.225912+00:00",
+        "clientes": {
+            "id": "e54d230a-8b51-4851-b9b4-14bb161356d0",
+            "nome": "Paulo Ricardo Messias De Brito",
+            "cidade": "Bauru",
+            "telefone": "5514996802310"
+        }
+    },
+    {
+        "id": "7047d83f-1b9b-480c-95c7-4bee0ba25f49",
+        "cliente_id": "3959b616-d9bf-409c-9917-78f651de7e53",
+        "valor_emprestado": 450.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-21",
+        "data_vencimento": "2026-06-21",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:24:13.139474+00:00",
+        "updated_at": "2026-06-02T02:24:13.139474+00:00",
+        "clientes": {
+            "id": "3959b616-d9bf-409c-9917-78f651de7e53",
+            "nome": "Pedro Luis Cândido ",
+            "cidade": "Bauru",
+            "telefone": "5514991531845"
+        }
+    },
+    {
+        "id": "5d61f257-de2f-4c0c-8a5e-fc0fd46a9d96",
+        "cliente_id": "3959b616-d9bf-409c-9917-78f651de7e53",
+        "valor_emprestado": 500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-12",
+        "data_vencimento": "2026-06-12",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:23:27.381334+00:00",
+        "updated_at": "2026-06-02T02:23:27.381334+00:00",
+        "clientes": {
+            "id": "3959b616-d9bf-409c-9917-78f651de7e53",
+            "nome": "Pedro Luis Cândido ",
+            "cidade": "Bauru",
+            "telefone": "5514991531845"
+        }
+    },
+    {
+        "id": "98453715-d081-43b5-b9ed-b985f11f47e3",
+        "cliente_id": "e9c64e6c-8e02-4e70-9ba2-1813b710e2c4",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-06-02",
+        "data_vencimento": "2026-07-02",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:15:10.869099+00:00",
+        "updated_at": "2026-06-02T02:15:10.869099+00:00",
+        "clientes": {
+            "id": "e9c64e6c-8e02-4e70-9ba2-1813b710e2c4",
+            "nome": "Douglas guardia penholati ",
+            "cidade": "Bauru",
+            "telefone": "5514988143929"
+        }
+    },
+    {
+        "id": "263fefe6-30f7-4ef4-830e-86075898c489",
+        "cliente_id": "accf93dc-883a-4cd8-b7e4-d4d1322a3fef",
+        "valor_emprestado": 750.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-21",
+        "data_vencimento": "2026-06-21",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:07:09.352664+00:00",
+        "updated_at": "2026-06-02T02:07:09.352664+00:00",
+        "clientes": {
+            "id": "accf93dc-883a-4cd8-b7e4-d4d1322a3fef",
+            "nome": "Sabrina Cristina Dos Santos ",
+            "cidade": "Bauru",
+            "telefone": "5514991116386"
+        }
+    },
+    {
+        "id": "f9c5a09f-336e-4ddf-b4ae-801e6eb3fac2",
+        "cliente_id": "accf93dc-883a-4cd8-b7e4-d4d1322a3fef",
+        "valor_emprestado": 500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-17",
+        "data_vencimento": "2026-06-17",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T02:05:29.937441+00:00",
+        "updated_at": "2026-06-02T02:05:29.937441+00:00",
+        "clientes": {
+            "id": "accf93dc-883a-4cd8-b7e4-d4d1322a3fef",
+            "nome": "Sabrina Cristina Dos Santos ",
+            "cidade": "Bauru",
+            "telefone": "5514991116386"
+        }
+    },
+    {
+        "id": "aa122076-db5c-4586-aded-4446d2b69e10",
+        "cliente_id": "f6ea7b56-1b5c-45fa-9ebf-ff440dd475d5",
+        "valor_emprestado": 500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-03",
+        "data_vencimento": "2026-07-03",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T01:59:46.265853+00:00",
+        "updated_at": "2026-06-04T12:05:12.515196+00:00",
+        "clientes": {
+            "id": "f6ea7b56-1b5c-45fa-9ebf-ff440dd475d5",
+            "nome": "Thais Cristina Ramos ",
+            "cidade": "",
+            "telefone": "5514998038174"
+        }
+    },
+    {
+        "id": "cde3bb69-37c0-4174-bd0e-b6b4469c52c0",
+        "cliente_id": "559930ea-bfc7-4423-8b4a-fe6755cf0db4",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-03",
+        "data_vencimento": "2026-06-03",
+        "status": "quitado",
+        "observacoes": null,
+        "created_at": "2026-06-02T01:55:04.949122+00:00",
+        "updated_at": "2026-06-04T12:07:02.492809+00:00",
+        "clientes": {
+            "id": "559930ea-bfc7-4423-8b4a-fe6755cf0db4",
+            "nome": "Tamara batista ",
+            "cidade": "Bauru",
+            "telefone": "5514991647300"
+        }
+    },
+    {
+        "id": "c572b77d-5021-4fa1-a367-1ef9216972a8",
+        "cliente_id": "6d9207a5-2893-4d46-a30c-e011f48298dd",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-03",
+        "data_vencimento": "2026-07-03",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T01:35:40.147124+00:00",
+        "updated_at": "2026-06-04T12:05:53.870037+00:00",
+        "clientes": {
+            "id": "6d9207a5-2893-4d46-a30c-e011f48298dd",
+            "nome": "Valeria pedroso de Oliveira ",
+            "cidade": "Bauru",
+            "telefone": "5514996793997"
+        }
+    },
+    {
+        "id": "938c5ec1-68e4-4cfa-903e-2a216ab2bb22",
+        "cliente_id": "954fd3a1-47a9-44c9-acf0-56de8e5381cf",
+        "valor_emprestado": 1800.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-24",
+        "data_vencimento": "2026-06-24",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T01:31:58.376456+00:00",
+        "updated_at": "2026-06-02T01:31:58.376456+00:00",
+        "clientes": {
+            "id": "954fd3a1-47a9-44c9-acf0-56de8e5381cf",
+            "nome": "Rover Oliver ",
+            "cidade": "Bauru",
+            "telefone": "5514998527551"
+        }
+    },
+    {
+        "id": "b6194124-4d00-48b8-af7e-02d7e3c01afd",
+        "cliente_id": "954fd3a1-47a9-44c9-acf0-56de8e5381cf",
+        "valor_emprestado": 2500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-16",
+        "data_vencimento": "2026-06-16",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T01:24:07.608746+00:00",
+        "updated_at": "2026-06-02T01:24:07.608746+00:00",
+        "clientes": {
+            "id": "954fd3a1-47a9-44c9-acf0-56de8e5381cf",
+            "nome": "Rover Oliver ",
+            "cidade": "Bauru",
+            "telefone": "5514998527551"
+        }
+    },
+    {
+        "id": "a8f8fa72-acb2-42e8-835f-0618c76a396a",
+        "cliente_id": "c76d9397-8c7f-4b19-bbcf-4367aa04aba8",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-05",
+        "data_vencimento": "2026-06-05",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T01:21:25.643947+00:00",
+        "updated_at": "2026-06-02T01:21:25.643947+00:00",
+        "clientes": {
+            "id": "c76d9397-8c7f-4b19-bbcf-4367aa04aba8",
+            "nome": "Juliane Grandinetti Martins pavanelo",
+            "cidade": "Bauru",
+            "telefone": "5514991676031"
+        }
+    },
+    {
+        "id": "22eeb96a-e105-4edc-ba29-f391fe64b8eb",
+        "cliente_id": "14bf1753-a714-49e3-9316-23a4f729362d",
+        "valor_emprestado": 300.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-14",
+        "data_vencimento": "2026-06-14",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T01:05:41.979615+00:00",
+        "updated_at": "2026-06-02T01:05:41.979615+00:00",
+        "clientes": {
+            "id": "14bf1753-a714-49e3-9316-23a4f729362d",
+            "nome": "Gilto costa neto ",
+            "cidade": "Bauru",
+            "telefone": "5514999072087"
+        }
+    },
+    {
+        "id": "0d24002a-2618-405b-aaa8-6876e6935890",
+        "cliente_id": "f2e20ee9-4853-4385-9e4b-acbf1b7fa76e",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-11",
+        "data_vencimento": "2026-06-11",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T00:52:47.417771+00:00",
+        "updated_at": "2026-06-02T00:52:47.417771+00:00",
+        "clientes": {
+            "id": "f2e20ee9-4853-4385-9e4b-acbf1b7fa76e",
+            "nome": "Guilherme aparecido Alves ",
+            "cidade": "Bauru",
+            "telefone": "5514997166294"
+        }
+    },
+    {
+        "id": "32acc2b1-8d72-4c87-af14-4023cc0ed9ea",
+        "cliente_id": "456d0c8b-b3c8-472f-bf13-28f396e019e7",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T00:36:32.823413+00:00",
+        "updated_at": "2026-06-02T00:36:32.823413+00:00",
+        "clientes": {
+            "id": "456d0c8b-b3c8-472f-bf13-28f396e019e7",
+            "nome": "Juliano Aparecido De Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514997665368"
+        }
+    },
+    {
+        "id": "169f95b9-0b1c-4b46-975e-0564a8c18236",
+        "cliente_id": "456d0c8b-b3c8-472f-bf13-28f396e019e7",
+        "valor_emprestado": 600.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T00:34:59.906474+00:00",
+        "updated_at": "2026-06-02T00:34:59.906474+00:00",
+        "clientes": {
+            "id": "456d0c8b-b3c8-472f-bf13-28f396e019e7",
+            "nome": "Juliano Aparecido De Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514997665368"
+        }
+    },
+    {
+        "id": "d750d55e-321a-4207-b9be-04b037cb53a1",
+        "cliente_id": "456d0c8b-b3c8-472f-bf13-28f396e019e7",
+        "valor_emprestado": 700.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-28",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-02T00:33:35.451778+00:00",
+        "updated_at": "2026-06-02T00:33:35.451778+00:00",
+        "clientes": {
+            "id": "456d0c8b-b3c8-472f-bf13-28f396e019e7",
+            "nome": "Juliano Aparecido De Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514997665368"
+        }
+    },
+    {
+        "id": "2e8ccb20-c935-4909-bd72-f8052b7192ed",
+        "cliente_id": "de8912fa-a85c-4126-8f13-b0bf3d6f931e",
+        "valor_emprestado": 200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-06-01",
+        "data_vencimento": "2026-07-05",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-01T20:49:36.285433+00:00",
+        "updated_at": "2026-06-01T20:49:36.285433+00:00",
+        "clientes": {
+            "id": "de8912fa-a85c-4126-8f13-b0bf3d6f931e",
+            "nome": "Amanda de melo",
+            "cidade": "Bauru",
+            "telefone": "5514991241343"
+        }
+    },
+    {
+        "id": "7cb8f5e5-56d1-4084-a71a-1dfe79f073fa",
+        "cliente_id": "48137891-0ca6-4814-b092-8d12cb9fd79d",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-06-01",
+        "data_vencimento": "2026-07-01",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-06-01T20:46:14.175788+00:00",
+        "updated_at": "2026-06-01T20:46:14.175788+00:00",
+        "clientes": {
+            "id": "48137891-0ca6-4814-b092-8d12cb9fd79d",
+            "nome": "Bruno Daniel Lacerda de Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514981213249"
+        }
+    },
+    {
+        "id": "ab0aabe9-2032-40d8-8ed9-3bc681795478",
+        "cliente_id": "12a64f70-e000-45fa-853f-5d8b3ecd83a8",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-05",
+        "data_vencimento": "2026-06-05",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-31T10:01:17.412583+00:00",
+        "updated_at": "2026-05-31T10:01:17.412583+00:00",
+        "clientes": {
+            "id": "12a64f70-e000-45fa-853f-5d8b3ecd83a8",
+            "nome": "Erica regina dos Santos sabino ",
+            "cidade": "Bauru",
+            "telefone": "5514997181778"
+        }
+    },
+    {
+        "id": "03cd5a40-865b-4888-b1f7-285b71fe81ab",
+        "cliente_id": "c64a0c9b-7a48-4564-8770-1b596b899e99",
+        "valor_emprestado": 200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-05",
+        "data_vencimento": "2026-06-05",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-31T09:47:17.861349+00:00",
+        "updated_at": "2026-05-31T09:47:17.861349+00:00",
+        "clientes": {
+            "id": "c64a0c9b-7a48-4564-8770-1b596b899e99",
+            "nome": "Francisco Gomes da Silva ",
+            "cidade": "Bauru",
+            "telefone": "5514981428187"
+        }
+    },
+    {
+        "id": "0478c795-b8d8-4afd-9df7-860658eb72bd",
+        "cliente_id": "c64a0c9b-7a48-4564-8770-1b596b899e99",
+        "valor_emprestado": 823.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-18",
+        "data_vencimento": "2026-06-18",
+        "status": "ativo",
+        "observacoes": "2ª parcela de 7",
+        "created_at": "2026-05-31T09:42:46.219867+00:00",
+        "updated_at": "2026-05-31T09:42:46.219867+00:00",
+        "clientes": {
+            "id": "c64a0c9b-7a48-4564-8770-1b596b899e99",
+            "nome": "Francisco Gomes da Silva ",
+            "cidade": "Bauru",
+            "telefone": "5514981428187"
+        }
+    },
+    {
+        "id": "18a5b580-4065-4cd8-8074-5c8e989f7eb2",
+        "cliente_id": "c64a0c9b-7a48-4564-8770-1b596b899e99",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-11",
+        "data_vencimento": "2026-06-11",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-31T09:38:10.917384+00:00",
+        "updated_at": "2026-05-31T09:38:10.917384+00:00",
+        "clientes": {
+            "id": "c64a0c9b-7a48-4564-8770-1b596b899e99",
+            "nome": "Francisco Gomes da Silva ",
+            "cidade": "Bauru",
+            "telefone": "5514981428187"
+        }
+    },
+    {
+        "id": "580e3ff3-5c5a-4fa5-af24-78cfe1b6e4bf",
+        "cliente_id": "8931e4e2-4915-4c8b-a838-5204b9ebbfb8",
+        "valor_emprestado": 2000.00,
+        "taxa_juros": 20.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-21",
+        "data_vencimento": "2026-06-21",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:54:42.918797+00:00",
+        "updated_at": "2026-05-30T16:54:42.918797+00:00",
+        "clientes": {
+            "id": "8931e4e2-4915-4c8b-a838-5204b9ebbfb8",
+            "nome": "Maria de lourdes ",
+            "cidade": "Bauru",
+            "telefone": "5514988020702"
+        }
+    },
+    {
+        "id": "b405b75b-7c3d-43f7-a9ef-e2296847d971",
+        "cliente_id": "53736aae-5d0d-4c82-93b6-0bc839ce0827",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-30",
+        "data_vencimento": "2026-06-30",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:38:59.204763+00:00",
+        "updated_at": "2026-05-30T16:38:59.204763+00:00",
+        "clientes": {
+            "id": "53736aae-5d0d-4c82-93b6-0bc839ce0827",
+            "nome": "Rogerio primolan da silva ",
+            "cidade": "Bauru",
+            "telefone": "5514996061763"
+        }
+    },
+    {
+        "id": "5c438566-d771-4ca7-8383-121990ab97bc",
+        "cliente_id": "d81f3c2e-a507-4278-a02e-ed52459e794d",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-27",
+        "data_vencimento": "2026-06-27",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:36:02.330093+00:00",
+        "updated_at": "2026-05-30T16:36:02.330093+00:00",
+        "clientes": {
+            "id": "d81f3c2e-a507-4278-a02e-ed52459e794d",
+            "nome": "Gersno de Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514988260646"
+        }
+    },
+    {
+        "id": "2389357b-0614-4cb9-909e-3e7529a78cc1",
+        "cliente_id": "17128f8c-731b-4ce8-a2ea-e170af5cf5ec",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:32:58.84046+00:00",
+        "updated_at": "2026-05-30T16:32:58.84046+00:00",
+        "clientes": {
+            "id": "17128f8c-731b-4ce8-a2ea-e170af5cf5ec",
+            "nome": "Claudinei candido escorpião de Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514996858505"
+        }
+    },
+    {
+        "id": "e3cce8bf-7138-4aa5-b4bf-4fa1d6e1e5a9",
+        "cliente_id": "17128f8c-731b-4ce8-a2ea-e170af5cf5ec",
+        "valor_emprestado": 1200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-28",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:30:10.295365+00:00",
+        "updated_at": "2026-05-30T16:30:10.295365+00:00",
+        "clientes": {
+            "id": "17128f8c-731b-4ce8-a2ea-e170af5cf5ec",
+            "nome": "Claudinei candido escorpião de Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514996858505"
+        }
+    },
+    {
+        "id": "8c384baa-ccbb-464f-a4f2-1231ee6af73a",
+        "cliente_id": "17128f8c-731b-4ce8-a2ea-e170af5cf5ec",
+        "valor_emprestado": 1200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-16",
+        "data_vencimento": "2026-06-16",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:28:52.896433+00:00",
+        "updated_at": "2026-05-30T16:28:52.896433+00:00",
+        "clientes": {
+            "id": "17128f8c-731b-4ce8-a2ea-e170af5cf5ec",
+            "nome": "Claudinei candido escorpião de Souza ",
+            "cidade": "Bauru",
+            "telefone": "5514996858505"
+        }
+    },
+    {
+        "id": "2ad62690-5dbd-426a-bd3d-29f1edbe462c",
+        "cliente_id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+        "valor_emprestado": 30000.00,
+        "taxa_juros": 12.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-10",
+        "data_vencimento": "2026-06-10",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:20:24.626452+00:00",
+        "updated_at": "2026-05-30T16:20:24.626452+00:00",
+        "clientes": {
+            "id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+            "nome": "Luis Paulo de Oliveira Cabral ",
+            "cidade": "Bauru",
+            "telefone": "5514998972592"
+        }
+    },
+    {
+        "id": "49e7bd0d-375c-4e11-ab14-5dbfad53da56",
+        "cliente_id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+        "valor_emprestado": 20000.00,
+        "taxa_juros": 10.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-03",
+        "data_vencimento": "2026-07-03",
+        "status": "ativo",
+        "observacoes": "Repasse 5%1000,00 gilberto",
+        "created_at": "2026-05-30T16:11:45.508448+00:00",
+        "updated_at": "2026-06-03T23:46:01.623201+00:00",
+        "clientes": {
+            "id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+            "nome": "Luis Paulo de Oliveira Cabral ",
+            "cidade": "Bauru",
+            "telefone": "5514998972592"
+        }
+    },
+    {
+        "id": "a7622cb1-3f7a-4cba-aecc-14345e2d1f74",
+        "cliente_id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+        "valor_emprestado": 100000.00,
+        "taxa_juros": 8.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-25",
+        "data_vencimento": "2026-06-25",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:09:07.963212+00:00",
+        "updated_at": "2026-05-30T16:09:07.963212+00:00",
+        "clientes": {
+            "id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+            "nome": "Luis Paulo de Oliveira Cabral ",
+            "cidade": "Bauru",
+            "telefone": "5514998972592"
+        }
+    },
+    {
+        "id": "49ffbc4a-c018-42fa-80b1-b3f7e490a499",
+        "cliente_id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+        "valor_emprestado": 40000.00,
+        "taxa_juros": 5.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-30",
+        "data_vencimento": "2026-06-30",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T16:05:22.671644+00:00",
+        "updated_at": "2026-05-30T16:05:22.671644+00:00",
+        "clientes": {
+            "id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+            "nome": "Luis Paulo de Oliveira Cabral ",
+            "cidade": "Bauru",
+            "telefone": "5514998972592"
+        }
+    },
+    {
+        "id": "2bdabe31-67c8-4b13-bba4-6bdff254f71b",
+        "cliente_id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+        "valor_emprestado": 2000.00,
+        "taxa_juros": 35.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-22",
+        "data_vencimento": "2026-06-22",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T15:58:55.504072+00:00",
+        "updated_at": "2026-05-30T15:58:55.504072+00:00",
+        "clientes": {
+            "id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+            "nome": "Carla Candido de Souza Nogueira ",
+            "cidade": "Bauru",
+            "telefone": "5514998439278"
+        }
+    },
+    {
+        "id": "c83980ba-e55c-42e8-ac55-c02dcbc7dc31",
+        "cliente_id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+        "valor_emprestado": 2000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-29",
+        "data_vencimento": "2026-06-29",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T15:57:40.496865+00:00",
+        "updated_at": "2026-05-30T15:57:40.496865+00:00",
+        "clientes": {
+            "id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+            "nome": "Carla Candido de Souza Nogueira ",
+            "cidade": "Bauru",
+            "telefone": "5514998439278"
+        }
+    },
+    {
+        "id": "aba6bf8b-4a6e-4c20-a25b-302b8d2721b3",
+        "cliente_id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+        "valor_emprestado": 2000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-21",
+        "data_vencimento": "2026-06-08",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T15:55:30.995165+00:00",
+        "updated_at": "2026-05-30T15:55:30.995165+00:00",
+        "clientes": {
+            "id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+            "nome": "Carla Candido de Souza Nogueira ",
+            "cidade": "Bauru",
+            "telefone": "5514998439278"
+        }
+    },
+    {
+        "id": "e6dc316e-6e79-4ca6-98ef-a069612f45f5",
+        "cliente_id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+        "valor_emprestado": 2000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-25",
+        "data_vencimento": "2026-06-25",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T15:53:47.427313+00:00",
+        "updated_at": "2026-05-30T15:53:47.427313+00:00",
+        "clientes": {
+            "id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+            "nome": "Carla Candido de Souza Nogueira ",
+            "cidade": "Bauru",
+            "telefone": "5514998439278"
+        }
+    },
+    {
+        "id": "7272b7d3-9a77-43f4-8af8-651fe4db52a9",
+        "cliente_id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+        "valor_emprestado": 2500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-09",
+        "data_vencimento": "2026-06-09",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T15:52:39.710202+00:00",
+        "updated_at": "2026-05-30T15:52:39.710202+00:00",
+        "clientes": {
+            "id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+            "nome": "Carla Candido de Souza Nogueira ",
+            "cidade": "Bauru",
+            "telefone": "5514998439278"
+        }
+    },
+    {
+        "id": "4b2bdbeb-8c20-46ef-b889-6cf3bd2e673a",
+        "cliente_id": "12b74f74-224b-4c8d-ab52-a8a5fa37e20e",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-29",
+        "data_vencimento": "2026-06-29",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T13:49:54.800871+00:00",
+        "updated_at": "2026-05-30T13:49:54.800871+00:00",
+        "clientes": {
+            "id": "12b74f74-224b-4c8d-ab52-a8a5fa37e20e",
+            "nome": "Marcos Floriano ",
+            "cidade": "Bauru",
+            "telefone": "5514988255948"
+        }
+    },
+    {
+        "id": "2e73f48a-8243-44c5-9d5b-0c18fb4debb3",
+        "cliente_id": "12b74f74-224b-4c8d-ab52-a8a5fa37e20e",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T13:48:00.97387+00:00",
+        "updated_at": "2026-05-30T13:48:00.97387+00:00",
+        "clientes": {
+            "id": "12b74f74-224b-4c8d-ab52-a8a5fa37e20e",
+            "nome": "Marcos Floriano ",
+            "cidade": "Bauru",
+            "telefone": "5514988255948"
+        }
+    },
+    {
+        "id": "15cbc7b8-5da4-4f9f-8c84-7343d4773388",
+        "cliente_id": "d4e3d002-385d-46b4-bbdd-6eba1fc5d4e2",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-29",
+        "data_vencimento": "2026-06-29",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-30T13:40:38.794631+00:00",
+        "updated_at": "2026-05-30T13:40:38.794631+00:00",
+        "clientes": {
+            "id": "d4e3d002-385d-46b4-bbdd-6eba1fc5d4e2",
+            "nome": "Lucia elena pavini",
+            "cidade": "Bauru",
+            "telefone": "5514996213674"
+        }
+    },
+    {
+        "id": "7972ac1b-3b02-4fb3-8245-b970597d0a5c",
+        "cliente_id": "2be21c53-4ca0-4b91-a5dc-aac23e62376d",
+        "valor_emprestado": 32500.00,
+        "taxa_juros": 12.93,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-25",
+        "data_vencimento": "2026-06-25",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T03:22:26.661007+00:00",
+        "updated_at": "2026-05-29T03:22:26.661007+00:00",
+        "clientes": {
+            "id": "2be21c53-4ca0-4b91-a5dc-aac23e62376d",
+            "nome": "Willian da Silva Vieira ",
+            "cidade": "Bauru",
+            "telefone": "5514976041132"
+        }
+    },
+    {
+        "id": "08fc758f-2906-426d-9196-9f241c946d81",
+        "cliente_id": "2be21c53-4ca0-4b91-a5dc-aac23e62376d",
+        "valor_emprestado": 32500.00,
+        "taxa_juros": 12.93,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-10",
+        "data_vencimento": "2026-06-10",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T03:21:07.600844+00:00",
+        "updated_at": "2026-05-29T03:21:07.600844+00:00",
+        "clientes": {
+            "id": "2be21c53-4ca0-4b91-a5dc-aac23e62376d",
+            "nome": "Willian da Silva Vieira ",
+            "cidade": "Bauru",
+            "telefone": "5514976041132"
+        }
+    },
+    {
+        "id": "6dc77de7-763b-4a27-83eb-7ba4a28b304f",
+        "cliente_id": "cf44ba81-870e-4992-8479-c95a9d4459a1",
+        "valor_emprestado": 65000.00,
+        "taxa_juros": 8.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-04-30",
+        "data_vencimento": "2026-06-30",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T03:10:54.731783+00:00",
+        "updated_at": "2026-05-29T03:10:54.731783+00:00",
+        "clientes": {
+            "id": "cf44ba81-870e-4992-8479-c95a9d4459a1",
+            "nome": "Michel espanavero anjolin ",
+            "cidade": "Bauru",
+            "telefone": "5514997184268"
+        }
+    },
+    {
+        "id": "0dc58ccf-404f-4449-8a50-2ae49f9d3c9b",
+        "cliente_id": "cf44ba81-870e-4992-8479-c95a9d4459a1",
+        "valor_emprestado": 65000.00,
+        "taxa_juros": 8.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-15",
+        "data_vencimento": "2026-06-15",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T03:09:20.490023+00:00",
+        "updated_at": "2026-05-29T03:09:20.490023+00:00",
+        "clientes": {
+            "id": "cf44ba81-870e-4992-8479-c95a9d4459a1",
+            "nome": "Michel espanavero anjolin ",
+            "cidade": "Bauru",
+            "telefone": "5514997184268"
+        }
+    },
+    {
+        "id": "6e13f9cc-c5a4-44b1-b7d1-740f15878029",
+        "cliente_id": "0dc34de8-a83a-45db-beea-5deb43a80195",
+        "valor_emprestado": 15000.00,
+        "taxa_juros": 20.00,
+        "taxa_multa": 0.50,
+        "num_parcelas": 1,
+        "data_inicio": "2026-04-29",
+        "data_vencimento": "2026-06-29",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:51:40.587364+00:00",
+        "updated_at": "2026-05-29T02:51:40.587364+00:00",
+        "clientes": {
+            "id": "0dc34de8-a83a-45db-beea-5deb43a80195",
+            "nome": "Pedro aristeu conchinelli junior",
+            "cidade": "Bauru",
+            "telefone": "5514997724464"
+        }
+    },
+    {
+        "id": "24c1d278-7485-41c2-bf83-177e7638751c",
+        "cliente_id": "0dc34de8-a83a-45db-beea-5deb43a80195",
+        "valor_emprestado": 3000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 3.30,
+        "num_parcelas": 1,
+        "data_inicio": "2026-04-29",
+        "data_vencimento": "2026-05-29",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:48:14.783092+00:00",
+        "updated_at": "2026-05-29T02:48:14.783092+00:00",
+        "clientes": {
+            "id": "0dc34de8-a83a-45db-beea-5deb43a80195",
+            "nome": "Pedro aristeu conchinelli junior",
+            "cidade": "Bauru",
+            "telefone": "5514997724464"
+        }
+    },
+    {
+        "id": "2a71596e-ee71-4c4b-b2dd-bb0bb171a408",
+        "cliente_id": "d798ecf1-0468-4d5c-a369-c886639f3d0c",
+        "valor_emprestado": 1500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-03",
+        "data_vencimento": "2026-07-03",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:40:00.684497+00:00",
+        "updated_at": "2026-06-04T12:04:32.954716+00:00",
+        "clientes": {
+            "id": "d798ecf1-0468-4d5c-a369-c886639f3d0c",
+            "nome": "Cristiane Candido de douza",
+            "cidade": "Bauru",
+            "telefone": "5514996535055"
+        }
+    },
+    {
+        "id": "e9e84d51-6868-43da-8d51-bb41af424509",
+        "cliente_id": "d798ecf1-0468-4d5c-a369-c886639f3d0c",
+        "valor_emprestado": 800.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-23",
+        "data_vencimento": "2026-06-23",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:39:02.916665+00:00",
+        "updated_at": "2026-05-29T02:39:02.916665+00:00",
+        "clientes": {
+            "id": "d798ecf1-0468-4d5c-a369-c886639f3d0c",
+            "nome": "Cristiane Candido de douza",
+            "cidade": "Bauru",
+            "telefone": "5514996535055"
+        }
+    },
+    {
+        "id": "5bd88f92-39b5-48d7-ac1e-6f134a7c6914",
+        "cliente_id": "14c06c6f-7170-44a3-84a2-8e58a46694f8",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-25",
+        "data_vencimento": "2026-06-25",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:29:07.564358+00:00",
+        "updated_at": "2026-05-29T02:29:07.564358+00:00",
+        "clientes": {
+            "id": "14c06c6f-7170-44a3-84a2-8e58a46694f8",
+            "nome": "Daiane da silva Silveira ",
+            "cidade": "Bauru",
+            "telefone": "5514991199473"
+        }
+    },
+    {
+        "id": "43a15688-70a5-445e-93f7-10527d40f9de",
+        "cliente_id": "96a4285f-052d-4509-8ff2-ef57ad0db64d",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-23",
+        "data_vencimento": "2026-06-23",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:24:16.049959+00:00",
+        "updated_at": "2026-05-29T02:24:16.049959+00:00",
+        "clientes": {
+            "id": "96a4285f-052d-4509-8ff2-ef57ad0db64d",
+            "nome": "Inez trevisan da silva ",
+            "cidade": "Bauru",
+            "telefone": "5514998285104"
+        }
+    },
+    {
+        "id": "08e872e9-fa10-4a87-9d84-263a19feda31",
+        "cliente_id": "9f5a529c-09b8-4526-b01b-3113aa917e75",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-12",
+        "data_vencimento": "2026-06-12",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:21:10.009886+00:00",
+        "updated_at": "2026-05-29T02:21:10.009886+00:00",
+        "clientes": {
+            "id": "9f5a529c-09b8-4526-b01b-3113aa917e75",
+            "nome": "Thiego Rodrigues ",
+            "cidade": "Bauru",
+            "telefone": "5514991849838"
+        }
+    },
+    {
+        "id": "373790a8-9fcc-4d3f-bfeb-bde3be515098",
+        "cliente_id": "dea603ea-d06e-46b8-afee-91a8960d0833",
+        "valor_emprestado": 400.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-15",
+        "data_vencimento": "2026-06-15",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:13:51.606851+00:00",
+        "updated_at": "2026-05-29T02:13:51.606851+00:00",
+        "clientes": {
+            "id": "dea603ea-d06e-46b8-afee-91a8960d0833",
+            "nome": "Marcia Rita Santos de paula ",
+            "cidade": "Bauru",
+            "telefone": "5514998377181"
+        }
+    },
+    {
+        "id": "0b75256c-fe36-43d1-be2d-a512b0ad9397",
+        "cliente_id": "0a11bfe6-8dc6-424d-ac85-b0905b8a49e0",
+        "valor_emprestado": 5000.00,
+        "taxa_juros": 10.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-11",
+        "data_vencimento": "2026-06-11",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:09:45.555247+00:00",
+        "updated_at": "2026-05-29T02:09:45.555247+00:00",
+        "clientes": {
+            "id": "0a11bfe6-8dc6-424d-ac85-b0905b8a49e0",
+            "nome": "Priscilla leite Justiniano de sales paula ",
+            "cidade": "Bauru",
+            "telefone": "5514991880619"
+        }
+    },
+    {
+        "id": "9abb3353-781d-43b0-b65d-5aa20a29993b",
+        "cliente_id": "0a11bfe6-8dc6-424d-ac85-b0905b8a49e0",
+        "valor_emprestado": 10000.00,
+        "taxa_juros": 10.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-12",
+        "data_vencimento": "2026-06-12",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:07:26.709009+00:00",
+        "updated_at": "2026-05-29T02:07:26.709009+00:00",
+        "clientes": {
+            "id": "0a11bfe6-8dc6-424d-ac85-b0905b8a49e0",
+            "nome": "Priscilla leite Justiniano de sales paula ",
+            "cidade": "Bauru",
+            "telefone": "5514991880619"
+        }
+    },
+    {
+        "id": "fe9171a1-0c74-42f6-a6f4-cb503c6d78e9",
+        "cliente_id": "a72e58c8-5ca0-45e2-9510-0ac60cc525c3",
+        "valor_emprestado": 10000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-10",
+        "data_vencimento": "2026-06-10",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T02:01:22.425983+00:00",
+        "updated_at": "2026-05-29T02:01:22.425983+00:00",
+        "clientes": {
+            "id": "a72e58c8-5ca0-45e2-9510-0ac60cc525c3",
+            "nome": "Heber",
+            "cidade": "Bauru",
+            "telefone": "5514997545894"
+        }
+    },
+    {
+        "id": "44025b3b-ec91-4956-83bc-a61f7892f24f",
+        "cliente_id": "ad2d0e05-b057-45eb-b67e-f06a6ed1a89d",
+        "valor_emprestado": 100.00,
+        "taxa_juros": 50.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-05-29",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T01:27:43.146479+00:00",
+        "updated_at": "2026-05-29T01:27:43.146479+00:00",
+        "clientes": {
+            "id": "ad2d0e05-b057-45eb-b67e-f06a6ed1a89d",
+            "nome": "Rodrigo Soares /focus",
+            "cidade": "Bauru",
+            "telefone": "5514996085487"
+        }
+    },
+    {
+        "id": "d9619554-4c0d-4534-84fa-86db1a68af22",
+        "cliente_id": "ad2d0e05-b057-45eb-b67e-f06a6ed1a89d",
+        "valor_emprestado": 500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-06",
+        "data_vencimento": "2026-06-06",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T01:26:30.351068+00:00",
+        "updated_at": "2026-05-29T01:26:30.351068+00:00",
+        "clientes": {
+            "id": "ad2d0e05-b057-45eb-b67e-f06a6ed1a89d",
+            "nome": "Rodrigo Soares /focus",
+            "cidade": "Bauru",
+            "telefone": "5514996085487"
+        }
+    },
+    {
+        "id": "0345871d-23df-4322-9806-7d805d886f56",
+        "cliente_id": "df4d3cef-48a6-4189-bb90-2f1f2542c58f",
+        "valor_emprestado": 300.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-10",
+        "data_vencimento": "2026-06-10",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T01:22:06.764041+00:00",
+        "updated_at": "2026-05-29T01:22:06.764041+00:00",
+        "clientes": {
+            "id": "df4d3cef-48a6-4189-bb90-2f1f2542c58f",
+            "nome": "Thiago Carvalho ",
+            "cidade": "Bauru",
+            "telefone": "5514998519004"
+        }
+    },
+    {
+        "id": "102d4ba9-26c6-4242-ad1d-21d283ccb239",
+        "cliente_id": "df4d3cef-48a6-4189-bb90-2f1f2542c58f",
+        "valor_emprestado": 500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-10",
+        "data_vencimento": "2026-06-10",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T01:20:36.332292+00:00",
+        "updated_at": "2026-05-29T01:20:36.332292+00:00",
+        "clientes": {
+            "id": "df4d3cef-48a6-4189-bb90-2f1f2542c58f",
+            "nome": "Thiago Carvalho ",
+            "cidade": "Bauru",
+            "telefone": "5514998519004"
+        }
+    },
+    {
+        "id": "16b91ed3-8bd9-477a-a141-c955355efeef",
+        "cliente_id": "e3310757-1da1-4fb3-9f86-d6791d6e648e",
+        "valor_emprestado": 200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-15",
+        "data_vencimento": "2026-06-15",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T01:04:46.493327+00:00",
+        "updated_at": "2026-05-29T01:04:46.493327+00:00",
+        "clientes": {
+            "id": "e3310757-1da1-4fb3-9f86-d6791d6e648e",
+            "nome": "Bruna Abílio pinheiro ",
+            "cidade": "Bauru",
+            "telefone": "5514998401873"
+        }
+    },
+    {
+        "id": "63ff44e4-7a65-4bb8-9d38-8ea56c6bc3ce",
+        "cliente_id": "1f311660-bafb-4b7e-9b5b-57393e0e184f",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-11",
+        "data_vencimento": "2026-06-11",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T00:53:52.062292+00:00",
+        "updated_at": "2026-05-29T00:53:52.062292+00:00",
+        "clientes": {
+            "id": "1f311660-bafb-4b7e-9b5b-57393e0e184f",
+            "nome": "Priscila zamaro da Silva ",
+            "cidade": "Bauru",
+            "telefone": "5514910043432"
+        }
+    },
+    {
+        "id": "c3b55bd5-e8aa-4350-8aa3-a53c05232303",
+        "cliente_id": "8bf68316-3623-4b20-9ab6-adc15d22dbca",
+        "valor_emprestado": 1200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-25",
+        "data_vencimento": "2026-06-25",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-29T00:25:22.635828+00:00",
+        "updated_at": "2026-05-29T00:25:22.635828+00:00",
+        "clientes": {
+            "id": "8bf68316-3623-4b20-9ab6-adc15d22dbca",
+            "nome": "Kerolyn Francine Menezes Diniz",
+            "cidade": "Bauru",
+            "telefone": "5514991386267"
+        }
+    },
+    {
+        "id": "5cbbce2f-e1ac-4506-a4c1-4495bba55cfe",
+        "cliente_id": "c56c8045-c983-4eca-b323-397458044008",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-26",
+        "data_vencimento": "2026-06-26",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T23:58:20.72502+00:00",
+        "updated_at": "2026-05-28T23:58:20.72502+00:00",
+        "clientes": {
+            "id": "c56c8045-c983-4eca-b323-397458044008",
+            "nome": "Cecilio Rodrigues Neto ",
+            "cidade": "Bauru",
+            "telefone": "5514996529407"
+        }
+    },
+    {
+        "id": "36560337-2be8-47de-9a70-e0e6320e61de",
+        "cliente_id": "1aa5d3a9-504e-483e-90f0-c227e89ad774",
+        "valor_emprestado": 1200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-16",
+        "data_vencimento": "2026-06-16",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T23:51:12.050963+00:00",
+        "updated_at": "2026-05-28T23:51:12.050963+00:00",
+        "clientes": {
+            "id": "1aa5d3a9-504e-483e-90f0-c227e89ad774",
+            "nome": "Cinthia aparecida silva de oliveira ",
+            "cidade": "Bauru",
+            "telefone": "5514991463987"
+        }
+    },
+    {
+        "id": "6e2a57d0-7293-4e67-a3fd-e822bddfebfd",
+        "cliente_id": "1aa5d3a9-504e-483e-90f0-c227e89ad774",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T23:49:27.352692+00:00",
+        "updated_at": "2026-05-28T23:49:27.352692+00:00",
+        "clientes": {
+            "id": "1aa5d3a9-504e-483e-90f0-c227e89ad774",
+            "nome": "Cinthia aparecida silva de oliveira ",
+            "cidade": "Bauru",
+            "telefone": "5514991463987"
+        }
+    },
+    {
+        "id": "278c5f25-9f49-44a9-8047-6f397f57283c",
+        "cliente_id": "1aa5d3a9-504e-483e-90f0-c227e89ad774",
+        "valor_emprestado": 500.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-30",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T23:47:54.466781+00:00",
+        "updated_at": "2026-05-28T23:47:54.466781+00:00",
+        "clientes": {
+            "id": "1aa5d3a9-504e-483e-90f0-c227e89ad774",
+            "nome": "Cinthia aparecida silva de oliveira ",
+            "cidade": "Bauru",
+            "telefone": "5514991463987"
+        }
+    },
+    {
+        "id": "55b4f524-6b58-4e01-8a0c-144557916bd0",
+        "cliente_id": "f5c92aaf-8bb9-41ba-9abd-36c637a30bb1",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T23:24:04.397167+00:00",
+        "updated_at": "2026-05-28T23:24:04.397167+00:00",
+        "clientes": {
+            "id": "f5c92aaf-8bb9-41ba-9abd-36c637a30bb1",
+            "nome": "Marcelo De Souza Barbosa ",
+            "cidade": "Bauru",
+            "telefone": "5514996171770"
+        }
+    },
+    {
+        "id": "90bb5ac3-7057-48e5-9ff6-12242d3d2b20",
+        "cliente_id": "5150b501-7522-43b9-bca7-ef84c8d57d3e",
+        "valor_emprestado": 5000.00,
+        "taxa_juros": 15.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-23",
+        "data_vencimento": "2026-06-23",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T23:14:24.706543+00:00",
+        "updated_at": "2026-05-28T23:14:24.706543+00:00",
+        "clientes": {
+            "id": "5150b501-7522-43b9-bca7-ef84c8d57d3e",
+            "nome": "Richard Rodrigues dos Santos ",
+            "cidade": "Bauru",
+            "telefone": "5514988189715"
+        }
+    },
+    {
+        "id": "19aeade9-4ab2-42b3-8060-0f610d468dff",
+        "cliente_id": "5150b501-7522-43b9-bca7-ef84c8d57d3e",
+        "valor_emprestado": 5000.00,
+        "taxa_juros": 15.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-28",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T23:07:10.851275+00:00",
+        "updated_at": "2026-05-28T23:07:10.851275+00:00",
+        "clientes": {
+            "id": "5150b501-7522-43b9-bca7-ef84c8d57d3e",
+            "nome": "Richard Rodrigues dos Santos ",
+            "cidade": "Bauru",
+            "telefone": "5514988189715"
+        }
+    },
+    {
+        "id": "da1cb59d-5a60-4032-aea5-e4203e0867f3",
+        "cliente_id": "7dee1fef-38a2-4108-9f76-173ec9941d07",
+        "valor_emprestado": 12000.00,
+        "taxa_juros": 6.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-18",
+        "data_vencimento": "2026-06-18",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-28T14:18:00.471421+00:00",
+        "updated_at": "2026-05-28T14:18:00.471421+00:00",
+        "clientes": {
+            "id": "7dee1fef-38a2-4108-9f76-173ec9941d07",
+            "nome": "Kikinho",
+            "cidade": "Bauru",
+            "telefone": "5514991117140"
+        }
+    },
+    {
+        "id": "b95bf725-b982-4133-91bb-ef12b9b59980",
+        "cliente_id": "ef33b21c-3040-4733-afd2-dabad415edb2",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-27",
+        "data_vencimento": "2026-06-27",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T18:24:28.382722+00:00",
+        "updated_at": "2026-05-27T18:24:28.382722+00:00",
+        "clientes": {
+            "id": "ef33b21c-3040-4733-afd2-dabad415edb2",
+            "nome": "Waldevino Zeferino Neto",
+            "cidade": "Bauru",
+            "telefone": "5514991285195"
+        }
+    },
+    {
+        "id": "1a2b3572-4734-46ec-989a-a0665648842a",
+        "cliente_id": "1c5b697c-20c0-44cf-985b-8e59995f59ec",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-27",
+        "data_vencimento": "2026-06-26",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T16:28:33.744727+00:00",
+        "updated_at": "2026-05-27T16:28:33.744727+00:00",
+        "clientes": {
+            "id": "1c5b697c-20c0-44cf-985b-8e59995f59ec",
+            "nome": "Juliana Lima de Oliveira ",
+            "cidade": "Bauru",
+            "telefone": "5514998667720"
+        }
+    },
+    {
+        "id": "ac62bca1-fcc9-436c-bec3-a5d6f44e7946",
+        "cliente_id": "0a11bfe6-8dc6-424d-ac85-b0905b8a49e0",
+        "valor_emprestado": 15000.00,
+        "taxa_juros": 10.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-23",
+        "data_vencimento": "2026-06-23",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T15:03:29.278925+00:00",
+        "updated_at": "2026-05-27T15:03:29.278925+00:00",
+        "clientes": {
+            "id": "0a11bfe6-8dc6-424d-ac85-b0905b8a49e0",
+            "nome": "Priscilla leite Justiniano de sales paula ",
+            "cidade": "Bauru",
+            "telefone": "5514991880619"
+        }
+    },
+    {
+        "id": "ddfa715e-8845-4924-82d1-c713043b7a07",
+        "cliente_id": "d3d15012-4b36-4c63-b930-30aa3682e434",
+        "valor_emprestado": 700.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T14:57:57.402092+00:00",
+        "updated_at": "2026-05-27T14:57:57.402092+00:00",
+        "clientes": {
+            "id": "d3d15012-4b36-4c63-b930-30aa3682e434",
+            "nome": "Josiel negao ",
+            "cidade": "Bauru",
+            "telefone": "5514991201965"
+        }
+    },
+    {
+        "id": "426ce351-54fd-4217-97af-0495e4c44f89",
+        "cliente_id": "d3d15012-4b36-4c63-b930-30aa3682e434",
+        "valor_emprestado": 700.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-07",
+        "data_vencimento": "2026-06-07",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T14:57:03.542149+00:00",
+        "updated_at": "2026-05-27T14:57:03.542149+00:00",
+        "clientes": {
+            "id": "d3d15012-4b36-4c63-b930-30aa3682e434",
+            "nome": "Josiel negao ",
+            "cidade": "Bauru",
+            "telefone": "5514991201965"
+        }
+    },
+    {
+        "id": "388131bb-5c31-4f5c-98dc-772ae69db2f0",
+        "cliente_id": "2f9ac068-0cf2-4a70-8a01-6cda92d7ba26",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-17",
+        "data_vencimento": "2026-06-17",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T14:53:36.650439+00:00",
+        "updated_at": "2026-05-27T14:53:36.650439+00:00",
+        "clientes": {
+            "id": "2f9ac068-0cf2-4a70-8a01-6cda92d7ba26",
+            "nome": "Fernando Henrique de Moraes Ramos ",
+            "cidade": "Bauru",
+            "telefone": "5514991568498"
+        }
+    },
+    {
+        "id": "5b1184ca-f503-4844-b603-576df701cd26",
+        "cliente_id": "00d68b8c-6eea-40d3-bd48-ec84f4a67a45",
+        "valor_emprestado": 2000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-20",
+        "data_vencimento": "2026-06-20",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T14:44:26.680466+00:00",
+        "updated_at": "2026-05-27T14:44:26.680466+00:00",
+        "clientes": {
+            "id": "00d68b8c-6eea-40d3-bd48-ec84f4a67a45",
+            "nome": "Daniela Cristina Fernandes ",
+            "cidade": "Bauru",
+            "telefone": "5514981773959"
+        }
+    },
+    {
+        "id": "b6703d5d-6e50-4980-be78-e484751e2188",
+        "cliente_id": "668d1372-58f7-4a3f-bb89-79370150161c",
+        "valor_emprestado": 300.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-17",
+        "data_vencimento": "2026-06-17",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T14:38:46.29731+00:00",
+        "updated_at": "2026-05-27T14:38:46.29731+00:00",
+        "clientes": {
+            "id": "668d1372-58f7-4a3f-bb89-79370150161c",
+            "nome": "Kely sapatao ",
+            "cidade": "Bauru",
+            "telefone": "5514988042321"
+        }
+    },
+    {
+        "id": "bd36ad05-9f6e-4688-b91b-82ac90c50668",
+        "cliente_id": "be47fff8-f203-4697-b338-381b0906a3c8",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-08",
+        "data_vencimento": "2026-06-18",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T14:35:55.200138+00:00",
+        "updated_at": "2026-05-27T14:35:55.200138+00:00",
+        "clientes": {
+            "id": "be47fff8-f203-4697-b338-381b0906a3c8",
+            "nome": "Alexa Bianca da Silva ",
+            "cidade": "Bauru",
+            "telefone": "5514981773959"
+        }
+    },
+    {
+        "id": "17afab28-d506-4197-8b1d-19547940ee7f",
+        "cliente_id": "dce6f164-d804-4a4d-baf1-f4769d23362d",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-06",
+        "data_vencimento": "2026-06-06",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T14:32:08.173248+00:00",
+        "updated_at": "2026-05-27T14:32:08.173248+00:00",
+        "clientes": {
+            "id": "dce6f164-d804-4a4d-baf1-f4769d23362d",
+            "nome": "Edson calixto dos Santos neto",
+            "cidade": "Bauru",
+            "telefone": "5514998599993"
+        }
+    },
+    {
+        "id": "45225777-c0bf-4645-98d2-7c8f44375dbe",
+        "cliente_id": "7dee1fef-38a2-4108-9f76-173ec9941d07",
+        "valor_emprestado": 2500.00,
+        "taxa_juros": 6.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-10",
+        "data_vencimento": "2026-06-10",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T12:18:00.133199+00:00",
+        "updated_at": "2026-05-27T12:18:00.133199+00:00",
+        "clientes": {
+            "id": "7dee1fef-38a2-4108-9f76-173ec9941d07",
+            "nome": "Kikinho",
+            "cidade": "Bauru",
+            "telefone": "5514991117140"
+        }
+    },
+    {
+        "id": "8f96498e-5b5c-49e6-80b8-220c039483ca",
+        "cliente_id": "7dee1fef-38a2-4108-9f76-173ec9941d07",
+        "valor_emprestado": 3000.00,
+        "taxa_juros": 6.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-27",
+        "data_vencimento": "2026-06-27",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-27T09:17:33.670592+00:00",
+        "updated_at": "2026-05-27T09:17:33.670592+00:00",
+        "clientes": {
+            "id": "7dee1fef-38a2-4108-9f76-173ec9941d07",
+            "nome": "Kikinho",
+            "cidade": "Bauru",
+            "telefone": "5514991117140"
+        }
+    },
+    {
+        "id": "867e6767-a077-4f33-88bb-4a5ec562aee9",
+        "cliente_id": "5150b501-7522-43b9-bca7-ef84c8d57d3e",
+        "valor_emprestado": 10000.00,
+        "taxa_juros": 15.00,
+        "taxa_multa": 1.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-26",
+        "data_vencimento": "2026-06-26",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-26T21:45:06.69906+00:00",
+        "updated_at": "2026-05-26T21:45:06.69906+00:00",
+        "clientes": {
+            "id": "5150b501-7522-43b9-bca7-ef84c8d57d3e",
+            "nome": "Richard Rodrigues dos Santos ",
+            "cidade": "Bauru",
+            "telefone": "5514988189715"
+        }
+    },
+    {
+        "id": "2a1bdbf9-292a-4222-8862-61aa534e6968",
+        "cliente_id": "be1bb872-8fe1-49e0-8336-4c2aef2feaf7",
+        "valor_emprestado": 800.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-28",
+        "data_vencimento": "2026-06-28",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-26T14:52:41.337514+00:00",
+        "updated_at": "2026-05-26T14:52:41.337514+00:00",
+        "clientes": {
+            "id": "be1bb872-8fe1-49e0-8336-4c2aef2feaf7",
+            "nome": "Alexandre dos Santos damasceno ",
+            "cidade": "Bauru",
+            "telefone": "5514998543054"
+        }
+    },
+    {
+        "id": "f228e8f2-42d8-4f97-b90a-009a2007dd46",
+        "cliente_id": "be1bb872-8fe1-49e0-8336-4c2aef2feaf7",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-27",
+        "data_vencimento": "2026-06-27",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-26T14:50:31.296768+00:00",
+        "updated_at": "2026-05-26T14:50:31.296768+00:00",
+        "clientes": {
+            "id": "be1bb872-8fe1-49e0-8336-4c2aef2feaf7",
+            "nome": "Alexandre dos Santos damasceno ",
+            "cidade": "Bauru",
+            "telefone": "5514998543054"
+        }
+    },
+    {
+        "id": "3f0f9170-6a95-428f-b955-fbac051c419e",
+        "cliente_id": "8521e4b8-98c8-406e-bf6a-50e7070ba059",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 25.00,
+        "taxa_multa": 0.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-06",
+        "data_vencimento": "2026-06-06",
+        "status": "ativo",
+        "observacoes": "Acordo restante 4x 250,00",
+        "created_at": "2026-05-26T02:58:40.790474+00:00",
+        "updated_at": "2026-05-26T02:58:40.790474+00:00",
+        "clientes": {
+            "id": "8521e4b8-98c8-406e-bf6a-50e7070ba059",
+            "nome": "Thais Cristina Cunha lanzetti",
+            "cidade": "Bauru",
+            "telefone": "5514935005887"
+        }
+    },
+    {
+        "id": "d8cdfa77-3cb6-4fb3-8189-8c3bbde1cd48",
+        "cliente_id": "3905b894-12e4-4c92-80a1-462ba7a36a8c",
+        "valor_emprestado": 1000.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 20.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-18",
+        "data_vencimento": "2026-06-18",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-26T02:51:31.386905+00:00",
+        "updated_at": "2026-05-26T02:51:31.386905+00:00",
+        "clientes": {
+            "id": "3905b894-12e4-4c92-80a1-462ba7a36a8c",
+            "nome": "Bruna Moreira Guedes eugenio",
+            "cidade": "Bauru",
+            "telefone": "5514988069509"
+        }
+    },
+    {
+        "id": "c4d26b57-d2c8-4a03-a5d1-6876113d0496",
+        "cliente_id": "f98e988d-8ae0-4615-be39-b810dc3183a9",
+        "valor_emprestado": 200.00,
+        "taxa_juros": 30.00,
+        "taxa_multa": 10.00,
+        "num_parcelas": 1,
+        "data_inicio": "2026-05-25",
+        "data_vencimento": "2026-06-26",
+        "status": "ativo",
+        "observacoes": null,
+        "created_at": "2026-05-26T02:31:42.771951+00:00",
+        "updated_at": "2026-05-26T02:31:42.771951+00:00",
+        "clientes": {
+            "id": "f98e988d-8ae0-4615-be39-b810dc3183a9",
+            "nome": "Rogerio alex da costa ",
+            "cidade": "Bauru",
+            "telefone": "5514991527214"
+        }
+    }
+]

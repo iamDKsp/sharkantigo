@@ -1,0 +1,538 @@
+[
+    {
+        "id": "be47fff8-f203-4697-b338-381b0906a3c8",
+        "nome": "Alexa Bianca da Silva ",
+        "telefone": "5514981773959",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "be1bb872-8fe1-49e0-8336-4c2aef2feaf7",
+        "nome": "Alexandre dos Santos damasceno ",
+        "telefone": "5514998543054",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "de8912fa-a85c-4126-8f13-b0bf3d6f931e",
+        "nome": "Amanda de melo",
+        "telefone": "5514991241343",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780013017008-42nbgp-1001506068.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxMzAxNzAwOC00Mm5iZ3AtMTAwMTUwNjA2OC5qcGciLCJpYXQiOjE3ODAwMTMwMTgsImV4cCI6MTgxMTU0OTAxOH0.SWRwOW-SZxX5AUBb__NUEBkXjHFlgP-pfF1-U_3sgY0"
+    },
+    {
+        "id": "0c7c535c-0ad9-4189-819b-9820e5f585fa",
+        "nome": "Ana Claudia constante oscar ",
+        "telefone": "5514998306663",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780013533638-cdtiyp-1001504866.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxMzUzMzYzOC1jZHRpeXAtMTAwMTUwNDg2Ni5qcGciLCJpYXQiOjE3ODAwMTM1MzQsImV4cCI6MTgxMTU0OTUzNH0.CWCvC1q3KKL713TW9uKbYLu3cm6dVh5yTjpUx6pPfrE"
+    },
+    {
+        "id": "e3310757-1da1-4fb3-9f86-d6791d6e648e",
+        "nome": "Bruna Abílio pinheiro ",
+        "telefone": "5514998401873",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780016601523-vgcgjj-1001506196.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxNjYwMTUyMy12Z2NnamotMTAwMTUwNjE5Ni5qcGciLCJpYXQiOjE3ODAwMTY2MDMsImV4cCI6MTgxMTU1MjYwM30.Ebl5T7Ow8VQy1cQ3vYucWhcQONa4hUzYrG3eJRlkARM"
+    },
+    {
+        "id": "3905b894-12e4-4c92-80a1-462ba7a36a8c",
+        "nome": "Bruna Moreira Guedes eugenio",
+        "telefone": "5514988069509",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779763378797-4votlm-1001497996.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTc2MzM3ODc5Ny00dm90bG0tMTAwMTQ5Nzk5Ni5qcGciLCJpYXQiOjE3Nzk3NjMzODAsImV4cCI6MTgxMTI5OTM4MH0.1wgHPNDrnQ6tjwgSTOJgEWLTwV8M48JOuMIFTHWA-Oo"
+    },
+    {
+        "id": "48137891-0ca6-4814-b092-8d12cb9fd79d",
+        "nome": "Bruno Daniel Lacerda de Souza ",
+        "telefone": "5514981213249",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780346692229-5qvfcg-1001516895.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM0NjY5MjIyOS01cXZmY2ctMTAwMTUxNjg5NS5qcGciLCJpYXQiOjE3ODAzNDY2OTMsImV4cCI6MTgxMTg4MjY5M30.qdPFhqXqucuhIFzUxGMmvfh3i9dLZXl4WhVTtaNenU0"
+    },
+    {
+        "id": "aea5e9ca-6c6c-40c6-99d7-df1bef5da0fc",
+        "nome": "Bruno Tiago Pereira ",
+        "telefone": "5514998521996",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "4c9291de-f86e-40de-a1cf-1e99dfce52a8",
+        "nome": "Carla Candido de Souza Nogueira ",
+        "telefone": "5514998439278",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780156217906-38pn37-1001511023.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDE1NjIxNzkwNi0zOHBuMzctMTAwMTUxMTAyMy5qcGciLCJpYXQiOjE3ODAxNTYyMTgsImV4cCI6MTgxMTY5MjIxOH0.TcSiJVrq6Qrtzl_hA3xlhAL2mGtxTShMHDHvvoyyMig"
+    },
+    {
+        "id": "c56c8045-c983-4eca-b323-397458044008",
+        "nome": "Cecilio Rodrigues Neto ",
+        "telefone": "5514996529407",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780012478553-qhjvcm-1001499941.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxMjQ3ODU1My1xaGp2Y20tMTAwMTQ5OTk0MS5qcGciLCJpYXQiOjE3ODAwMTI0ODAsImV4cCI6MTgxMTU0ODQ4MH0.0FA7z4AmIckaN0s1oNo24IzeKbytevkQchWSRdWTHac"
+    },
+    {
+        "id": "1aa5d3a9-504e-483e-90f0-c227e89ad774",
+        "nome": "Cinthia aparecida silva de oliveira ",
+        "telefone": "5514991463987",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "17128f8c-731b-4ce8-a2ea-e170af5cf5ec",
+        "nome": "Claudinei candido escorpião de Souza ",
+        "telefone": "5514996858505",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780158361578-ev8mml-1001511159.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDE1ODM2MTU3OC1ldjhtbWwtMTAwMTUxMTE1OS5qcGciLCJpYXQiOjE3ODAxNTgzNjMsImV4cCI6MTgxMTY5NDM2M30.nsSvakHODUB6eo2bLc30o66sTuLMjK-wKWV-eilwk4E"
+    },
+    {
+        "id": "5b155ed2-06ba-4a99-bf6a-e0832d19b68a",
+        "nome": "Cleuber candido de souza ",
+        "telefone": "5514997480801",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780367670809-x9pvmr-1001518267.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2NzY3MDgwOS14OXB2bXItMTAwMTUxODI2Ny5qcGciLCJpYXQiOjE3ODAzNjc2NzEsImV4cCI6MTgxMTkwMzY3MX0.8Dz15tS3ijntKDGub0NSvb62h1y00GYM4s1oULc49Iw"
+    },
+    {
+        "id": "d798ecf1-0468-4d5c-a369-c886639f3d0c",
+        "nome": "Cristiane Candido de douza",
+        "telefone": "5514996535055",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780022281510-c6a5yf-1001506419.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMjI4MTUxMC1jNmE1eWYtMTAwMTUwNjQxOS5qcGciLCJpYXQiOjE3ODAwMjIyODIsImV4cCI6MTgxMTU1ODI4Mn0.1VS-wn1hOWWBIrZV0qhX6Rfr50jtZD-vZGptmMRFf_w"
+    },
+    {
+        "id": "14c06c6f-7170-44a3-84a2-8e58a46694f8",
+        "nome": "Daiane da silva Silveira ",
+        "telefone": "5514991199473",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780021683515-h4mpnd-1001506414.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMTY4MzUxNS1oNG1wbmQtMTAwMTUwNjQxNC5qcGciLCJpYXQiOjE3ODAwMjE2ODUsImV4cCI6MTgxMTU1NzY4NX0.pmNM26m9NIFXwx5Fde2RHO38CASVOSWh3dm1WH4QRBI"
+    },
+    {
+        "id": "00d68b8c-6eea-40d3-bd48-ec84f4a67a45",
+        "nome": "Daniela Cristina Fernandes ",
+        "telefone": "5514981773959",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779892989721-52dtew-1001501902.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTg5Mjk4OTcyMS01MmR0ZXctMTAwMTUwMTkwMi5qcGciLCJpYXQiOjE3Nzk4OTI5OTEsImV4cCI6MTgxMTQyODk5MX0.6hj7y7qn-O9Ov_JTcqaRFwu8FLS9omSfIUjL46Hz6Ak"
+    },
+    {
+        "id": "b0b5f35b-d0ef-4f2c-a651-5c46d52eec6a",
+        "nome": "Darlene Araújo pinho ",
+        "telefone": "5515998499877",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780393393165-3ucq3l-1001518552.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM5MzM5MzE2NS0zdWNxM2wtMTAwMTUxODU1Mi5qcGciLCJpYXQiOjE3ODAzOTMzOTQsImV4cCI6MTgxMTkyOTM5NH0.QmJLZZxcb9qe-pXeFwcIc5I61J0uKICHYn6CePp5opY"
+    },
+    {
+        "id": "e9c64e6c-8e02-4e70-9ba2-1813b710e2c4",
+        "nome": "Douglas guardia penholati ",
+        "telefone": "5514988143929",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780366461809-ws18ns-1001518248.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2NjQ2MTgwOS13czE4bnMtMTAwMTUxODI0OC5qcGciLCJpYXQiOjE3ODAzNjY0NjMsImV4cCI6MTgxMTkwMjQ2M30.XYrJcDMFfeO3yAGXTwTHdel2h6gJgbpAJkTbx1F4LwU"
+    },
+    {
+        "id": "dce6f164-d804-4a4d-baf1-f4769d23362d",
+        "nome": "Edson calixto dos Santos neto",
+        "telefone": "5514998599993",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779892139805-wv33ef-1001501875.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTg5MjEzOTgwNS13djMzZWYtMTAwMTUwMTg3NS5qcGciLCJpYXQiOjE3Nzk4OTIxNDEsImV4cCI6MTgxMTQyODE0MX0.g1-YrRAU3GQcjpEIO__lHdRGKsHRQr3SyXudNNT2cuU"
+    },
+    {
+        "id": "12a64f70-e000-45fa-853f-5d8b3ecd83a8",
+        "nome": "Erica regina dos Santos sabino ",
+        "telefone": "5514997181778",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780221521860-z8khmq-1001512758.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDIyMTUyMTg2MC16OGtobXEtMTAwMTUxMjc1OC5qcGciLCJpYXQiOjE3ODAyMjE1MjMsImV4cCI6MTgxMTc1NzUyM30.FH3IiBSzRdS9SYv0HTYYPMW5_J9z9KLxI60jedQK7ks"
+    },
+    {
+        "id": "2f9ac068-0cf2-4a70-8a01-6cda92d7ba26",
+        "nome": "Fernando Henrique de Moraes Ramos ",
+        "telefone": "5514991568498",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779893566165-nkzkba-1001501938.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTg5MzU2NjE2NS1ua3prYmEtMTAwMTUwMTkzOC5qcGciLCJpYXQiOjE3Nzk4OTM1NjcsImV4cCI6MTgxMTQyOTU2N30.pzCra1yUPPEDlSPU3ZU9m-9j-IGP0llimyHxARdxgPY"
+    },
+    {
+        "id": "c64a0c9b-7a48-4564-8770-1b596b899e99",
+        "nome": "Francisco Gomes da Silva ",
+        "telefone": "5514981428187",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780220149491-u8yuae-1001512754.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDIyMDE0OTQ5MS11OHl1YWUtMTAwMTUxMjc1NC5qcGciLCJpYXQiOjE3ODAyMjAxNTAsImV4cCI6MTgxMTc1NjE1MH0.g8Z8qwt4wq46tRvIqAUDEQGUQeQ7vV0-Uc421xoMZD0"
+    },
+    {
+        "id": "07bf901f-d184-4595-8e4d-1156027f65fd",
+        "nome": "Geisa biancao crivelaro de Jesus ",
+        "telefone": "5514991712893",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779806888536-q4e3vq-1001499265.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTgwNjg4ODUzNi1xNGUzdnEtMTAwMTQ5OTI2NS5qcGciLCJpYXQiOjE3Nzk4MDY4ODksImV4cCI6MTgxMTM0Mjg4OX0.96SQL0HN4zSpcMzB1kp9CGOpE0-cUnurkqZgXsyUVwY"
+    },
+    {
+        "id": "d81f3c2e-a507-4278-a02e-ed52459e794d",
+        "nome": "Gersno de Souza ",
+        "telefone": "5514988260646",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "ca61b21d-d8e5-4b2d-8de5-e19058037f16",
+        "nome": "Gilmar José Ribeiro ",
+        "telefone": "5514997459474",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "14bf1753-a714-49e3-9316-23a4f729362d",
+        "nome": "Gilto costa neto ",
+        "telefone": "5514999072087",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780362279836-px3cdj-1001518090.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2MjI3OTgzNi1weDNjZGotMTAwMTUxODA5MC5qcGciLCJpYXQiOjE3ODAzNjIyODAsImV4cCI6MTgxMTg5ODI4MH0.yi4zaCxOnjx9W1Fy1uijgQjy9_auAs86-CZxBIaneOc"
+    },
+    {
+        "id": "f2e20ee9-4853-4385-9e4b-acbf1b7fa76e",
+        "nome": "Guilherme aparecido Alves ",
+        "telefone": "5514997166294",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780361508976-itnyy4-1001518039.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2MTUwODk3Ni1pdG55eTQtMTAwMTUxODAzOS5qcGciLCJpYXQiOjE3ODAzNjE1MTAsImV4cCI6MTgxMTg5NzUxMH0.MkbDqf-LrV98DbBeH2WY5iu-swy0fyecxqYKvmWXoU0"
+    },
+    {
+        "id": "a72e58c8-5ca0-45e2-9510-0ac60cc525c3",
+        "nome": "Heber",
+        "telefone": "5514997545894",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "96a4285f-052d-4509-8ff2-ef57ad0db64d",
+        "nome": "Inez trevisan da silva ",
+        "telefone": "5514998285104",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780021408176-wmmvot-1001506405.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMTQwODE3Ni13bW12b3QtMTAwMTUwNjQwNS5qcGciLCJpYXQiOjE3ODAwMjE0MDksImV4cCI6MTgxMTU1NzQwOX0.mwrcNXuIISnbDTusM36keqOXZulGOTPKASdr3y5cWpQ"
+    },
+    {
+        "id": "d3d15012-4b36-4c63-b930-30aa3682e434",
+        "nome": "Josiel negao ",
+        "telefone": "5514991201965",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779893766324-fk6ulh-1001501972.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTg5Mzc2NjMyNC1mazZ1bGgtMTAwMTUwMTk3Mi5qcGciLCJpYXQiOjE3Nzk4OTM3NjcsImV4cCI6MTgxMTQyOTc2N30.Z0tLUNO80EhmIpw8KLNhI88NR85MAlIhST-4_omd5RU"
+    },
+    {
+        "id": "1c5b697c-20c0-44cf-985b-8e59995f59ec",
+        "nome": "Juliana Lima de Oliveira ",
+        "telefone": "5514998667720",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779899252001-agz24y-1001501052.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTg5OTI1MjAwMS1hZ3oyNHktMTAwMTUwMTA1Mi5qcGciLCJpYXQiOjE3Nzk4OTkyNTMsImV4cCI6MTgxMTQzNTI1M30.7zwUyxYD2T1dfkKAmhy5f5p-Fwo0u_EFJHDBkwemP6Q"
+    },
+    {
+        "id": "c76d9397-8c7f-4b19-bbcf-4367aa04aba8",
+        "nome": "Juliane Grandinetti Martins pavanelo",
+        "telefone": "5514991676031",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780363242505-kmnhaz-1001518131.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2MzI0MjUwNS1rbW5oYXotMTAwMTUxODEzMS5qcGciLCJpYXQiOjE3ODAzNjMyNDQsImV4cCI6MTgxMTg5OTI0NH0.Qn5c7zbqT6JQd3u5XOhYMHNHgLTyeyuv8FtKLhCRj6Y"
+    },
+    {
+        "id": "456d0c8b-b3c8-472f-bf13-28f396e019e7",
+        "nome": "Juliano Aparecido De Souza ",
+        "telefone": "5514997665368",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780023539853-m4xvoc-1001506457.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMzUzOTg1My1tNHh2b2MtMTAwMTUwNjQ1Ny5qcGciLCJpYXQiOjE3ODAwMjM1NDEsImV4cCI6MTgxMTU1OTU0MX0.J_KBJNpmzDZylBSGjbac9vYIkaJHyGumrElOWEo24xI"
+    },
+    {
+        "id": "5e760a86-815d-47e6-ac0e-505df22c8af3",
+        "nome": "Julio César Xavier ",
+        "telefone": "5514998338325",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780413528326-yfv3mi-1001519807.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDQxMzUyODMyNi15ZnYzbWktMTAwMTUxOTgwNy5qcGciLCJpYXQiOjE3ODA0MTM1MzAsImV4cCI6MTgxMTk0OTUzMH0.trR4DshsrAwyuCxl_Wvq416JdThVgNfw2BflQ1fYMxI"
+    },
+    {
+        "id": "668d1372-58f7-4a3f-bb89-79370150161c",
+        "nome": "Kely sapatao ",
+        "telefone": "5514988042321",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "8bf68316-3623-4b20-9ab6-adc15d22dbca",
+        "nome": "Kerolyn Francine Menezes Diniz",
+        "telefone": "5514991386267",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780014115342-h9k3fl-1001506097.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxNDExNTM0Mi1oOWszZmwtMTAwMTUwNjA5Ny5qcGciLCJpYXQiOjE3ODAwMTQxMTYsImV4cCI6MTgxMTU1MDExNn0.USUA0YCmdCp9uBvFtzpCcYk684AxSCwSW6Hbi0FKNGQ"
+    },
+    {
+        "id": "7dee1fef-38a2-4108-9f76-173ec9941d07",
+        "nome": "Kikinho",
+        "telefone": "5514991117140",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779978139657-1tkjth-1001504402.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTk3ODEzOTY1Ny0xdGtqdGgtMTAwMTUwNDQwMi5qcGciLCJpYXQiOjE3Nzk5NzgxNDEsImV4cCI6MTgxMTUxNDE0MX0.609BaMisJebaAdCn-9taorimRGAt_kVXAFdiO2mvivw"
+    },
+    {
+        "id": "21e31760-6b74-4aea-9e3f-724567c84fd8",
+        "nome": "Luana tairini Pereira Lourenço ",
+        "telefone": "5514991459399",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780394789941-5qkmyz-1001518606.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM5NDc4OTk0MS01cWtteXotMTAwMTUxODYwNi5qcGciLCJpYXQiOjE3ODAzOTQ3OTEsImV4cCI6MTgxMTkzMDc5MX0.epZQEa4banRWATvSrGN87Bhts3tdslHrDGdT4Z0pEr0"
+    },
+    {
+        "id": "d4e3d002-385d-46b4-bbdd-6eba1fc5d4e2",
+        "nome": "Lucia elena pavini",
+        "telefone": "5514996213674",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780148350689-50jhhk-1001507697.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDE0ODM1MDY4OS01MGpoaGstMTAwMTUwNzY5Ny5qcGciLCJpYXQiOjE3ODAxNDgzNTEsImV4cCI6MTgxMTY4NDM1MX0.hGVTBLt6rt8MFS73Ufekwj74r2lH2PMs2NUTOO_ZVPE"
+    },
+    {
+        "id": "5f5706e1-0163-4046-9d01-39ff666a3a73",
+        "nome": "Luis Paulo de Oliveira Cabral ",
+        "telefone": "5514998972592",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780157065889-z06yro-1001511090.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDE1NzA2NTg4OS16MDZ5cm8tMTAwMTUxMTA5MC5qcGciLCJpYXQiOjE3ODAxNTcwNjYsImV4cCI6MTgxMTY5MzA2Nn0.PYhZKHP4TcTpQ7cGDxyaftyYkORwNqXSgpF2ZMdaq-s"
+    },
+    {
+        "id": "f5c92aaf-8bb9-41ba-9abd-36c637a30bb1",
+        "nome": "Marcelo De Souza Barbosa ",
+        "telefone": "5514996171770",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780010499876-ypjm55-1001448325.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxMDQ5OTg3Ni15cGptNTUtMTAwMTQ0ODMyNS5qcGciLCJpYXQiOjE3ODAwMTA1MDEsImV4cCI6MTgxMTU0NjUwMX0.cL1zHubvZeg7cCZVkJ62wZkZ65Hc6raQ2OkikotKmoo"
+    },
+    {
+        "id": "dea603ea-d06e-46b8-afee-91a8960d0833",
+        "nome": "Marcia Rita Santos de paula ",
+        "telefone": "5514998377181",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780020758826-ypkbrz-1001506367.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMDc1ODgyNi15cGticnotMTAwMTUwNjM2Ny5qcGciLCJpYXQiOjE3ODAwMjA3NjAsImV4cCI6MTgxMTU1Njc2MH0._zQIj6bIAMhcuU8rWG7zzMsyzPt04suZy0uB64Rm18E"
+    },
+    {
+        "id": "12b74f74-224b-4c8d-ab52-a8a5fa37e20e",
+        "nome": "Marcos Floriano ",
+        "telefone": "5514988255948",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780148781773-nemrtq-1001510625.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDE0ODc4MTc3My1uZW1ydHEtMTAwMTUxMDYyNS5qcGciLCJpYXQiOjE3ODAxNDg3ODIsImV4cCI6MTgxMTY4NDc4Mn0.MDckwq9L_K7rxcC9K8xyf7lPeQu8WwN9nqRUz6b85Mk"
+    },
+    {
+        "id": "8931e4e2-4915-4c8b-a838-5204b9ebbfb8",
+        "nome": "Maria de lourdes ",
+        "telefone": "5514988020702",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "cf44ba81-870e-4992-8479-c95a9d4459a1",
+        "nome": "Michel espanavero anjolin ",
+        "telefone": "5514997184268",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780024062081-jidrgy-1001506462.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyNDA2MjA4MS1qaWRyZ3ktMTAwMTUwNjQ2Mi5qcGciLCJpYXQiOjE3ODAwMjQwNjQsImV4cCI6MTgxMTU2MDA2NH0.4Q1v59pp8BGzhLRd9H7OyHUWR4bo-DCkUTpXGtqe4Aw"
+    },
+    {
+        "id": "8c9371c7-af03-4f2a-b99a-d0dd6a17eab0",
+        "nome": "Pablo Richard de sales Ferrari ",
+        "telefone": "5514991520024",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780393022690-iilea2-1001518536.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM5MzAyMjY5MC1paWxlYTItMTAwMTUxODUzNi5qcGciLCJpYXQiOjE3ODAzOTMwMjMsImV4cCI6MTgxMTkyOTAyM30.GAAprzmR67cYPgQRG1o8UVwIBZi2Z4J_5_M9Oa02iq0"
+    },
+    {
+        "id": "e54d230a-8b51-4851-b9b4-14bb161356d0",
+        "nome": "Paulo Ricardo Messias De Brito",
+        "telefone": "5514996802310",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780367337934-kl7c2i-1001518261.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2NzMzNzkzNC1rbDdjMmktMTAwMTUxODI2MS5qcGciLCJpYXQiOjE3ODAzNjczMzgsImV4cCI6MTgxMTkwMzMzOH0._mupixkFfLl-NPNM-G4pBKmnJDO23w_J-I4Xfz1ZzJk"
+    },
+    {
+        "id": "0dc34de8-a83a-45db-beea-5deb43a80195",
+        "nome": "Pedro aristeu conchinelli junior",
+        "telefone": "5514997724464",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780022700914-3iceqm-1001506443.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMjcwMDkxNC0zaWNlcW0tMTAwMTUwNjQ0My5qcGciLCJpYXQiOjE3ODAwMjI3MDIsImV4cCI6MTgxMTU1ODcwMn0.Ma84nsBdp9DJOznZeHMmGe4rnM9BOagUC6--SgjnOEU"
+    },
+    {
+        "id": "3959b616-d9bf-409c-9917-78f651de7e53",
+        "nome": "Pedro Luis Cândido ",
+        "telefone": "5514991531845",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780366966341-1e5z27-1001518254.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2Njk2NjM0MS0xZTV6MjctMTAwMTUxODI1NC5qcGciLCJpYXQiOjE3ODAzNjY5NjcsImV4cCI6MTgxMTkwMjk2N30.9dr4uUFco51YiHLex78jmyD_SaTj1xk84BJprp5DmuY"
+    },
+    {
+        "id": "cfa03db4-7243-466a-a8f2-cda6f135ed5d",
+        "nome": "Priscila Gonçalves Ferreira ",
+        "telefone": "5514998667517",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780392622195-pbfiki-1001518532.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM5MjYyMjE5NS1wYmZpa2ktMTAwMTUxODUzMi5qcGciLCJpYXQiOjE3ODAzOTI2MjIsImV4cCI6MTgxMTkyODYyMn0.eH8IJo57k9CwNktejP47fTWQFYG8ePQnpDBGkpSx73Y"
+    },
+    {
+        "id": "1f311660-bafb-4b7e-9b5b-57393e0e184f",
+        "nome": "Priscila zamaro da Silva ",
+        "telefone": "5514910043432",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780015975947-htmr62-1001506159.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxNTk3NTk0Ny1odG1yNjItMTAwMTUwNjE1OS5qcGciLCJpYXQiOjE3ODAwMTU5NzcsImV4cCI6MTgxMTU1MTk3N30.RnBX0UvrcXAhQfI_iJ05rIwj2fZmE9PSxvp71uGpBEc"
+    },
+    {
+        "id": "0a11bfe6-8dc6-424d-ac85-b0905b8a49e0",
+        "nome": "Priscilla leite Justiniano de sales paula ",
+        "telefone": "5514991880619",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779894151558-6e6qxk-1001501977.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTg5NDE1MTU1OC02ZTZxeGstMTAwMTUwMTk3Ny5qcGciLCJpYXQiOjE3Nzk4OTQxNTIsImV4cCI6MTgxMTQzMDE1Mn0.3epJ2uqizU4-iAqFZPVjjhdqgjh8M3hFktGvbPp9NAY"
+    },
+    {
+        "id": "84ef693d-1757-40c7-b7c7-1c481e898a70",
+        "nome": "Rafaela Silva Viana dos anjos ",
+        "telefone": "5514991496742",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780020263855-9ujkdc-1001506342.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMDI2Mzg1NS05dWprZGMtMTAwMTUwNjM0Mi5qcGciLCJpYXQiOjE3ODAwMjAyNjUsImV4cCI6MTgxMTU1NjI2NX0.OiGEvCxA5CG0Po8LTIwgFh8LiIjuq3osEBYZ6AhLWPc"
+    },
+    {
+        "id": "5150b501-7522-43b9-bca7-ef84c8d57d3e",
+        "nome": "Richard Rodrigues dos Santos ",
+        "telefone": "5514988189715",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "ad2d0e05-b057-45eb-b67e-f06a6ed1a89d",
+        "nome": "Rodrigo Soares /focus",
+        "telefone": "5514996085487",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "f98e988d-8ae0-4615-be39-b810dc3183a9",
+        "nome": "Rogerio alex da costa ",
+        "telefone": "5514991527214",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "53736aae-5d0d-4c82-93b6-0bc839ce0827",
+        "nome": "Rogerio primolan da silva ",
+        "telefone": "5514996061763",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780159081922-s7chnf-1001511184.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDE1OTA4MTkyMi1zN2NobmYtMTAwMTUxMTE4NC5qcGciLCJpYXQiOjE3ODAxNTkwODIsImV4cCI6MTgxMTY5NTA4Mn0.FmKsoknBdjWyPq5R9QfKS1lZ8BakZoeVcgGgwY320Zw"
+    },
+    {
+        "id": "954fd3a1-47a9-44c9-acf0-56de8e5381cf",
+        "nome": "Rover Oliver ",
+        "telefone": "5514998527551",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": null
+    },
+    {
+        "id": "accf93dc-883a-4cd8-b7e4-d4d1322a3fef",
+        "nome": "Sabrina Cristina Dos Santos ",
+        "telefone": "5514991116386",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780365862853-5zwy1i-1001518233.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2NTg2Mjg1My01end5MWktMTAwMTUxODIzMy5qcGciLCJpYXQiOjE3ODAzNjU4NjMsImV4cCI6MTgxMTkwMTg2M30.9YVRTDVhNSuhnl0RBgaXTxbHX65c3SjY5fPxC9Lxxb8"
+    },
+    {
+        "id": "559930ea-bfc7-4423-8b4a-fe6755cf0db4",
+        "nome": "Tamara batista ",
+        "telefone": "5514991647300",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780365256971-fb6mo2-1001518226.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2NTI1Njk3MS1mYjZtbzItMTAwMTUxODIyNi5qcGciLCJpYXQiOjE3ODAzNjUyNTcsImV4cCI6MTgxMTkwMTI1N30.hNpGMoqNqdmEnJj928jiIZ4JB0vDfw934xGJkUwacdw"
+    },
+    {
+        "id": "8521e4b8-98c8-406e-bf6a-50e7070ba059",
+        "nome": "Thais Cristina Cunha lanzetti",
+        "telefone": "5514935005887",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779764141018-7s3d82-1001498017.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTc2NDE0MTAxOC03czNkODItMTAwMTQ5ODAxNy5qcGciLCJpYXQiOjE3Nzk3NjQxNDIsImV4cCI6MTgxMTMwMDE0Mn0.BzBvYk6r0s_TraT00J3NEvKpQjmSbN3glomaBamrXPQ"
+    },
+    {
+        "id": "f6ea7b56-1b5c-45fa-9ebf-ff440dd475d5",
+        "nome": "Thais Cristina Ramos ",
+        "telefone": "5514998038174",
+        "cidade": "",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780365525904-njs9sh-1001518230.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2NTUyNTkwNC1uanM5c2gtMTAwMTUxODIzMC5qcGciLCJpYXQiOjE3ODAzNjU1MjcsImV4cCI6MTgxMTkwMTUyN30.4zwkXajtG3P6UeuFCreHpS37wLrRk8By5rX4AO-VptE"
+    },
+    {
+        "id": "df4d3cef-48a6-4189-bb90-2f1f2542c58f",
+        "nome": "Thiago Carvalho ",
+        "telefone": "5514998519004",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780017554718-nhshd3-1001506237.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAxNzU1NDcxOC1uaHNoZDMtMTAwMTUwNjIzNy5qcGciLCJpYXQiOjE3ODAwMTc1NTYsImV4cCI6MTgxMTU1MzU1Nn0.Z3nNcltINEEqHYzOz3Q_MtdK22j83lWEsydGnvUPLLg"
+    },
+    {
+        "id": "9f5a529c-09b8-4526-b01b-3113aa917e75",
+        "nome": "Thiego Rodrigues ",
+        "telefone": "5514991849838",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780021140939-xtfjfv-1001506396.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyMTE0MDkzOS14dGZqZnYtMTAwMTUwNjM5Ni5qcGciLCJpYXQiOjE3ODAwMjExNDIsImV4cCI6MTgxMTU1NzE0Mn0.aA53ccYkdbWFfk3Y8noVSjP8e-5XBijc6iOks1evzcc"
+    },
+    {
+        "id": "6d9207a5-2893-4d46-a30c-e011f48298dd",
+        "nome": "Valeria pedroso de Oliveira ",
+        "telefone": "5514996793997",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780364087701-olz7f9-1001518154.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDM2NDA4NzcwMS1vbHo3ZjktMTAwMTUxODE1NC5qcGciLCJpYXQiOjE3ODAzNjQwODgsImV4cCI6MTgxMTkwMDA4OH0.gtTqDqK_ugOz4nwKG8Gj66VieNFhPOPaPTmTyuOIkY4"
+    },
+    {
+        "id": "ef33b21c-3040-4733-afd2-dabad415edb2",
+        "nome": "Waldevino Zeferino Neto",
+        "telefone": "5514991285195",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1779906158796-ppf01o-1001502318.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc3OTkwNjE1ODc5Ni1wcGYwMW8tMTAwMTUwMjMxOC5qcGciLCJpYXQiOjE3Nzk5MDYxNjAsImV4cCI6MTgxMTQ0MjE2MH0.ZhGCVvG88Xh-SXmMSv3YXbxG9yv1eADciZdg1mrQ0xw"
+    },
+    {
+        "id": "2be21c53-4ca0-4b91-a5dc-aac23e62376d",
+        "nome": "Willian da Silva Vieira ",
+        "telefone": "5514976041132",
+        "cidade": "Bauru",
+        "documento": "",
+        "foto_url": "https://ghuyqezlnffnrjugwwkc.supabase.co/storage/v1/object/sign/uploads/clientes/foto/1780024494849-9dwu7i-1001506471.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hZGRmMmFkNy02OWNiLTRiMzEtYThhZi0xMWRiZDI3NTE3YjEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJ1cGxvYWRzL2NsaWVudGVzL2ZvdG8vMTc4MDAyNDQ5NDg0OS05ZHd1N2ktMTAwMTUwNjQ3MS5qcGciLCJpYXQiOjE3ODAwMjQ0OTYsImV4cCI6MTgxMTU2MDQ5Nn0.BNm47mjiImNLDfwTWCHBO2oFEcfYggl7-CjPera6RjY"
+    }
+]
