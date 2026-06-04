@@ -142,7 +142,7 @@ export default function ClientCobrancasView({ atrasados, hojeLista, aVencer }: C
       ]);
 
       try {
-        const res = await fetch("http://localhost:3001/send", {
+        const res = await fetch("/api/whatsapp/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

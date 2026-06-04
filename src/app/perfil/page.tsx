@@ -12,12 +12,10 @@ export default function PerfilPage() {
   // Poll status from the companion service
   const fetchStatus = async () => {
     try {
-      const res = await fetch("http://localhost:3001/status");
-      if (res.ok) {
-        const data = await res.json();
-        setStatus(data.status);
-        setQrCode(data.qr);
-      }
+      const res = await fetch("/api/whatsapp/status");
+      const data = await res.json();
+      setStatus(data.status || "disconnected");
+      setQrCode(data.qr || null);
     } catch (err) {
       console.error("WhatsApp companion service offline", err);
       setStatus("disconnected");
@@ -29,7 +27,7 @@ export default function PerfilPage() {
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 3000);
+    const interval = setInterval(fetchStatus, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -37,7 +35,7 @@ export default function PerfilPage() {
     if (!confirm("Tem certeza que deseja desconectar o WhatsApp?")) return;
     setIsDisconnecting(true);
     try {
-      const res = await fetch("http://localhost:3001/logout", {
+      const res = await fetch("/api/whatsapp/logout", {
         method: "POST"
       });
       if (res.ok) {

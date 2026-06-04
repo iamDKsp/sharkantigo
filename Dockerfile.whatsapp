@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and install only needed dependencies
+COPY package.json package-lock.json ./
+RUN npm install @whiskeysockets/baileys qrcode
+
+# Copy the service file
+COPY whatsapp-service.js ./
+
+# Create directory for auth info with proper permissions
+RUN mkdir -p /app/auth_info_baileys && chown -R node:node /app
+
+# Switch to non-root user
+USER node
+
+# Expose the API port
+EXPOSE 3001
+
+# Command to run the service
+CMD ["node", "whatsapp-service.js"]
