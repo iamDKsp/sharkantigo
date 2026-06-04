@@ -7,7 +7,7 @@ export async function GET() {
     const res = await fetch(`${WHATSAPP_API}/status`, { cache: 'no-store' });
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json({ status: "disconnected", error: err.message }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ status: "disconnected", error: error.message || "Offline" }, { status: 500 });
   }
 }
