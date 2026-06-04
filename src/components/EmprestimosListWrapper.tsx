@@ -324,7 +324,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos }: Emprestim
         </div>
 
         {/* Abas de Status */}
-        <div className="flex space-x-1 bg-slate-100 dark:bg-[#13221b] p-1 rounded-2xl self-start flex-shrink-0 shadow-sm border border-slate-200 dark:border-emerald-950/50">
+        <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-[#13221b] p-1 rounded-2xl self-start shadow-sm border border-slate-200 dark:border-emerald-950/50">
           {(["todos", "ativos", "atrasados", "quitados"] as const).map((tab) => {
             const isSelected = statusFilter === tab;
             return (
