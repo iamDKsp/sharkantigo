@@ -121,13 +121,27 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* User Logout Icon - Mobile Only (Top Bar) */}
-            <button
-              onClick={handleLogout}
-              className="md:hidden p-2 text-emerald-200 hover:text-red-300 active:scale-95 transition-transform"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+            {/* Action Icons - Mobile Only (Top Bar) */}
+            <div className="md:hidden flex items-center space-x-0.5">
+              <Link 
+                href="/cheques"
+                className="p-2 text-emerald-200 hover:text-white active:scale-95 transition-transform"
+              >
+                <BookOpenCheck className="w-5 h-5" />
+              </Link>
+              <Link 
+                href="/perfil"
+                className="p-2 text-emerald-200 hover:text-white active:scale-95 transition-transform"
+              >
+                <User className="w-5 h-5" />
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="p-2 text-emerald-200 hover:text-red-300 active:scale-95 transition-transform"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
