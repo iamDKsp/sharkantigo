@@ -67,21 +67,25 @@ const server = http.createServer(async (req, res) => {
   }
 
   const url = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = url.pathname.replace(/\/+/g, '/'); // Normalize multiple slashes to a single slash
 
-  if (url.pathname === "/status" && req.method === "GET") {
+  if (pathname === "/status" && req.method === "GET") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ status: connectionStatus, qr: lastQr }));
     return;
   }
 
-  if (url.pathname === "/logout" && req.method === "POST") {
+  if (pathname === "/logout" && req.method === "POST") {
     try {
       if (sock) {
         await sock.logout().catch(e => console.log("Logout error ignored", e));
       }
       const authDir = path.join(__dirname, "auth_info_baileys");
       if (fs.existsSync(authDir)) {
-        fs.rmSync(authDir, { recursive: true, force: true });
+        const files = fs.readdirSync(authDir);
+        for (const file of files) {
+          fs.unlinkSync(path.join(authDir, file));
+        }
       }
       connectionStatus = "disconnected";
       lastQr = null;
@@ -95,7 +99,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (url.pathname === "/send" && req.method === "POST") {
+  if (pathname === "/send" && req.method === "POST") {
     let body = "";
     req.on("data", chunk => { body += chunk; });
     req.on("end", async () => {
