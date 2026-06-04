@@ -1,65 +1,531 @@
-import Image from "next/image";
+import { prisma } from "@/lib/db";
+import {
+  TrendingUp,
+  DollarSign,
+  AlertCircle,
+  Plus,
+  Users,
+  ArrowUpRight,
+  Wallet,
+  BadgeDollarSign,
+  BarChart3,
+  Sparkles,
+  Clock3,
+  CheckCircle2,
+  Target,
+} from "lucide-react";
+import Link from "next/link";
+import { ProjecaoBarChart } from "@/components/ProjecaoBarChart";
+import { CarteiraPieChart } from "@/components/CarteiraPieChart";
 
-export default function Home() {
+export const revalidate = 0;
+
+export default async function DashboardPage() {
+  const hoje = new Date();
+  const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
+
+  const anoAtualInicio = new Date(Date.UTC(hoje.getFullYear(), 0, 1));
+  const mesAtualInicio = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), 1));
+
+  const limiteSemana = new Date(hojeUTC);
+  limiteSemana.setUTCDate(hojeUTC.getUTCDate() + 7);
+  const limiteMes = new Date(hojeUTC);
+  limiteMes.setUTCDate(hojeUTC.getUTCDate() + 30);
+  const limiteAno = new Date(hojeUTC);
+  limiteAno.setUTCDate(hojeUTC.getUTCDate() + 365);
+  const limite7DiasUTC = new Date(hojeUTC);
+  limite7DiasUTC.setUTCDate(hojeUTC.getUTCDate() + 7);
+
+  // Buscar empréstimos ATIVOS
+  const emprestimosAtivos = await prisma.emprestimo.findMany({
+    where: { status: "ativo" },
+    include: { cliente: true, parcelas: true, parceiro: true },
+    orderBy: { data_vencimento: "asc" },
+  });
+
+  // Buscar empréstimos QUITADOS para calcular ganhos reais
+  const emprestimosQuitados = await prisma.emprestimo.findMany({
+    where: { status: "quitado" },
+    include: { parcelas: true, parceiro: true },
+  });
+
+  // ────────────────────────────────────────────────────────
+  // MÉTRICAS DE CARTEIRA ATIVA
+  // ────────────────────────────────────────────────────────
+  let totalEmprestado = 0;
+  let totalAReceber = 0;
+  let totalAtrasadosCount = 0;
+  let vencendoHojeCount = 0;
+  let receberHoje = 0;
+  let receberSemana = 0;
+  let receberMes = 0;
+  let receberAno = 0;
+  let receberParceiros = 0;
+  let receberProprio = 0;
+  const parceirosMap: Record<string, { nome: string; total: number; count: number }> = {};
+
+  const mesesProjecao = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(hojeUTC);
+    d.setUTCMonth(hojeUTC.getUTCMonth() + i);
+    return {
+      year: d.getUTCFullYear(),
+      month: d.getUTCMonth(),
+      label: d.toLocaleDateString("pt-BR", { month: "short", timeZone: "UTC" }).replace(".", ""),
+      valor: 0,
+    };
+  });
+
+  emprestimosAtivos.forEach((emp) => {
+    const principal = Number(emp.valor_emprestado);
+    const juros = Number(emp.taxa_juros);
+    const totalDevido = principal * (1 + juros / 100);
+
+    totalEmprestado += principal;
+    totalAReceber += totalDevido;
+
+    const vencObj = new Date(emp.data_vencimento);
+    const vencimentoUTC = new Date(Date.UTC(vencObj.getUTCFullYear(), vencObj.getUTCMonth(), vencObj.getUTCDate()));
+
+    const venceHoje = vencimentoUTC.getTime() === hojeUTC.getTime();
+    const estaAtrasado = vencimentoUTC < hojeUTC;
+
+    if (estaAtrasado) totalAtrasadosCount++;
+    if (venceHoje) vencendoHojeCount++;
+
+    const isParceiro = emp.parceiro_id !== null;
+    const parceiroNome = emp.parceiro?.nome || "Próprio";
+
+    if (emp.parcelas && emp.parcelas.length > 0) {
+      emp.parcelas.forEach((p) => {
+        if (p.status === "aberto") {
+          const pvObj = new Date(p.data_vencimento);
+          const pvUTC = new Date(Date.UTC(pvObj.getUTCFullYear(), pvObj.getUTCMonth(), pvObj.getUTCDate()));
+          const valor = Number(p.valor);
+
+          if (isParceiro) {
+            receberParceiros += valor;
+            if (!parceirosMap[emp.parceiro_id!]) {
+              parceirosMap[emp.parceiro_id!] = { nome: parceiroNome, total: 0, count: 0 };
+            }
+            parceirosMap[emp.parceiro_id!].total += valor;
+            parceirosMap[emp.parceiro_id!].count++;
+          } else {
+            receberProprio += valor;
+          }
+
+          if (pvUTC.getTime() === hojeUTC.getTime()) receberHoje += valor;
+          if (pvUTC >= hojeUTC && pvUTC <= limiteSemana) receberSemana += valor;
+          if (pvUTC >= hojeUTC && pvUTC <= limiteMes) receberMes += valor;
+          if (pvUTC >= hojeUTC && pvUTC <= limiteAno) receberAno += valor;
+
+          mesesProjecao.forEach((m) => {
+            if (pvUTC.getUTCFullYear() === m.year && pvUTC.getUTCMonth() === m.month) {
+              m.valor += valor;
+            }
+          });
+        }
+      });
+    } else {
+      const valor = totalDevido;
+      if (isParceiro) {
+        receberParceiros += valor;
+        if (!parceirosMap[emp.parceiro_id!]) {
+          parceirosMap[emp.parceiro_id!] = { nome: parceiroNome, total: 0, count: 0 };
+        }
+        parceirosMap[emp.parceiro_id!].total += valor;
+        parceirosMap[emp.parceiro_id!].count++;
+      } else {
+        receberProprio += valor;
+      }
+      if (vencimentoUTC.getTime() === hojeUTC.getTime()) receberHoje += valor;
+      if (vencimentoUTC >= hojeUTC && vencimentoUTC <= limiteSemana) receberSemana += valor;
+      if (vencimentoUTC >= hojeUTC && vencimentoUTC <= limiteMes) receberMes += valor;
+      if (vencimentoUTC >= hojeUTC && vencimentoUTC <= limiteAno) receberAno += valor;
+      mesesProjecao.forEach((m) => {
+        if (vencimentoUTC.getUTCFullYear() === m.year && vencimentoUTC.getUTCMonth() === m.month) {
+          m.valor += valor;
+        }
+      });
+    }
+  });
+
+  // ────────────────────────────────────────────────────────
+  // MÉTRICAS DE GANHOS REAIS (QUITADOS)
+  // ────────────────────────────────────────────────────────
+  let ganhoTotal = 0;         // Juros recebidos de TODOS os quitados
+  let ganhoMesAtual = 0;      // Juros recebidos este mês (pagamentos feitos em parcelas)
+  let ganhoAnoAtual = 0;      // Juros recebidos este ano
+  let faturadoTotal = 0;      // Total bruto recebido (principal + juros)
+  let emprestimosQuitadosCount = emprestimosQuitados.length;
+  let ticketMedioQuitado = 0;
+
+  emprestimosQuitados.forEach((emp) => {
+    const principal = Number(emp.valor_emprestado);
+    const juros = Number(emp.taxa_juros);
+
+    if (emp.parcelas && emp.parcelas.length > 0) {
+      // Calcular com base nas parcelas pagas
+      emp.parcelas.forEach((p) => {
+        if (p.status.startsWith("pago") && p.valor_pago) {
+          const valorPago = Number(p.valor_pago);
+          faturadoTotal += valorPago;
+
+          const pvObj = new Date(p.data_vencimento);
+          const pvUTC = new Date(Date.UTC(pvObj.getUTCFullYear(), pvObj.getUTCMonth(), pvObj.getUTCDate()));
+
+          if (pvUTC >= mesAtualInicio && pvUTC <= hojeUTC) {
+            ganhoMesAtual += valorPago;
+          }
+          if (pvUTC >= anoAtualInicio && pvUTC <= hojeUTC) {
+            ganhoAnoAtual += valorPago;
+          }
+        }
+      });
+      // Ganho de juros = faturado - principal
+      const totalPagoEmp = emp.parcelas
+        .filter((p) => p.status.startsWith("pago") && p.valor_pago)
+        .reduce((acc, p) => acc + Number(p.valor_pago), 0);
+      ganhoTotal += Math.max(0, totalPagoEmp - principal);
+    } else {
+      // Fallback sem parcelas
+      const totalDevido = principal * (1 + juros / 100);
+      faturadoTotal += totalDevido;
+      ganhoTotal += totalDevido - principal;
+    }
+  });
+
+  if (emprestimosQuitadosCount > 0) {
+    ticketMedioQuitado = faturadoTotal / emprestimosQuitadosCount;
+  }
+
+  const lucroEstimado = totalAReceber - totalEmprestado;
+  const parceirosList = Object.values(parceirosMap).sort((a, b) => b.total - a.total);
+
+  const formatBRL = (value: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+
+  const totalRecebiveisCalculados = receberProprio + receberParceiros;
+  const pctProprio = totalRecebiveisCalculados > 0 ? (receberProprio / totalRecebiveisCalculados) * 100 : 0;
+  const pctParceiros = totalRecebiveisCalculados > 0 ? (receberParceiros / totalRecebiveisCalculados) * 100 : 0;
+  const maxProjecao = Math.max(...mesesProjecao.map((m) => m.valor), 1);
+
+  const radius = 50;
+  const circumference = 2 * Math.PI * radius;
+
+  // Taxa de sucesso (quitados / (quitados + ativos))
+  const totalEmprestimosGeral = emprestimosAtivos.length + emprestimosQuitadosCount;
+  const taxaSucesso = totalEmprestimosGeral > 0 ? (emprestimosQuitadosCount / totalEmprestimosGeral) * 100 : 0;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="space-y-8 max-w-7xl mx-auto px-1 animate-fade-in text-zinc-900 dark:text-zinc-100">
+
+      {/* ── CABEÇALHO ── */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-sm font-bold text-emerald-500 uppercase tracking-widest">Ao vivo</span>
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent">
+            Painel Geral
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg text-slate-400 dark:text-zinc-500 mt-1">
+            {hoje.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="flex items-center gap-3">
+          <Link
+            href="/clientes/novo"
+            className="flex items-center gap-1.5 border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/10 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <Plus className="w-3.5 h-3.5 text-emerald-500" />
+            Novo Cliente
+          </Link>
+          <Link
+            href="/emprestimos/novo"
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-500/20"
           >
-            Documentation
-          </a>
+            <Plus className="w-3.5 h-3.5" />
+            Novo Empréstimo
+          </Link>
         </div>
-      </main>
+      </div>
+
+      {/* ── ROW 1: CARTEIRA + ALERTAS ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        {/* Total Emprestado */}
+        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-black uppercase tracking-widest text-zinc-400">Capital em Campo</span>
+            <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 flex items-center justify-center">
+              <Wallet className="w-4 h-4 text-zinc-500 dark:text-zinc-300" />
+            </div>
+          </div>
+          <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white leading-none">
+            {formatBRL(totalEmprestado)}
+          </div>
+          <div className="mt-2 text-sm text-zinc-400">
+            {emprestimosAtivos.length} empréstimos ativos
+          </div>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-zinc-100/50 dark:bg-zinc-800/20 group-hover:scale-110 transition-transform duration-500" />
+        </div>
+
+        {/* Total a Receber */}
+        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-5 shadow-sm hover:shadow-emerald-500/10 hover:shadow-lg transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">A Receber</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-emerald-500" />
+            </div>
+          </div>
+          <div className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 leading-none">
+            {formatBRL(totalAReceber)}
+          </div>
+          <div className="mt-2 text-sm text-zinc-400">
+            Juros incluso: <span className="text-emerald-500 font-bold">{formatBRL(lucroEstimado)}</span>
+          </div>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-emerald-50/50 dark:bg-emerald-950/10 group-hover:scale-110 transition-transform duration-500" />
+        </div>
+
+        {/* Atrasados */}
+        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-5 shadow-sm hover:shadow-rose-500/10 hover:shadow-lg transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-black uppercase tracking-widest text-rose-500">Atrasados</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center">
+              <AlertCircle className="w-4 h-4 text-rose-500" />
+            </div>
+          </div>
+          <div className="text-2xl font-black tracking-tight text-rose-600 dark:text-rose-400 leading-none">
+            {totalAtrasadosCount}
+          </div>
+          <div className="mt-2 text-sm text-zinc-400">empréstimos vencidos</div>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-rose-50/50 dark:bg-rose-950/10 group-hover:scale-110 transition-transform duration-500" />
+        </div>
+
+        {/* Vencendo Hoje */}
+        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-5 shadow-sm hover:shadow-amber-500/10 hover:shadow-lg transition-all group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">Vencendo Hoje</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center">
+              <Clock3 className="w-4 h-4 text-amber-500" />
+            </div>
+          </div>
+          <div className="text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 leading-none">
+            {vencendoHojeCount}
+          </div>
+          <div className="mt-2 text-sm text-zinc-400">parcelas vencem hoje</div>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-50/50 dark:bg-amber-950/10 group-hover:scale-110 transition-transform duration-500" />
+        </div>
+      </div>
+
+      {/* ── ROW 2: RECEBÍVEIS POR PERÍODO ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-3.5 h-3.5 text-emerald-500" />
+          <h2 className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Recebíveis por Período</h2>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Hoje", value: receberHoje, color: "amber", accent: "border-l-amber-500", text: "text-amber-600 dark:text-amber-400" },
+            { label: "Esta semana (7d)", value: receberSemana, color: "emerald", accent: "border-l-emerald-500", text: "text-emerald-600 dark:text-emerald-400" },
+            { label: "No mês (30d)", value: receberMes, color: "emerald", accent: "border-l-cyan-500", text: "text-cyan-600 dark:text-cyan-400" },
+            { label: "No ano (365d)", value: receberAno, color: "emerald", accent: "border-l-indigo-500", text: "text-indigo-600 dark:text-indigo-400" },
+          ].map((item, idx) => (
+            <div key={idx} className={`bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm border-l-4 ${item.accent} hover:shadow-md transition-all`}>
+              <span className="text-sm font-black uppercase tracking-widest text-zinc-400">{item.label}</span>
+              <div className={`text-2xl font-black mt-2 leading-none ${item.text}`}>
+                {formatBRL(item.value)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── ROW 3: GRÁFICOS (logo após recebíveis, como pedido) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Projeção de Recebimentos */}
+        <div className="bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-6 lg:col-span-2 shadow-sm">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+              <BarChart3 className="w-3.5 h-3.5 text-emerald-500" />
+              Projeção de Recebimentos
+            </h3>
+            <span className="text-sm font-bold text-zinc-400 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded-full">
+              Próximos 6 meses
+            </span>
+          </div>
+          <ProjecaoBarChart data={mesesProjecao} />
+        </div>
+
+        {/* Distribuição de Carteira */}
+        <div className="bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-indigo-500" />
+              Distribuição de Carteira
+            </h3>
+
+            <CarteiraPieChart
+              receberProprio={receberProprio}
+              receberParceiros={receberParceiros}
+              totalRecebivel={totalRecebiveisCalculados}
+              pctProprio={pctProprio}
+              pctParceiros={pctParceiros}
+            />
+
+            <div className="space-y-2.5 mt-1">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 flex-shrink-0 shadow-sm shadow-cyan-500/50" />
+                  <span className="text-zinc-500 dark:text-zinc-400">Capital Próprio</span>
+                  <span className="text-sm font-black text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full">{pctProprio.toFixed(0)}%</span>
+                </div>
+                <span className="font-black text-zinc-900 dark:text-white text-sm">{formatBRL(receberProprio)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-violet-500 flex-shrink-0 shadow-sm shadow-violet-500/50" />
+                  <span className="text-zinc-500 dark:text-zinc-400">Parceiros</span>
+                  <span className="text-sm font-black text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full">{pctParceiros.toFixed(0)}%</span>
+                </div>
+                <span className="font-black text-zinc-900 dark:text-white text-sm">{formatBRL(receberParceiros)}</span>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-zinc-200/60 dark:border-zinc-800/60 pt-3 mt-4 flex items-center justify-between">
+            <span className="text-zinc-400 uppercase text-sm font-black">Total Recebível</span>
+            <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">{formatBRL(totalRecebiveisCalculados)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── ROW 4: GANHOS & FATURAMENTO ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+          <h2 className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Ganhos & Faturamento Real</h2>
+          <span className="text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold">Baseado em quitados</span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+          {/* Ganho Total em Juros */}
+          <div className="col-span-1 relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-5 shadow-lg shadow-emerald-500/25 text-white">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-black uppercase tracking-widest opacity-80">Juros Ganhos (Total)</span>
+              <div className="w-7 h-7 rounded-xl bg-white/15 flex items-center justify-center">
+                <BadgeDollarSign className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-3xl font-black leading-none">{formatBRL(ganhoTotal)}</div>
+            <div className="mt-2 text-sm opacity-70">De {emprestimosQuitadosCount} contratos quitados</div>
+            <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
+          </div>
+
+          {/* Faturado Este Mês */}
+          <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-black uppercase tracking-widest text-zinc-400">Faturado Este Mês</span>
+              <div className="w-7 h-7 rounded-xl bg-sky-50 dark:bg-sky-950/40 flex items-center justify-center">
+                <DollarSign className="w-3.5 h-3.5 text-sky-500" />
+              </div>
+            </div>
+            <div className="text-2xl font-black leading-none text-sky-600 dark:text-sky-400">{formatBRL(ganhoMesAtual)}</div>
+            <div className="mt-2 text-sm text-zinc-400">Parcelas quitadas no mês</div>
+          </div>
+
+          {/* Faturado Este Ano */}
+          <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-black uppercase tracking-widest text-zinc-400">Faturado Este Ano</span>
+              <div className="w-7 h-7 rounded-xl bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center">
+                <ArrowUpRight className="w-3.5 h-3.5 text-violet-500" />
+              </div>
+            </div>
+            <div className="text-2xl font-black leading-none text-violet-600 dark:text-violet-400">{formatBRL(ganhoAnoAtual)}</div>
+            <div className="mt-2 text-sm text-zinc-400">Parcelas quitadas em {hoje.getFullYear()}</div>
+          </div>
+
+          {/* Taxa de Sucesso */}
+          <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-black uppercase tracking-widest text-zinc-400">Taxa de Quitação</span>
+              <div className="w-7 h-7 rounded-xl bg-teal-50 dark:bg-teal-950/40 flex items-center justify-center">
+                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500" />
+              </div>
+            </div>
+            <div className="text-2xl font-black leading-none text-teal-600 dark:text-teal-400">{taxaSucesso.toFixed(1)}%</div>
+            <div className="mt-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5">
+              <div
+                className="h-1.5 rounded-full bg-gradient-to-r from-teal-400 to-teal-600 transition-all duration-700"
+                style={{ width: `${taxaSucesso}%` }}
+              />
+            </div>
+            <div className="mt-1.5 text-sm text-zinc-400">{emprestimosQuitadosCount} de {totalEmprestimosGeral} contratos</div>
+          </div>
+
+        </div>
+
+        {/* Resumo Compacto */}
+        <div className="bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm">
+          <div className="flex flex-wrap gap-6 items-center">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+                <Target className="w-4.5 h-4.5 text-emerald-500" />
+              </div>
+              <div>
+                <div className="text-sm font-black uppercase tracking-widest text-zinc-400">Total Faturado (Bruto)</div>
+                <div className="text-xl font-black text-zinc-900 dark:text-white leading-tight">{formatBRL(faturadoTotal)}</div>
+              </div>
+            </div>
+            <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-800 hidden md:block" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center">
+                <BadgeDollarSign className="w-4.5 h-4.5 text-indigo-500" />
+              </div>
+              <div>
+                <div className="text-sm font-black uppercase tracking-widest text-zinc-400">Lucro Potencial (Carteira Ativa)</div>
+                <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 leading-tight">{formatBRL(lucroEstimado)}</div>
+              </div>
+            </div>
+            <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-800 hidden md:block" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center">
+                <DollarSign className="w-4.5 h-4.5 text-amber-500" />
+              </div>
+              <div>
+                <div className="text-sm font-black uppercase tracking-widest text-zinc-400">Ticket Médio (Quitados)</div>
+                <div className="text-xl font-black text-amber-600 dark:text-amber-400 leading-tight">{formatBRL(ticketMedioQuitado)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+      {/* ── ROW 5: PARCEIROS ── */}
+      {parceirosList.length > 0 && (
+        <div className="bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-6 shadow-sm">
+          <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Users className="w-3.5 h-3.5 text-violet-500" />
+            Recebíveis por Parceiros
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {parceirosList.map((p, idx) => (
+              <div key={idx} className="p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-200 dark:border-zinc-700/40 flex flex-col justify-between hover:border-violet-300 dark:hover:border-violet-500/30 transition-all">
+                <span className="text-sm font-black text-slate-700 dark:text-zinc-200">{p.nome}</span>
+                <div className="mt-3 flex items-end justify-between">
+                  <span className="text-sm font-black text-violet-600 dark:text-violet-400">{formatBRL(p.total)}</span>
+                  <span className="text-sm text-zinc-400 font-bold">{p.count} parcelas</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

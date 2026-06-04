@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Perfil {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  criado_em DateTime @default(now())
+
+  @@map("perfis")
+}
+
+model Cliente {
+  id          String       @id @default(uuid())
+  nome        String
+  telefone    String
+  cidade      String
+  documento   String       // CPF / RG
+  endereco     String?      @db.Text
+  referencia   String?      @db.Text
+  quem_indicou String?      @db.Text
+  email        String?
+  blacklist       Boolean      @default(false)
+  observacoes     String?      @db.Text
+  foto_url        String?      @db.Text
+  documentos_urls String?      @db.Text
+  criado_em       DateTime     @default(now())
+  emprestimos    Emprestimo[]
+
+  @@map("clientes")
+}
+
+model Emprestimo {
+  id               String   @id @default(uuid())
+  valor_emprestado Decimal  @db.Decimal(15, 2)
+  taxa_juros       Decimal  @db.Decimal(5, 2)
+  taxa_multa       Decimal  @db.Decimal(5, 2)
+  data_vencimento  DateTime @db.Date
+  status           String   @default("ativo")
+  cliente_id       String
+  cliente          Cliente  @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  
+  // Novos campos
+  tipo_pagamento   String    @default("a_vista")
+  frequencia       String    @default("mensal")
+  data_inicio      DateTime  @default(now())
+  juros_atraso     Decimal   @db.Decimal(5, 2) @default(0.00)
+  categoria        String    @default("Sem categoria")
+  observacoes      String?   @db.Text
+  parcelas         Parcela[]
+  parceiro_id      String?
+  parceiro         Parceiro? @relation(fields: [parceiro_id], references: [id], onDelete: SetNull)
+
+  criado_em        DateTime @default(now())
+
+  @@map("emprestimos")
+}
+
+model Parceiro {
+  id          String       @id @default(uuid())
+  nome        String
+  telefone    String?
+  criado_em   DateTime     @default(now())
+  emprestimos Emprestimo[]
+
+  @@map("parceiros")
+}
+
+model Parcela {
+  id              String     @id @default(uuid())
+  emprestimo_id   String
+  emprestimo      Emprestimo @relation(fields: [emprestimo_id], references: [id], onDelete: Cascade)
+  numero          Int
+  valor           Decimal    @db.Decimal(15, 2)
+  data_vencimento DateTime   @db.Date
+  status          String     @default("aberto") // aberto, pago, atrasado
+  data_pagamento  DateTime?  @db.Date
+  valor_pago      Decimal?   @db.Decimal(15, 2)
+  criado_em       DateTime   @default(now())
+
+  @@map("parcelas")
+}
+
+model Cheque {
+  // Controle de cheques
+  id               String   @id @default(uuid())
+  cliente_id       String?
+  titular          String
+  banco            String
+  valor            Decimal  @db.Decimal(15, 2)
+  data_compensacao DateTime @db.Date
+  status           String   @default("em_maos")
+  criado_em        DateTime @default(now())
+
+  @@map("cheques")
+}
+

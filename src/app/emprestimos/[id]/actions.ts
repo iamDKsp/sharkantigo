@@ -1,0 +1,306 @@
+"use server";
+
+import { prisma } from "@/lib/db";
+import { revalidatePath } from "next/cache";
+
+// 1. Pagar Próxima Parcela (com ou sem atraso)
+export async function payNextInstallment(emprestimoId: string, withDelay: boolean) {
+  const hoje = new Date();
+
+  // Buscar a primeira parcela em aberto ordenada por número
+  const proximaParcela = await prisma.parcela.findFirst({
+    where: { emprestimo_id: emprestimoId, status: "aberto" },
+    orderBy: { numero: "asc" },
+  });
+
+  if (!proximaParcela) {
+    throw new Error("Não há parcelas em aberto para este empréstimo.");
+  }
+
+  // Atualizar a parcela para paga
+  await prisma.parcela.update({
+    where: { id: proximaParcela.id },
+    data: {
+      status: withDelay ? "pago_com_atraso" : "pago",
+      data_pagamento: hoje,
+      valor_pago: proximaParcela.valor,
+    },
+  });
+
+  // Verificar se ainda existem parcelas em aberto
+  const parcelasRestantes = await prisma.parcela.count({
+    where: { emprestimo_id: emprestimoId, status: "aberto" },
+  });
+
+  if (parcelasRestantes === 0) {
+    // Determinar se o empréstimo total teve pagamentos atrasados
+    const temAtrasadas = await prisma.parcela.count({
+      where: { emprestimo_id: emprestimoId, status: "pago_com_atraso" },
+    });
+
+    await prisma.emprestimo.update({
+      where: { id: emprestimoId },
+      data: {
+        status: temAtrasadas > 0 ? "quitado_com_atraso" : "quitado",
+      },
+    });
+  }
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true };
+}
+
+// 2. Quitação Total (com ou sem atraso)
+export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
+  const hoje = new Date();
+
+  await prisma.$transaction(async (tx) => {
+    // Atualizar todas as parcelas abertas
+    const parcelasAbertas = await tx.parcela.findMany({
+      where: { emprestimo_id: emprestimoId, status: "aberto" },
+    });
+
+    for (const p of parcelasAbertas) {
+      await tx.parcela.update({
+        where: { id: p.id },
+        data: {
+          status: withDelay ? "pago_com_atraso" : "pago",
+          data_pagamento: hoje,
+          valor_pago: p.valor,
+        },
+      });
+    }
+
+    // Atualizar status do empréstimo
+    await tx.emprestimo.update({
+      where: { id: emprestimoId },
+      data: {
+        status: withDelay ? "quitado_com_atraso" : "quitado",
+      },
+    });
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true };
+}
+
+// 3. Renegociar Dívida (Abater valores + aplicar juros opcional sobre o saldo devedor)
+export async function renegociarEmprestimo(
+  emprestimoId: string,
+  valorAbatido: number,
+  aplicarJuros: boolean,
+  taxaJuros: number
+) {
+  const hoje = new Date();
+
+  if (valorAbatido <= 0) {
+    throw new Error("O valor a ser abatido deve ser maior que zero.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Buscar parcelas abertas do empréstimo
+    const parcelasAbertas = await tx.parcela.findMany({
+      where: { emprestimo_id: emprestimoId, status: "aberto" },
+      orderBy: { numero: "asc" },
+    });
+
+    let restanteAbater = valorAbatido;
+
+    for (const p of parcelasAbertas) {
+      if (restanteAbater <= 0) break;
+
+      const valorParcela = Number(p.valor);
+
+      if (restanteAbater >= valorParcela) {
+        // Paga a parcela inteira
+        await tx.parcela.update({
+          where: { id: p.id },
+          data: {
+            status: "pago",
+            data_pagamento: hoje,
+            valor_pago: p.valor,
+          },
+        });
+        restanteAbater -= valorParcela;
+      } else {
+        // Paga parcialmente a parcela
+        const novoValor = valorParcela - restanteAbater;
+        await tx.parcela.update({
+          where: { id: p.id },
+          data: {
+            valor: novoValor,
+          },
+        });
+        restanteAbater = 0;
+      }
+    }
+
+    // Buscar parcelas abertas atualizadas pós-abatimento
+    const parcelasAbertasPosAbate = await tx.parcela.findMany({
+      where: { emprestimo_id: emprestimoId, status: "aberto" },
+      orderBy: { numero: "asc" },
+    });
+
+    if (parcelasAbertasPosAbate.length === 0) {
+      // Quitou tudo
+      await tx.emprestimo.update({
+        where: { id: emprestimoId },
+        data: { status: "quitado" },
+      });
+    } else {
+      // Se tiver saldo restante e escolher aplicar juros
+      if (aplicarJuros && taxaJuros > 0) {
+        const saldoDevedor = parcelasAbertasPosAbate.reduce((acc, p) => acc + Number(p.valor), 0);
+        const jurosAdicional = saldoDevedor * (taxaJuros / 100);
+
+        // Distribuir o juros proporcionalmente nas parcelas abertas
+        for (const p of parcelasAbertasPosAbate) {
+          const proporcao = Number(p.valor) / saldoDevedor;
+          const novoValor = Number(p.valor) + jurosAdicional * proporcao;
+
+          await tx.parcela.update({
+            where: { id: p.id },
+            data: {
+              valor: Number(novoValor.toFixed(2)),
+            },
+          });
+        }
+      }
+    }
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true };
+}
+
+// 4. Reprogramar Empréstimo (Nova data de vencimento + dinheiro extra opcional + juros opcional + nova frequência)
+export async function reprogramarEmprestimo(
+  emprestimoId: string,
+  novaDataVencimento: string,
+  principalExtra: number,
+  taxaJuros: number,
+  frequencia: string
+) {
+  if (!novaDataVencimento) {
+    throw new Error("A data de vencimento é obrigatória.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Buscar parcelas abertas
+    const parcelasAbertas = await tx.parcela.findMany({
+      where: { emprestimo_id: emprestimoId, status: "aberto" },
+      orderBy: { numero: "asc" },
+    });
+
+    if (parcelasAbertas.length === 0) {
+      throw new Error("Não existem parcelas em aberto para reprogramar.");
+    }
+
+    let saldoDevedor = parcelasAbertas.reduce((acc, p) => acc + Number(p.valor), 0);
+
+    // 1. Somar dinheiro extra (se houver)
+    if (principalExtra > 0) {
+      saldoDevedor += principalExtra;
+      // Atualizar o valor emprestado do registro pai
+      const empAtual = await tx.emprestimo.findUnique({ where: { id: emprestimoId } });
+      if (empAtual) {
+        await tx.emprestimo.update({
+          where: { id: emprestimoId },
+          data: {
+            valor_emprestado: Number(empAtual.valor_emprestado) + principalExtra,
+          },
+        });
+      }
+    }
+
+    // 2. Aplicar taxa de juros (se houver)
+    if (taxaJuros > 0) {
+      saldoDevedor = saldoDevedor * (1 + taxaJuros / 100);
+    }
+
+    // 3. Redistribuir valores nas parcelas em aberto e reprogramar datas baseado na nova frequência
+    const totalParcelas = parcelasAbertas.length;
+    const valorCadaParcela = Number((saldoDevedor / totalParcelas).toFixed(2));
+
+    // Parse da data inicial em UTC para evitar offset local shifts
+    const [year, month, day] = novaDataVencimento.split("-").map(Number);
+    const firstDueDateUTC = new Date(Date.UTC(year, month - 1, day));
+
+    const addPeriod = (startDate: Date, index: number, freq: string) => {
+      const d = new Date(startDate.getTime());
+      if (freq === "diario") {
+        d.setUTCDate(d.getUTCDate() + index);
+      } else if (freq === "semanal") {
+        d.setUTCDate(d.getUTCDate() + index * 7);
+      } else if (freq === "quinzenal") {
+        d.setUTCDate(d.getUTCDate() + index * 15);
+      } else if (freq === "mensal") {
+        d.setUTCMonth(d.getUTCMonth() + index);
+      }
+      return d;
+    };
+
+    let finalDueDate = firstDueDateUTC;
+
+    for (let i = 0; i < totalParcelas; i++) {
+      const p = parcelasAbertas[i];
+      const pDate = addPeriod(firstDueDateUTC, i, frequencia);
+      
+      if (i === totalParcelas - 1) {
+        finalDueDate = pDate;
+      }
+
+      await tx.parcela.update({
+        where: { id: p.id },
+        data: {
+          valor: valorCadaParcela,
+          data_vencimento: pDate,
+        },
+      });
+    }
+
+    // 4. Atualizar o vencimento e frequência do empréstimo pai
+    await tx.emprestimo.update({
+      where: { id: emprestimoId },
+      data: {
+        data_vencimento: finalDueDate,
+        frequencia: frequencia,
+      },
+    });
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true };
+}
+
+// 5. Alternar Blacklist do Cliente
+export async function toggleClientBlacklist(clientId: string, currentStatus: boolean, emprestimoId: string) {
+  await prisma.cliente.update({
+    where: { id: clientId },
+    data: { blacklist: !currentStatus },
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath(`/clientes/${clientId}`);
+  revalidatePath("/clientes");
+  return { success: true };
+}
+
+// 6. Excluir Empréstimo
+export async function deleteLoan(id: string) {
+  await prisma.emprestimo.delete({
+    where: { id },
+  });
+
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true, redirectUrl: "/emprestimos" };
+}
