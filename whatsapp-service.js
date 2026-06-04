@@ -53,7 +53,7 @@ async function connectToWhatsApp() {
 // Start WhatsApp socket connection
 connectToWhatsApp().catch(err => console.error("Error in Baileys startup:", err));
 
-// Start HTTP server on port 3001
+// Start HTTP server on port 3529
 const server = http.createServer(async (req, res) => {
   // Enable CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -149,6 +149,6 @@ const server = http.createServer(async (req, res) => {
   res.end("Not Found");
 });
 
-server.listen(3001, () => {
-  console.log("WhatsApp server listening on port 3001");
+server.listen(3529, () => {
+  console.log("WhatsApp server listening on port 3529");
 });
