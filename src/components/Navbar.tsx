@@ -41,13 +41,12 @@ export default function Navbar() {
     return null;
   }
 
-  // Mobile nav will show top 4 + Perfil
   const mobileNavItems = [
     { name: "Início", path: "/", icon: LayoutDashboard },
     { name: "Clientes", path: "/clientes", icon: Users },
     { name: "Empréstimos", path: "/emprestimos", icon: HandCoins },
+    { name: "Parceiros", path: "/parceiros", icon: Handshake },
     { name: "Cobranças", path: "/cobrancas", icon: MessageSquare },
-    { name: "Perfil", path: "/perfil", icon: User },
   ];
 
   return (
