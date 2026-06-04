@@ -181,6 +181,87 @@ export default function PerfilPage() {
           )}
         </div>
       </div>
+
+      {/* Seção Email (Bloqueado) */}
+      <div className="premium-card p-6 bg-white dark:bg-[#13221b] space-y-4 border border-slate-100 dark:border-emerald-950 opacity-90">
+        <h3 className="text-md font-bold text-slate-900 dark:text-white">Email da Conta</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-emerald-300 mb-1 ml-1">Email de acesso</label>
+            <input 
+              type="email" 
+              name="email"
+              value="ronigabrieloscar@hotmail.com" 
+              className="w-full px-4 py-2.5 bg-slate-100 dark:bg-[#0b130e] border border-slate-200 dark:border-emerald-900/40 rounded-xl text-slate-500 dark:text-slate-400 cursor-not-allowed"
+              disabled 
+            />
+            <p className="text-xs text-slate-500 mt-2 ml-1">
+              O email de acesso não pode ser alterado por motivos de segurança.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Seção Alterar Senha */}
+      <div className="premium-card p-6 bg-white dark:bg-[#13221b] space-y-4 border border-slate-100 dark:border-emerald-950">
+        <h3 className="text-md font-bold text-slate-900 dark:text-white">Alterar senha</h3>
+        <form 
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.currentTarget;
+            const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+            const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+            
+            if (password !== confirmPassword) {
+              alert("As senhas não coincidem!");
+              return;
+            }
+            if (password.length < 6) {
+              alert("A senha deve ter pelo menos 6 caracteres.");
+              return;
+            }
+
+            try {
+              const res = await fetch('/api/perfil', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+              });
+              if (res.ok) {
+                alert("Senha atualizada com sucesso!");
+                form.reset();
+              } else {
+                alert("Erro ao atualizar senha.");
+              }
+            } catch (err) {
+              alert("Erro ao atualizar senha.");
+            }
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-emerald-300 mb-1 ml-1">Nova senha</label>
+            <input 
+              type="password" 
+              name="password"
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#0f1c14] border border-slate-200 dark:border-emerald-900/40 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              required 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 dark:text-emerald-300 mb-1 ml-1">Confirmar senha</label>
+            <input 
+              type="password" 
+              name="confirmPassword"
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#0f1c14] border border-slate-200 dark:border-emerald-900/40 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              required 
+            />
+          </div>
+          <button type="submit" className="bg-[#043e2f] hover:bg-[#065b45] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors">
+            Atualizar senha
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

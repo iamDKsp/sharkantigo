@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import EmprestimosListWrapper from "@/components/EmprestimosListWrapper";
+import ExportarEmprestimosButton from "@/components/ExportarEmprestimosButton";
 
 export const revalidate = 0;
 
@@ -34,20 +35,23 @@ export default async function EmprestimosPage() {
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Empréstimos</h1>
           <p className="text-slate-500 dark:text-emerald-400/80">
             {emprestimos.length} no total
           </p>
         </div>
-        <Link
-          href="/emprestimos/novo"
-          className="flex items-center space-x-1.5 bg-[#064e3b] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-850 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Novo empréstimo</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <ExportarEmprestimosButton emprestimos={serializedEmprestimos} />
+          <Link
+            href="/emprestimos/novo"
+            className="flex items-center space-x-1.5 bg-[#064e3b] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-850 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Novo empréstimo</span>
+          </Link>
+        </div>
       </div>
 
       {/* Busca, Filtros e Lista (Componente de Cliente Instantâneo) */}

@@ -236,14 +236,14 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/clientes/novo"
-            className="flex items-center gap-1.5 border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/10 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm"
+            className="flex items-center gap-1.5 border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-white/10 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 text-emerald-500" />
             Novo Cliente
           </Link>
           <Link
             href="/emprestimos/novo"
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-500/20"
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-500/20 active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             Novo Empréstimo

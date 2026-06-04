@@ -200,24 +200,24 @@ export default function ClientesListWrapper() {
             return (
               <div 
                 key={c.id} 
-                className="premium-card p-4 flex items-center justify-between bg-white dark:bg-[#13221b]"
+                className="premium-card p-4 flex items-center justify-between bg-white dark:bg-[#13221b] active:scale-[0.98] transition-transform cursor-pointer"
               >
-                <Link href={`/clientes/${c.id}`} className="flex items-center space-x-4 flex-grow cursor-pointer group">
+                <Link href={`/clientes/${c.id}`} className="flex items-center space-x-4 flex-grow group">
                   {/* Foto de Perfil ou Letra */}
                   {c.foto_url ? (
                     <img 
                       src={c.foto_url} 
                       alt={c.nome} 
-                      className="w-14 h-14 rounded-2xl object-cover border border-slate-100 dark:border-emerald-800/30 group-hover:border-emerald-500 transition-colors"
+                      className="w-14 h-14 rounded-2xl object-cover border border-slate-100 dark:border-emerald-800/30 group-hover:border-emerald-500 transition-colors pointer-events-none"
                     />
                   ) : (
-                    <div className="w-14 h-14 bg-emerald-800 text-emerald-100 font-bold rounded-2xl flex items-center justify-center text-sm group-hover:bg-emerald-700 transition-colors">
+                    <div className="w-14 h-14 bg-emerald-800 text-emerald-100 font-bold rounded-2xl flex items-center justify-center text-sm group-hover:bg-emerald-700 transition-colors pointer-events-none">
                       {avatarLetra}
                     </div>
                   )}
 
                   {/* Informações */}
-                  <div className="space-y-0.5">
+                  <div className="space-y-0.5 pointer-events-none">
                     <h3 className="font-bold text-slate-900 dark:text-white leading-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-455 transition-colors">
                       {c.nome}
                     </h3>
@@ -231,13 +231,13 @@ export default function ClientesListWrapper() {
                 </Link>
 
                 {/* Botões de Ação */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 z-10">
                   <button
                     onClick={(e) => { e.preventDefault(); openWaModal(c); }}
-                    className="p-2.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+                    className="p-2.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-all active:scale-90"
                     title="Enviar Mensagem"
                   >
-                    <MessageCircle className="w-5 h-5" />
+                    <MessageCircle className="w-5 h-5 pointer-events-none" />
                   </button>
                 </div>
               </div>

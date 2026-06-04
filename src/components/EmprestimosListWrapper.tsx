@@ -495,7 +495,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos }: Emprestim
             return (
               <div
                 key={emp.id}
-                className={`group relative overflow-hidden rounded-2xl border ${borderColor} ${bgClass} p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4`}
+                className={`group relative overflow-hidden rounded-2xl border ${borderColor} ${bgClass} p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 active:scale-[0.98] cursor-pointer`}
               >
                 {/* Accent Line Left */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
@@ -557,9 +557,9 @@ export default function EmprestimosListWrapper({ initialEmprestimos }: Emprestim
 
                   <button
                     onClick={(e) => { e.preventDefault(); openWaModal(emp); }}
-                    className="p-3 bg-slate-100 dark:bg-[#0f1c14] text-slate-400 dark:text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105"
+                    className="p-3 bg-slate-100 dark:bg-[#0f1c14] text-slate-400 dark:text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20"
                   >
-                    <MessageCircle className="w-5 h-5" />
+                    <MessageCircle className="w-5 h-5 pointer-events-none" />
                   </button>
                 </div>
               </div>
