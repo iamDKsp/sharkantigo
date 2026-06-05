@@ -20,10 +20,10 @@ export default function NovoClientePage() {
 
   // Foto de Perfil
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
-  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoBase64, setFotoBase64] = useState<string | null>(null);
 
   // Novos Documentos Selecionados
-  const [novosDocumentos, setNovosDocumentos] = useState<{ id: string; file: File; preview: string }[]>([]);
+  const [novosDocumentos, setNovosDocumentos] = useState<{ id: string; base64: string; preview: string }[]>([]);
 
   // Referências para inputs de arquivos ocultos
   const fileInputFotoRef = useRef<HTMLInputElement>(null);
@@ -36,118 +36,6 @@ export default function NovoClientePage() {
   const [webcamTarget, setWebcamTarget] = useState<"foto" | "documento" | null>(null);
   const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  // --- Handlers de Foto ---
-  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFotoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerFotoSelect = (acceptAll = false) => {
-    if (acceptAll) {
-      fileInputFotoAllRef.current?.click();
-    } else {
-      fileInputFotoRef.current?.click();
-    }
-  };
-
-  // --- Handlers de Documentos ---
-  const handleDocsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newDocsArray = Array.from(files).map((file) => {
-        const id = Math.random().toString(36).substring(2, 9);
-        const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-        return {
-          id,
-          file,
-          preview: isPdf ? "pdf" : URL.createObjectURL(file),
-        };
-      });
-      setNovosDocumentos((prev) => [...prev, ...newDocsArray]);
-    }
-  };
-
-  const triggerDocsSelect = (acceptAll = false) => {
-    if (acceptAll) {
-      fileInputDocsAllRef.current?.click();
-    } else {
-      fileInputDocsRef.current?.click();
-    }
-  };
-
-  const removeNovoDoc = (id: string, preview: string) => {
-    if (preview !== "pdf") {
-      URL.revokeObjectURL(preview);
-    }
-    setNovosDocumentos((prev) => prev.filter((doc) => doc.id !== id));
-  };
-
-  // --- Webcam Capture ---
-  const startWebcam = async (target: "foto" | "documento") => {
-    setWebcamTarget(target);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      setWebcamStream(stream);
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      }, 100);
-    } catch (err) {
-      console.error("Erro ao acessar a câmera:", err);
-      alert("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
-      setWebcamTarget(null);
-    }
-  };
-
-  const stopWebcam = () => {
-    if (webcamStream) {
-      webcamStream.getTracks().forEach((track) => track.stop());
-    }
-    setWebcamStream(null);
-    setWebcamTarget(null);
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const video = videoRef.current;
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const filename = `webcam-${Date.now()}.jpg`;
-            const file = new File([blob], filename, { type: "image/jpeg" });
-            const preview = URL.createObjectURL(blob);
-
-            if (webcamTarget === "foto") {
-              setFotoFile(file);
-              setFotoPreview(preview);
-            } else if (webcamTarget === "documento") {
-              setNovosDocumentos((prev) => [
-                ...prev,
-                { id: Math.random().toString(36).substring(2, 9), file, preview },
-              ]);
-            }
-          }
-          stopWebcam();
-        }, "image/jpeg", 0.9);
-      }
-    }
-  };
 
   // --- Helper Compressão Base64 ---
   const fileToBase64 = async (file: File): Promise<string> => {
@@ -188,23 +76,151 @@ export default function NovoClientePage() {
     });
   };
 
+  // --- Handlers de Foto ---
+  const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const base64 = await fileToBase64(file);
+        setFotoBase64(base64);
+        setFotoPreview(base64);
+      } catch (err) {
+        console.error("Erro ao converter foto:", err);
+      }
+    }
+  };
+
+  const triggerFotoSelect = (acceptAll = false) => {
+    if (acceptAll) {
+      fileInputFotoAllRef.current?.click();
+    } else {
+      fileInputFotoRef.current?.click();
+    }
+  };
+
+  // --- Handlers de Documentos ---
+  const handleDocsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const novos = Array.from(files);
+      const newDocsArray = [];
+      
+      for (const file of novos) {
+        const id = Math.random().toString(36).substring(2, 9);
+        const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+        let preview = "";
+        let base64 = "";
+        
+        try {
+          base64 = await fileToBase64(file);
+          preview = isPdf ? "pdf" : base64;
+          newDocsArray.push({ id, base64, preview });
+        } catch (err) {
+          console.error("Erro ao converter documento:", err);
+        }
+      }
+      setNovosDocumentos((prev) => [...prev, ...newDocsArray]);
+    }
+  };
+
+  const triggerDocsSelect = (acceptAll = false) => {
+    if (acceptAll) {
+      fileInputDocsAllRef.current?.click();
+    } else {
+      fileInputDocsRef.current?.click();
+    }
+  };
+
+  const removeNovoDoc = (id: string) => {
+    setNovosDocumentos((prev) => prev.filter((doc) => doc.id !== id));
+  };
+
+  // --- Webcam Capture ---
+  const startWebcam = async (target: "foto" | "documento") => {
+    setWebcamTarget(target);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      setWebcamStream(stream);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 100);
+    } catch (err) {
+      console.error("Erro ao acessar a câmera:", err);
+      alert("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+      setWebcamTarget(null);
+    }
+  };
+
+  const stopWebcam = () => {
+    if (webcamStream) {
+      webcamStream.getTracks().forEach((track) => track.stop());
+    }
+    setWebcamStream(null);
+    setWebcamTarget(null);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      
+      const MAX_SIZE = 800;
+      let width = canvas.width;
+      let height = canvas.height;
+      
+      if (width > height && width > MAX_SIZE) {
+        height *= MAX_SIZE / width;
+        width = MAX_SIZE;
+      } else if (height > MAX_SIZE) {
+        width *= MAX_SIZE / height;
+        height = MAX_SIZE;
+      }
+      
+      const finalCanvas = document.createElement("canvas");
+      finalCanvas.width = width;
+      finalCanvas.height = height;
+      const ctx = finalCanvas.getContext("2d");
+      
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, width, height);
+        const base64 = finalCanvas.toDataURL("image/jpeg", 0.7);
+        
+        if (webcamTarget === "foto") {
+          setFotoBase64(base64);
+          setFotoPreview(base64);
+        } else if (webcamTarget === "documento") {
+          setNovosDocumentos((prev) => [
+            ...prev,
+            { id: Math.random().toString(36).substring(2, 9), base64, preview: base64 },
+          ]);
+        }
+        stopWebcam();
+      }
+    }
+  };
+
   // --- Submit ---
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    if (fotoBase64) {
+      formData.set("fotoBase64", fotoBase64);
+    }
+
+    if (novosDocumentos.length > 0) {
+      const docsBase64 = novosDocumentos.map(d => d.base64);
+      formData.set("documentosBase64", JSON.stringify(docsBase64));
+    }
+
     startTransition(async () => {
       try {
-        if (fotoFile) {
-          const base64 = await fileToBase64(fotoFile);
-          formData.set("fotoBase64", base64);
-        }
-
-        if (novosDocumentos.length > 0) {
-          const docsBase64 = await Promise.all(novosDocumentos.map(d => fileToBase64(d.file)));
-          formData.set("documentosBase64", JSON.stringify(docsBase64));
-        }
-
         const res = await createCliente(formData);
         if (res && res.success && res.redirectUrl) {
           router.push(res.redirectUrl);
