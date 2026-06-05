@@ -137,7 +137,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
     const files = e.target.files;
     if (files) {
       const novos = Array.from(files);
-      const newDocsArray = [];
+      const newDocsArray: { id: string; base64: string; preview: string }[] = [];
       
       for (const file of novos) {
         const id = Math.random().toString(36).substring(2, 9);
