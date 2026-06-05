@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Save, Loader2, Calendar, User, Wallet, Settings, FileText, CheckCircle2, ChevronRight, Calculator } from "lucide-react";
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import SearchableSelect from "@/components/SearchableSelect";
 
 interface Cliente {
   id: string;
@@ -20,6 +21,7 @@ interface Parceiro {
 interface FormNovoEmprestimoProps {
   clientes: Cliente[];
   parceiros: Parceiro[];
+  clienteIdParam?: string;
 }
 
 type TipoPagamento = 
@@ -43,7 +45,7 @@ const addMonthsCapped = (date: Date, months: number) => {
   return d;
 };
 
-export default function FormNovoEmprestimo({ clientes, parceiros }: FormNovoEmprestimoProps) {
+export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam }: FormNovoEmprestimoProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -52,7 +54,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros }: FormNovoEmpr
   const [overlayStep, setOverlayStep] = useState(0);
 
   // Inputs Comuns
-  const [clienteId, setClienteId] = useState("");
+  const [clienteId, setClienteId] = useState(clienteIdParam || "");
   const [parceiroId, setParceiroId] = useState("");
   const [valor, setValor] = useState<number>(0);
   const [tipoPagamento, setTipoPagamento] = useState<TipoPagamento>("a_vista");
@@ -273,21 +275,15 @@ export default function FormNovoEmprestimo({ clientes, parceiros }: FormNovoEmpr
                 <label htmlFor="clienteId" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
                   Pessoa <span className="text-rose-500">*</span>
                 </label>
-                <select
-                  id="clienteId"
-                  name="clienteId"
-                  required
-                  value={clienteId}
-                  onChange={(e) => setClienteId(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white font-medium hover:border-emerald-400 transition-colors cursor-pointer"
-                >
-                  <option value="">Selecione uma pessoa</option>
-                  {clientes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nome} ({c.telefone})
-                    </option>
-                  ))}
-                </select>
+                <div className="bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 hover:border-emerald-400 transition-colors">
+                  <SearchableSelect
+                    name="clienteId"
+                    value={clienteId}
+                    onChange={setClienteId}
+                    options={clientes}
+                    placeholder="Selecione uma pessoa..."
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

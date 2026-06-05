@@ -3,7 +3,13 @@ import FormNovoEmprestimo from "@/components/FormNovoEmprestimo";
 
 export const revalidate = 0;
 
-export default async function NovoEmprestimoPage() {
+interface PageProps {
+  searchParams: Promise<{ clienteId?: string }>;
+}
+
+export default async function NovoEmprestimoPage({ searchParams }: PageProps) {
+  const { clienteId } = await searchParams;
+
   // Buscar lista de clientes ordenada para carregar no select do formulário
   const clientes = await prisma.cliente.findMany({
     select: {
@@ -27,5 +33,5 @@ export default async function NovoEmprestimoPage() {
     },
   });
 
-  return <FormNovoEmprestimo clientes={clientes} parceiros={parceiros} />;
+  return <FormNovoEmprestimo clientes={clientes} parceiros={parceiros} clienteIdParam={clienteId} />;
 }
