@@ -35,8 +35,23 @@ async function connectToWhatsApp() {
       console.log("Connection closed, reconnecting: ", shouldReconnect);
       connectionStatus = "disconnected";
       lastQr = null;
+      
       if (shouldReconnect) {
         setTimeout(connectToWhatsApp, 3000);
+      } else {
+        console.log("Logged out from WhatsApp. Clearing auth info and generating new QR.");
+        try {
+          const authDir = path.join(__dirname, "auth_info_baileys");
+          if (fs.existsSync(authDir)) {
+            const files = fs.readdirSync(authDir);
+            for (const file of files) {
+              fs.unlinkSync(path.join(authDir, file));
+            }
+          }
+        } catch (e) {
+          console.error("Error clearing auth info:", e);
+        }
+        setTimeout(connectToWhatsApp, 2000);
       }
     } else if (connection === "open") {
       console.log("Opened connection successfully");
