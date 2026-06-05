@@ -510,7 +510,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 type="button"
                 onClick={() => {
                   setFotoPreview(null);
-                  setFotoFile(null);
+                  setFotoBase64(null);
                   setRemoveFoto(true);
                 }}
                 className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-650 transition-colors shadow"
