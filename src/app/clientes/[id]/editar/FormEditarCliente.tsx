@@ -619,8 +619,8 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                     </div>
                     <button
                       type="button"
-                      onClick={() => removeNovoDoc(doc.id, doc.preview)}
-                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-650 text-white p-1 rounded-full shadow"
+                      onClick={() => removeNovoDoc(doc.id)}
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-650 text-white p-1 rounded-full shadow-sm transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>

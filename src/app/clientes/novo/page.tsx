@@ -544,7 +544,7 @@ export default function NovoClientePage() {
                     )}
                     <button
                       type="button"
-                      onClick={() => removeNovoDoc(doc.id, doc.preview)}
+                      onClick={() => removeNovoDoc(doc.id)}
                       className="absolute top-2 right-2 bg-red-500 hover:bg-red-650 text-white p-1 rounded-full shadow"
                     >
                       <X className="w-3 h-3" />
