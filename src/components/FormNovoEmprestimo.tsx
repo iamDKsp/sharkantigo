@@ -257,8 +257,8 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
 
       <form onSubmit={handleSubmit} className="space-y-6 pb-20">
         {/* Seção 1: Cliente */}
-        <div className="premium-card bg-white dark:bg-[#13221b] border border-slate-300 dark:border-emerald-900 shadow-md rounded-2xl relative overflow-hidden transition-shadow hover:shadow-lg">
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500"></div>
+        <div className="premium-card bg-white dark:bg-[#13221b] border border-slate-300 dark:border-emerald-900 shadow-md rounded-2xl relative transition-shadow hover:shadow-lg z-10">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-2xl"></div>
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl">
