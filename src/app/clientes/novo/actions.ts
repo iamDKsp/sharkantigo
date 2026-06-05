@@ -18,48 +18,11 @@ export async function createCliente(formData: FormData) {
   const observacoes = formData.get("observacoes") as string;
   const blacklist = formData.get("blacklist") === "true";
 
-  // 1. Processar Foto de Perfil
-  let fotoUrl: string | null = null;
-  const fotoFile = formData.get("foto") as File | null;
+  // 1. Processar Foto de Perfil (Base64)
+  const fotoUrl = formData.get("fotoBase64") as string | null;
 
-  if (fotoFile && fotoFile.size > 0 && fotoFile.name !== "undefined") {
-    try {
-      const buffer = Buffer.from(await fotoFile.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      await fs.mkdir(uploadDir, { recursive: true });
-      
-      const ext = path.extname(fotoFile.name) || ".jpg";
-      const filename = `${Date.now()}-perfil-${Math.random().toString(36).substring(2, 8)}${ext}`;
-      const filepath = path.join(uploadDir, filename);
-      await fs.writeFile(filepath, buffer);
-      fotoUrl = `/uploads/${filename}`;
-    } catch (err) {
-      console.error("Erro ao salvar foto de perfil:", err);
-    }
-  }
-
-  // 2. Processar Documentos
-  const docsFiles = formData.getAll("documentos") as File[];
-  const documentosUrls: string[] = [];
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadDir, { recursive: true });
-
-  for (const docFile of docsFiles) {
-    if (docFile && docFile.size > 0 && docFile.name !== "undefined") {
-      try {
-        const buffer = Buffer.from(await docFile.arrayBuffer());
-        const ext = path.extname(docFile.name) || ".jpg";
-        const filename = `${Date.now()}-doc-${Math.random().toString(36).substring(2, 8)}${ext}`;
-        const filepath = path.join(uploadDir, filename);
-        await fs.writeFile(filepath, buffer);
-        documentosUrls.push(`/uploads/${filename}`);
-      } catch (err) {
-        console.error("Erro ao salvar documento:", err);
-      }
-    }
-  }
-
-  const documentosUrlsStr = documentosUrls.length > 0 ? JSON.stringify(documentosUrls) : null;
+  // 2. Processar Documentos (Base64)
+  const documentosUrlsStr = formData.get("documentosBase64") as string | null;
 
   await prisma.cliente.create({
     data: {

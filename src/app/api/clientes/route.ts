@@ -13,10 +13,10 @@ export async function GET(request: Request) {
     const whereClause = query
       ? {
           OR: [
-            { nome: { contains: query } },
-            { telefone: { contains: query } },
-            { cidade: { contains: query } },
-            { documento: { contains: query } },
+            { nome: { contains: query, mode: "insensitive" as const } },
+            { telefone: { contains: query, mode: "insensitive" as const } },
+            { cidade: { contains: query, mode: "insensitive" as const } },
+            { documento: { contains: query, mode: "insensitive" as const } },
           ],
         }
       : undefined;

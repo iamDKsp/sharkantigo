@@ -149,23 +149,62 @@ export default function NovoClientePage() {
     }
   };
 
+  // --- Helper Compressão Base64 ---
+  const fileToBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (!e.target?.result) return reject();
+        const dataUrl = e.target.result as string;
+        
+        if (file.type === "application/pdf") {
+          return resolve(dataUrl);
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          const MAX_SIZE = 800;
+          
+          if (width > height && width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          } else if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        };
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   // --- Submit ---
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    // Anexar foto se houver
-    if (fotoFile) {
-      formData.set("foto", fotoFile);
-    }
-
-    // Anexar novos arquivos de documentos
-    novosDocumentos.forEach((doc) => {
-      formData.append("documentos", doc.file);
-    });
-
     startTransition(async () => {
       try {
+        if (fotoFile) {
+          const base64 = await fileToBase64(fotoFile);
+          formData.set("fotoBase64", base64);
+        }
+
+        if (novosDocumentos.length > 0) {
+          const docsBase64 = await Promise.all(novosDocumentos.map(d => fileToBase64(d.file)));
+          formData.set("documentosBase64", JSON.stringify(docsBase64));
+        }
+
         const res = await createCliente(formData);
         if (res && res.success && res.redirectUrl) {
           router.push(res.redirectUrl);
