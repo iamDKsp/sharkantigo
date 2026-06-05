@@ -173,7 +173,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     if (!text) return;
     setIsWaSending(true);
     try {
-      const res = await fetch("http://localhost:3001/send", {
+      const res = await fetch("/api/whatsapp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
