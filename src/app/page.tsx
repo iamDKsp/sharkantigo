@@ -262,7 +262,7 @@ export default async function DashboardPage() {
               <Wallet className="w-4 h-4 text-zinc-500 dark:text-zinc-300" />
             </div>
           </div>
-          <div className="text-2xl font-black tracking-tight text-zinc-900 dark:text-white leading-none">
+          <div className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 dark:text-white leading-none break-words">
             {formatBRL(totalEmprestado)}
           </div>
           <div className="mt-2 text-sm text-zinc-400">
@@ -279,7 +279,7 @@ export default async function DashboardPage() {
               <TrendingUp className="w-4 h-4 text-emerald-500" />
             </div>
           </div>
-          <div className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 leading-none">
+          <div className="text-xl sm:text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 leading-none break-words">
             {formatBRL(totalAReceber)}
           </div>
           <div className="mt-2 text-sm text-zinc-400">
@@ -296,7 +296,7 @@ export default async function DashboardPage() {
               <AlertCircle className="w-4 h-4 text-rose-500" />
             </div>
           </div>
-          <div className="text-2xl font-black tracking-tight text-rose-600 dark:text-rose-400 leading-none">
+          <div className="text-xl sm:text-2xl font-black tracking-tight text-rose-600 dark:text-rose-400 leading-none break-words">
             {totalAtrasadosCount}
           </div>
           <div className="mt-2 text-sm text-zinc-400">empréstimos vencidos</div>
@@ -311,7 +311,7 @@ export default async function DashboardPage() {
               <Clock3 className="w-4 h-4 text-amber-500" />
             </div>
           </div>
-          <div className="text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 leading-none">
+          <div className="text-xl sm:text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 leading-none break-words">
             {vencendoHojeCount}
           </div>
           <div className="mt-2 text-sm text-zinc-400">parcelas vencem hoje</div>
@@ -332,9 +332,9 @@ export default async function DashboardPage() {
             { label: "No mês (30d)", value: receberMes, color: "emerald", accent: "border-l-cyan-500", text: "text-cyan-600 dark:text-cyan-400" },
             { label: "No ano (365d)", value: receberAno, color: "emerald", accent: "border-l-indigo-500", text: "text-indigo-600 dark:text-indigo-400" },
           ].map((item, idx) => (
-            <div key={idx} className={`bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm border-l-4 ${item.accent} hover:shadow-md transition-all`}>
-              <span className="text-sm font-black uppercase tracking-widest text-zinc-400">{item.label}</span>
-              <div className={`text-2xl font-black mt-2 leading-none ${item.text}`}>
+            <div key={idx} className={`bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-4 sm:p-5 shadow-sm border-l-4 ${item.accent} hover:shadow-md transition-all`}>
+              <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-zinc-400">{item.label}</span>
+              <div className={`text-lg sm:text-2xl font-black mt-2 leading-none break-words ${item.text}`}>
                 {formatBRL(item.value)}
               </div>
             </div>
@@ -418,7 +418,7 @@ export default async function DashboardPage() {
                 <BadgeDollarSign className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-3xl font-black leading-none">{formatBRL(ganhoTotal)}</div>
+            <div className="text-2xl sm:text-3xl font-black leading-none break-words">{formatBRL(ganhoTotal)}</div>
             <div className="mt-2 text-sm opacity-70">De {emprestimosQuitadosCount} contratos quitados</div>
             <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
           </div>
@@ -431,7 +431,7 @@ export default async function DashboardPage() {
                 <DollarSign className="w-3.5 h-3.5 text-sky-500" />
               </div>
             </div>
-            <div className="text-2xl font-black leading-none text-sky-600 dark:text-sky-400">{formatBRL(ganhoMesAtual)}</div>
+            <div className="text-xl sm:text-2xl font-black leading-none text-sky-600 dark:text-sky-400 break-words">{formatBRL(ganhoMesAtual)}</div>
             <div className="mt-2 text-sm text-zinc-400">Parcelas quitadas no mês</div>
           </div>
 
@@ -443,7 +443,7 @@ export default async function DashboardPage() {
                 <ArrowUpRight className="w-3.5 h-3.5 text-violet-500" />
               </div>
             </div>
-            <div className="text-2xl font-black leading-none text-violet-600 dark:text-violet-400">{formatBRL(ganhoAnoAtual)}</div>
+            <div className="text-xl sm:text-2xl font-black leading-none text-violet-600 dark:text-violet-400 break-words">{formatBRL(ganhoAnoAtual)}</div>
             <div className="mt-2 text-sm text-zinc-400">Parcelas quitadas em {hoje.getFullYear()}</div>
           </div>
 

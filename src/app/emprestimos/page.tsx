@@ -19,6 +19,16 @@ export default async function EmprestimosPage() {
     },
   });
 
+  const cheques = await prisma.cheque.findMany({
+    include: {
+      cliente: true,
+      parceiro: true,
+    },
+    orderBy: {
+      data_compensacao: "asc"
+    }
+  });
+
   const serializedEmprestimos = emprestimos.map((emp) => ({
     ...emp,
     valor_emprestado: Number(emp.valor_emprestado),
@@ -32,6 +42,13 @@ export default async function EmprestimosPage() {
     })),
   }));
 
+  const serializedCheques = cheques.map((c) => ({
+    ...c,
+    valor: Number(c.valor),
+    taxa_desconto: c.taxa_desconto ? Number(c.taxa_desconto) : null,
+    valor_liquido: c.valor_liquido ? Number(c.valor_liquido) : null,
+  }));
+
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
@@ -43,7 +60,7 @@ export default async function EmprestimosPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <ExportarEmprestimosButton emprestimos={serializedEmprestimos} />
+          <ExportarEmprestimosButton emprestimos={serializedEmprestimos} cheques={serializedCheques} />
           <Link
             href="/emprestimos/novo"
             className="flex items-center space-x-1.5 bg-[#064e3b] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-850 transition-colors shadow-sm"

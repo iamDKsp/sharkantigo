@@ -6,9 +6,10 @@ import * as XLSX from "xlsx";
 
 interface ExportarEmprestimosButtonProps {
   emprestimos: any[];
+  cheques?: any[];
 }
 
-export default function ExportarEmprestimosButton({ emprestimos }: ExportarEmprestimosButtonProps) {
+export default function ExportarEmprestimosButton({ emprestimos, cheques = [] }: ExportarEmprestimosButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = () => {
@@ -117,9 +118,61 @@ export default function ExportarEmprestimosButton({ emprestimos }: ExportarEmpre
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Emprestimos");
+
+      // SEGUNDA PLANILHA: CHEQUES
+      if (cheques && cheques.length > 0) {
+        const chequeRows = cheques.map(c => {
+          const valorBruto = Number(c.valor) || 0;
+          const valorLiquido = Number(c.valor_liquido || c.valor) || 0;
+          
+          return {
+            "ID Cheque": c.id,
+            "Titular": c.cliente?.nome || c.titular || "Não informado",
+            "Banco": c.banco || "Não informado",
+            "Valor Bruto": valorBruto,
+            "Taxa Desconto (%)": Number(c.taxa_desconto || 0) / 100,
+            "Valor Líquido": valorLiquido,
+            "Lucro": valorBruto - valorLiquido,
+            "Data de Compensação": c.data_compensacao ? new Date(c.data_compensacao) : null,
+            "Status": formatStatus(c.status),
+            "Parceiro Vinculado": c.parceiro?.nome || "Nenhum"
+          };
+        });
+
+        const worksheetCheques = XLSX.utils.json_to_sheet(chequeRows);
+        
+        const rangeCheques = XLSX.utils.decode_range(worksheetCheques['!ref'] || 'A1:J1');
+        for (let R = rangeCheques.s.r + 1; R <= rangeCheques.e.r; ++R) {
+          const formatCell = (colIdx: number, format: string, type: string) => {
+            const cell = worksheetCheques[XLSX.utils.encode_cell({r: R, c: colIdx})];
+            if (cell && cell.t === type) cell.z = format;
+          };
+
+          formatCell(3, numFmtMoeda, 'n');         // D: Valor Bruto
+          formatCell(4, numFmtPorcentagem, 'n');   // E: Taxa Desconto
+          formatCell(5, numFmtMoeda, 'n');         // F: Valor Líquido
+          formatCell(6, numFmtMoeda, 'n');         // G: Lucro
+          formatCell(7, numFmtData, 'n');          // H: Data de Compensação
+        }
+
+        worksheetCheques['!cols'] = [
+          { wch: 15 }, // ID Cheque
+          { wch: 30 }, // Titular
+          { wch: 20 }, // Banco
+          { wch: 20 }, // Valor Bruto
+          { wch: 20 }, // Taxa Desconto
+          { wch: 20 }, // Valor Líquido
+          { wch: 20 }, // Lucro
+          { wch: 25 }, // Data de Compensação
+          { wch: 15 }, // Status
+          { wch: 25 }, // Parceiro Vinculado
+        ];
+
+        XLSX.utils.book_append_sheet(workbook, worksheetCheques, "Cheques");
+      }
       
       const dateStr = new Date().toISOString().split("T")[0];
-      XLSX.writeFile(workbook, `backup_emprestimos_${dateStr}.xlsx`);
+      XLSX.writeFile(workbook, `backup_sistema_${dateStr}.xlsx`);
       
     } catch (error) {
       console.error("Erro ao gerar backup:", error);
