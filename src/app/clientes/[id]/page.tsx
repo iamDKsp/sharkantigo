@@ -12,7 +12,8 @@ import {
   AlertCircle,
   TrendingUp,
   CheckCircle2,
-  Plus
+  Plus,
+  Wallet
 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import DeleteClientButton from "@/components/DeleteClientButton";
@@ -45,6 +46,11 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
           data_vencimento: "asc",
         },
       },
+      cheques: {
+        orderBy: {
+          data_compensacao: "asc",
+        },
+      },
     },
   });
 
@@ -61,6 +67,7 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
   let totalRecebido = 0;
   let totalAReceber = 0;
   let totalAtrasado = 0;
+  let lucroCheques = 0;
 
   let countAbertos = 0;
   let countAtrasados = 0;
@@ -87,6 +94,13 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
         countAtrasados++;
       }
     }
+  });
+
+  cliente.cheques.forEach((cheque) => {
+    const valor = Number(cheque.valor);
+    const liquido = Number(cheque.valor_liquido || cheque.valor);
+    const lucro = valor - liquido;
+    lucroCheques += lucro;
   });
 
   const formatBRL = (val: number) => {
@@ -219,6 +233,19 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
             </div>
             <div className="text-sm font-bold text-red-600 dark:text-red-400 mt-2">
               {formatBRL(totalAtrasado)}
+            </div>
+          </div>
+
+          {/* Lucro Cheques */}
+          <div className="premium-card p-4 bg-white dark:bg-[#13221b] sm:col-span-2 md:col-span-4 border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
+                <Wallet className="w-5 h-5" />
+                <span className="text-sm font-bold uppercase tracking-wider">Lucro Gerado com Cheques</span>
+              </div>
+              <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                {formatBRL(lucroCheques)}
+              </div>
             </div>
           </div>
         </div>
@@ -414,6 +441,74 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
                     </div>
                   </div>
                 </Link>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Cheques da Pessoa */}
+      <div className="premium-card overflow-hidden bg-white dark:bg-[#13221b]">
+        <div className="p-5 border-b border-slate-100 dark:border-emerald-950 flex items-center justify-between">
+          <h2 className="font-bold text-slate-900 dark:text-white">Troca de Cheques</h2>
+          <Link
+            href={`/cheques`}
+            className="flex items-center space-x-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 p-2 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-colors"
+          >
+            <span>Ir para Cheques</span>
+          </Link>
+        </div>
+
+        <div className="divide-y divide-slate-100 dark:divide-emerald-950">
+          {cliente.cheques.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 dark:text-emerald-400/60">
+              Nenhum cheque vinculado a esta pessoa.
+            </div>
+          ) : (
+            cliente.cheques.map((cheque) => {
+              const valorBruto = Number(cheque.valor);
+              const valorLiquido = Number(cheque.valor_liquido || cheque.valor);
+              const taxa = Number(cheque.taxa_desconto || 0);
+
+              return (
+                <div key={cheque.id} className="p-4 flex flex-col space-y-3 hover:bg-slate-50/60 dark:hover:bg-emerald-950/20 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-bold text-slate-950 dark:text-white">
+                        Vencimento: {formatData(cheque.data_compensacao)}
+                      </span>
+                      {cheque.status === "compensado" ? (
+                        <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                          Compensado
+                        </span>
+                      ) : cheque.status === "devolvido" ? (
+                        <span className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                          Devolvido
+                        </span>
+                      ) : (
+                        <span className="bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                          Pendente
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="border border-slate-200 dark:border-emerald-900 rounded-lg px-3 py-1.5 bg-white dark:bg-[#0b130e]">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-emerald-500 block">Cheque</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">{formatBRL(valorBruto)}</span>
+                      </div>
+                      <div className="border border-slate-200 dark:border-emerald-900 rounded-lg px-3 py-1.5 bg-white dark:bg-[#0b130e]">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-emerald-500 block">Taxa {taxa}%</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">{formatBRL(valorBruto - valorLiquido)}</span>
+                      </div>
+                    </div>
+                    <div className="text-right border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg px-3 py-1.5">
+                      <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Líquido</span>
+                      <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{formatBRL(valorLiquido)}</span>
+                    </div>
+                  </div>
+                </div>
               );
             })
           )}

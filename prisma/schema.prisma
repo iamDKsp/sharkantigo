@@ -37,6 +37,7 @@ model Cliente {
   documentos_urls String?      @db.Text
   criado_em       DateTime     @default(now())
   emprestimos    Emprestimo[]
+  cheques        Cheque[]
 
   @@map("clientes")
 }
@@ -73,6 +74,7 @@ model Parceiro {
   telefone    String?
   criado_em   DateTime     @default(now())
   emprestimos Emprestimo[]
+  cheques     Cheque[]
 
   @@map("parceiros")
 }
@@ -96,11 +98,18 @@ model Cheque {
   // Controle de cheques
   id               String   @id @default(uuid())
   cliente_id       String?
-  titular          String
-  banco            String
+  cliente          Cliente? @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  parceiro_id      String?
+  parceiro         Parceiro? @relation(fields: [parceiro_id], references: [id], onDelete: SetNull)
+  titular          String?
+  banco            String?
   valor            Decimal  @db.Decimal(15, 2)
+  taxa_desconto    Decimal? @db.Decimal(5, 2)
+  valor_liquido    Decimal? @db.Decimal(15, 2)
   data_compensacao DateTime @db.Date
   status           String   @default("em_maos")
+  foto_url         String?  @db.Text
+  observacoes      String?  @db.Text
   criado_em        DateTime @default(now())
 
   @@map("cheques")
