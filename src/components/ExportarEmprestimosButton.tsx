@@ -16,6 +16,11 @@ export default function ExportarEmprestimosButton({ emprestimos, cheques = [] }:
     setIsExporting(true);
     
     try {
+      const formatStatus = (status: string) => {
+        if (!status) return "";
+        return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      };
+
       const rows = emprestimos.map(emp => {
         const principal = Number(emp.valor_emprestado) || 0;
         
@@ -46,11 +51,6 @@ export default function ExportarEmprestimosButton({ emprestimos, cheques = [] }:
              }
           }
           return phone;
-        };
-
-        const formatStatus = (status: string) => {
-          if (!status) return "";
-          return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         };
 
         return {
