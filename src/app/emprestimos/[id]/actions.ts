@@ -152,24 +152,40 @@ export async function renegociarEmprestimo(
         data: { status: "quitado" },
       });
     } else {
-      // Se tiver saldo restante e escolher aplicar juros
+      // Se tiver saldo restante, vamos renegociar: aplicar juros se escolhido e empurrar vencimento +1 mês
+      const saldoDevedor = parcelasAbertasPosAbate.reduce((acc, p) => acc + Number(p.valor), 0);
+      let jurosAdicional = 0;
+      
       if (aplicarJuros && taxaJuros > 0) {
-        const saldoDevedor = parcelasAbertasPosAbate.reduce((acc, p) => acc + Number(p.valor), 0);
-        const jurosAdicional = saldoDevedor * (taxaJuros / 100);
-
-        // Distribuir o juros proporcionalmente nas parcelas abertas
-        for (const p of parcelasAbertasPosAbate) {
-          const proporcao = Number(p.valor) / saldoDevedor;
-          const novoValor = Number(p.valor) + jurosAdicional * proporcao;
-
-          await tx.parcela.update({
-            where: { id: p.id },
-            data: {
-              valor: Number(novoValor.toFixed(2)),
-            },
-          });
-        }
+        jurosAdicional = saldoDevedor * (taxaJuros / 100);
       }
+
+      // Distribuir o juros proporcionalmente nas parcelas abertas e empurrar data
+      for (const p of parcelasAbertasPosAbate) {
+        const proporcao = Number(p.valor) / saldoDevedor;
+        const novoValor = Number(p.valor) + jurosAdicional * proporcao;
+
+        const novoVencimento = new Date(p.data_vencimento);
+        novoVencimento.setUTCMonth(novoVencimento.getUTCMonth() + 1);
+
+        await tx.parcela.update({
+          where: { id: p.id },
+          data: {
+            valor: Number(novoValor.toFixed(2)),
+            data_vencimento: novoVencimento,
+          },
+        });
+      }
+
+      // Atualizar o vencimento global do empréstimo
+      const lastParcela = parcelasAbertasPosAbate[parcelasAbertasPosAbate.length - 1];
+      const novoVencGlobal = new Date(lastParcela.data_vencimento);
+      novoVencGlobal.setUTCMonth(novoVencGlobal.getUTCMonth() + 1);
+      
+      await tx.emprestimo.update({
+        where: { id: emprestimoId },
+        data: { data_vencimento: novoVencGlobal }
+      });
     }
   });
 
@@ -303,4 +319,79 @@ export async function deleteLoan(id: string) {
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
   return { success: true, redirectUrl: "/emprestimos" };
+}
+
+// 7. Receber só os juros (Renovar +30d)
+export async function receberSoJurosEmprestimo(emprestimoId: string) {
+  const hoje = new Date();
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Encontra o empréstimo com as parcelas abertas
+    const emprestimo = await tx.emprestimo.findUnique({
+      where: { id: emprestimoId },
+      include: { parcelas: { where: { status: "aberto" }, orderBy: { numero: "asc" } } },
+    });
+
+    if (!emprestimo || emprestimo.parcelas.length === 0) {
+      throw new Error("Empréstimo não encontrado ou sem parcelas em aberto.");
+    }
+
+    // 2. Pega a primeira parcela em aberto
+    const parcelaAtual = emprestimo.parcelas[0];
+
+    // 3. Calcula juros do empréstimo (baseado no valor original emprestado)
+    const valorEmprestado = Number(emprestimo.valor_emprestado);
+    const taxaJuros = Number(emprestimo.taxa_juros);
+    const valorJuros = valorEmprestado * (taxaJuros / 100);
+
+    if (valorJuros <= 0) {
+      throw new Error("O empréstimo não possui taxa de juros configurada para calcular o recebimento.");
+    }
+
+    // 4. Modifica a parcela atual para ser APENAS o valor dos juros, e marca como paga
+    await tx.parcela.update({
+      where: { id: parcelaAtual.id },
+      data: {
+        valor: valorJuros,
+        valor_pago: valorJuros,
+        status: "pago",
+        data_pagamento: hoje,
+      },
+    });
+
+    // 5. Cria uma NOVA parcela com o valor integral original (Principal + Juros)
+    // O vencimento será +1 mês em relação à parcela atual.
+    const novoVencimento = new Date(parcelaAtual.data_vencimento);
+    novoVencimento.setUTCMonth(novoVencimento.getUTCMonth() + 1);
+
+    // Identificar o número da nova parcela
+    const ultimaParcela = await tx.parcela.findFirst({
+      where: { emprestimo_id: emprestimoId },
+      orderBy: { numero: "desc" },
+    });
+    const novoNumero = (ultimaParcela?.numero || parcelaAtual.numero) + 1;
+
+    await tx.parcela.create({
+      data: {
+        emprestimo_id: emprestimoId,
+        numero: novoNumero,
+        valor: parcelaAtual.valor, // Valor cheio da parcela original que foi postergada
+        data_vencimento: novoVencimento,
+        status: "aberto",
+      },
+    });
+
+    // 6. O vencimento global do empréstimo também deve refletir
+    await tx.emprestimo.update({
+      where: { id: emprestimoId },
+      data: {
+        data_vencimento: novoVencimento,
+      },
+    });
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true };
 }

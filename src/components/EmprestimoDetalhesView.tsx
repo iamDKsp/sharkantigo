@@ -12,6 +12,7 @@ import {
 import {
   payNextInstallment, payFullLoan, renegociarEmprestimo,
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
+  receberSoJurosEmprestimo
 } from "@/app/emprestimos/[id]/actions";
 
 interface Cliente { id: string; nome: string; telefone: string; blacklist: boolean; foto_url: string | null; }
@@ -166,6 +167,17 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     startTransition(async () => {
       const res = await deleteLoan(emprestimo.id);
       if (res?.success && res?.redirectUrl) router.push(res.redirectUrl);
+    });
+  };
+
+  const receiveJuros = () => {
+    if (!confirm("Confirmar recebimento de APENAS os juros e renovar o principal para +30 dias?")) return;
+    startTransition(async () => {
+      try {
+        await receberSoJurosEmprestimo(emprestimo.id);
+      } catch (err: any) {
+        alert(err.message);
+      }
     });
   };
 
@@ -474,6 +486,9 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                       <BtnSecondary onClick={() => pay(true)} danger><Clock className="w-3.5 h-3.5" /> Devolvido com Atraso</BtnSecondary>
                     </>
                   )}
+                  <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 text-sm font-black rounded-xl transition-all active:scale-[0.98] shadow-sm">
+                    <RefreshCw className="w-4 h-4" /> Receber só os juros (renovar +30d)
+                  </button>
                   <div className="grid grid-cols-2 gap-2">
                     <BtnSecondary onClick={() => setModal("renegociar")}><RefreshCw className="w-3.5 h-3.5" /> Renegociar</BtnSecondary>
                     <BtnSecondary onClick={() => setModal("reprogramar")}><CalendarClock className="w-3.5 h-3.5" /> Reprogramar</BtnSecondary>
