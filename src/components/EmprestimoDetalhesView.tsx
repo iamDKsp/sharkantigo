@@ -373,9 +373,6 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                             <button onClick={() => pay(false)} disabled={isPending} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-black rounded-lg transition-colors shadow-sm">
                               Pagar
                             </button>
-                            <button onClick={() => pay(true)} disabled={isPending} className="px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-zinc-400 hover:text-rose-500 text-sm font-black rounded-lg transition-colors">
-                              Atraso
-                            </button>
                           </div>
                         )}
                       </div>
@@ -475,15 +472,10 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                           <CheckCircle2 className="w-3.5 h-3.5" /> Quitar Tudo
                         </button>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <BtnSecondary onClick={() => pay(true)} danger><Clock className="w-3.5 h-3.5" /> Parcela c/ Atraso</BtnSecondary>
-                        <BtnSecondary onClick={() => payAll(true)} danger><AlertCircle className="w-3.5 h-3.5" /> Quitação c/ Atraso</BtnSecondary>
-                      </div>
                     </>
                   ) : (
                     <>
                       <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> Marcar como Pago</BtnPrimary>
-                      <BtnSecondary onClick={() => pay(true)} danger><Clock className="w-3.5 h-3.5" /> Devolvido com Atraso</BtnSecondary>
                     </>
                   )}
                   <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 text-sm font-black rounded-xl transition-all active:scale-[0.98] shadow-sm">

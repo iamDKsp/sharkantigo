@@ -57,7 +57,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
   const [clienteId, setClienteId] = useState(clienteIdParam || "");
   const [parceiroId, setParceiroId] = useState("");
   const [valor, setValor] = useState<number>(0);
-  const [tipoPagamento, setTipoPagamento] = useState<TipoPagamento>("a_vista");
+  const [tipoPagamento, setTipoPagamento] = useState<TipoPagamento>("a_vista_juros");
   const [frequencia, setFrequencia] = useState<Frequencia>("mensal");
   const [taxaJuros, setTaxaJuros] = useState<number>(10); // default 10%
   const [periodos, setPeriodos] = useState<number>(3); // parcelas ou meses
