@@ -10,14 +10,12 @@ RUN npm install @whiskeysockets/baileys qrcode
 # Copy the service file
 COPY whatsapp-service.js ./
 
-# Create directory for auth info with proper permissions
-RUN mkdir -p /app/auth_info_baileys && chown -R node:node /app
+# Create directory for auth info
+RUN mkdir -p /app/auth_info_baileys
 
-# Switch to non-root user
-USER node
-
-# Expose the API port
+# Expose port
 EXPOSE 3529
 
 # Command to run the service
 CMD ["node", "whatsapp-service.js"]
+

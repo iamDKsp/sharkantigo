@@ -10,6 +10,9 @@ let lastQr = null;
 
 async function connectToWhatsApp() {
   const authDir = path.join(__dirname, "auth_info_baileys");
+  if (!fs.existsSync(authDir)) {
+    fs.mkdirSync(authDir, { recursive: true });
+  }
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
 
   sock = makeWASocket({
