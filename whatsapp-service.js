@@ -168,6 +168,7 @@ const server = http.createServer(async (req, res) => {
   res.end("Not Found");
 });
 
-server.listen(3529, () => {
-  console.log("WhatsApp server listening on port 3529");
+const PORT = process.env.PORT || 3529;
+server.listen(PORT, () => {
+  console.log(`WhatsApp server listening on port ${PORT}`);
 });
