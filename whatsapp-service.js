@@ -61,7 +61,11 @@ async function connectToWhatsApp() {
       connectionStatus = "connected";
       lastQr = null;
     } else if (connection === "connecting") {
-      connectionStatus = "connecting";
+      if (lastQr) {
+        connectionStatus = "qr";
+      } else {
+        connectionStatus = "connecting";
+      }
     }
   });
 

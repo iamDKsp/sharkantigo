@@ -19,15 +19,12 @@ export default function PerfilPage() {
       setStatus(data.status || "disconnected");
       setQrCode(data.qr || null);
       if (data.error) setErrorMessage(`${data.error} (${data.url || ''})`);
-      if (data.status === "connected") {
-        setIsPollingQr(false);
-      }
+      else setErrorMessage("");
     } catch (err: any) {
       console.error("WhatsApp companion service offline", err);
       setStatus("disconnected");
       setQrCode(null);
       setErrorMessage(err.message || "Erro desconhecido");
-      setIsPollingQr(false);
     } finally {
       setLoading(false);
     }
@@ -37,18 +34,19 @@ export default function PerfilPage() {
     fetchStatus();
   }, []);
 
+  // Continuous polling while not connected
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isPollingQr) {
-      interval = setInterval(fetchStatus, 5000);
+    if (status !== "connected") {
+      interval = setInterval(fetchStatus, 3000);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPollingQr]);
+  }, [status]);
 
   const handleDisconnect = async () => {
-    if (!confirm("Tem certeza que deseja desconectar o WhatsApp?")) return;
+    if (!confirm("Tem certeza que deseja desconectar/resetar o WhatsApp?")) return;
     setIsDisconnecting(true);
     try {
       const res = await fetch("/api/whatsapp/logout", {
@@ -102,19 +100,19 @@ export default function PerfilPage() {
               <span>Conectado</span>
             </span>
           )}
-          {status === "connecting" && (
+          {status === "connecting" && !qrCode && (
             <span className="bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 text-sm font-bold px-2.5 py-1 rounded-full uppercase flex items-center space-x-1">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               <span>Conectando...</span>
             </span>
           )}
-          {status === "qr" && (
+          {(status === "qr" || qrCode) && status !== "connected" && (
             <span className="bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 text-sm font-bold px-2.5 py-1 rounded-full uppercase flex items-center space-x-1">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               <span>Aguardando Leitura QR</span>
             </span>
           )}
-          {status === "disconnected" && (
+          {status === "disconnected" && !qrCode && (
             <span className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 text-sm font-bold px-2.5 py-1 rounded-full uppercase flex items-center space-x-1">
               <AlertCircle className="w-3.5 h-3.5" />
               <span>Desconectado</span>
@@ -153,36 +151,8 @@ export default function PerfilPage() {
                 </div>
               )}
 
-              {(status === "qr" || status === "disconnected") && !isPollingQr && (
-                <div className="text-center py-8 space-y-4 max-w-sm mx-auto">
-                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-                    <QrCode className="w-8 h-8" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Conexão Inativa</p>
-                    <p className="text-sm text-slate-500 dark:text-emerald-400/80">
-                      O WhatsApp não está conectado no momento. Clique no botão abaixo para gerar um QR Code.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsPollingQr(true);
-                      fetchStatus();
-                    }}
-                    className="flex items-center justify-center space-x-1.5 bg-[#043e2f] hover:bg-[#065b45] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors mx-auto"
-                  >
-                    <QrCode className="w-4 h-4" />
-                    <span>Gerar QR Code</span>
-                  </button>
-                  {errorMessage && (
-                    <p className="text-xs text-red-400 font-mono mt-4">
-                      {errorMessage}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {status === "qr" && isPollingQr && qrCode && (
+              {/* Show QR code if present and not connected */}
+              {qrCode && status !== "connected" && (
                 <div className="text-center space-y-4">
                   <p className="text-sm text-slate-650 dark:text-emerald-400 font-bold max-w-xs mx-auto">
                     Abra o WhatsApp no seu celular, vá em Aparelhos Conectados &gt; Conectar um Aparelho e aponte a câmera para o QR Code abaixo:
@@ -192,35 +162,61 @@ export default function PerfilPage() {
                   </div>
                   <p className="text-sm text-slate-400 flex items-center justify-center space-x-2">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Aguardando leitura...</span>
+                    <span>Aguardando leitura do QR Code...</span>
                   </p>
                   <button
-                    onClick={() => setIsPollingQr(false)}
-                    className="mt-4 text-xs font-bold text-red-500 hover:text-red-700"
+                    onClick={handleDisconnect}
+                    disabled={isDisconnecting}
+                    className="mt-4 text-xs font-bold text-red-500 hover:text-red-700 underline"
                   >
-                    Cancelar Leitura
+                    {isDisconnecting ? "Resetando..." : "Resetar Sessão / Gerar Novo QR Code"}
                   </button>
                 </div>
               )}
 
-              {status === "connecting" && (
-                <div className="text-center py-8 space-y-2">
-                  <Loader2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 animate-spin mx-auto" />
-                  <p className="text-sm font-bold">Autenticando sessão...</p>
-                  <p className="text-sm text-slate-500">Isso pode levar alguns segundos.</p>
-                </div>
-              )}
-
-              {status === "disconnected" && isPollingQr && (
+              {/* Show Connecting state ONLY if no QR code is available */}
+              {status === "connecting" && !qrCode && (
                 <div className="text-center py-8 space-y-4">
-                  <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto" />
-                  <p className="text-sm font-bold">Solicitando QR Code ao servidor...</p>
+                  <Loader2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400 animate-spin mx-auto" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold">Autenticando sessão...</p>
+                    <p className="text-sm text-slate-500">Isso pode levar alguns segundos.</p>
+                  </div>
                   <button
-                    onClick={() => setIsPollingQr(false)}
-                    className="mt-4 text-xs font-bold text-red-500 hover:text-red-700"
+                    onClick={handleDisconnect}
+                    disabled={isDisconnecting}
+                    className="mt-4 text-xs font-bold text-red-500 hover:text-red-700 underline block mx-auto"
                   >
-                    Cancelar
+                    {isDisconnecting ? "Resetando..." : "Resetar Sessão Presa"}
                   </button>
+                </div>
+              )}
+
+              {/* Show Disconnected state if no QR code is available */}
+              {status === "disconnected" && !qrCode && (
+                <div className="text-center py-8 space-y-4 max-w-sm mx-auto">
+                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+                    <QrCode className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">Conexão Inativa</p>
+                    <p className="text-sm text-slate-500 dark:text-emerald-400/80">
+                      O WhatsApp não está conectado no momento.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleDisconnect}
+                    disabled={isDisconnecting}
+                    className="flex items-center justify-center space-x-1.5 bg-[#043e2f] hover:bg-[#065b45] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors mx-auto"
+                  >
+                    <QrCode className="w-4 h-4" />
+                    <span>{isDisconnecting ? "Gerando..." : "Gerar QR Code / Reiniciar"}</span>
+                  </button>
+                  {errorMessage && (
+                    <p className="text-xs text-red-400 font-mono mt-4">
+                      {errorMessage}
+                    </p>
+                  )}
                 </div>
               )}
             </>
