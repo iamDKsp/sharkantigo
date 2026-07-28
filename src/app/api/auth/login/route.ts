@@ -15,12 +15,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email e senha são obrigatórios" }, { status: 400 });
     }
 
-    const user = await prisma.perfil.findUnique({
+    let user = await prisma.perfil.findUnique({
       where: { email },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
+      // Se o banco estiver totalmente sem usuários, cria o primeiro usuário automaticamente
+      const count = await prisma.perfil.count().catch(() => 0);
+      if (count === 0) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user = await prisma.perfil.create({
+          data: {
+            nome: "Administrador",
+            email: email,
+            senha: hashedPassword,
+          },
+        });
+      } else {
+        return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
+      }
     }
 
     const isValid = await bcrypt.compare(password, user.senha);
