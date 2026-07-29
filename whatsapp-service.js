@@ -7,8 +7,35 @@ const fs = require("fs");
 let sock = null;
 let connectionStatus = "disconnected"; // 'disconnected', 'connecting', 'qr', 'connected'
 let lastQr = null;
+let isResetting = false; // flag to abort auto-reconnect during manual reset
+
+function destroySocket() {
+  if (sock) {
+    try {
+      sock.ev.removeAllListeners();
+      sock.end();
+    } catch (_) {}
+    sock = null;
+  }
+}
+
+function clearAuthFiles() {
+  const authDir = path.join(__dirname, "auth_info_baileys");
+  if (fs.existsSync(authDir)) {
+    try {
+      const files = fs.readdirSync(authDir);
+      for (const file of files) {
+        fs.unlinkSync(path.join(authDir, file));
+      }
+    } catch (e) {
+      console.error("Error clearing auth files:", e);
+    }
+  }
+}
 
 async function connectToWhatsApp() {
+  if (isResetting) return; // do not start a new connection during reset
+
   const authDir = path.join(__dirname, "auth_info_baileys");
   if (!fs.existsSync(authDir)) {
     fs.mkdirSync(authDir, { recursive: true });
@@ -17,11 +44,13 @@ async function connectToWhatsApp() {
 
   sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true,
+    printQRInTerminal: false,
     defaultQueryTimeoutMs: undefined,
   });
 
   sock.ev.on("connection.update", async (update) => {
+    if (isResetting) return; // ignore events during reset
+
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
@@ -34,26 +63,20 @@ async function connectToWhatsApp() {
     }
 
     if (connection === "close") {
-      const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
       console.log("Connection closed, reconnecting: ", shouldReconnect);
+
+      if (isResetting) return;
+
       connectionStatus = "disconnected";
       lastQr = null;
-      
+
       if (shouldReconnect) {
         setTimeout(connectToWhatsApp, 3000);
       } else {
         console.log("Logged out from WhatsApp. Clearing auth info and generating new QR.");
-        try {
-          const authDir = path.join(__dirname, "auth_info_baileys");
-          if (fs.existsSync(authDir)) {
-            const files = fs.readdirSync(authDir);
-            for (const file of files) {
-              fs.unlinkSync(path.join(authDir, file));
-            }
-          }
-        } catch (e) {
-          console.error("Error clearing auth info:", e);
-        }
+        clearAuthFiles();
         setTimeout(connectToWhatsApp, 2000);
       }
     } else if (connection === "open") {
@@ -99,22 +122,28 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === "/logout" && req.method === "POST") {
     try {
-      if (sock) {
-        await sock.logout().catch(e => console.log("Logout error ignored", e));
-      }
-      const authDir = path.join(__dirname, "auth_info_baileys");
-      if (fs.existsSync(authDir)) {
-        const files = fs.readdirSync(authDir);
-        for (const file of files) {
-          fs.unlinkSync(path.join(authDir, file));
-        }
-      }
+      // Signal all active loops to stop
+      isResetting = true;
       connectionStatus = "disconnected";
       lastQr = null;
-      setTimeout(connectToWhatsApp, 1000);
+
+      // Destroy the current socket completely
+      destroySocket();
+
+      // Wait a moment for pending events to drain
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Wipe saved credentials so next connection asks for a new QR
+      clearAuthFiles();
+
+      // Re-enable connection and start fresh
+      isResetting = false;
+      setTimeout(connectToWhatsApp, 500);
+
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ success: true }));
     } catch (err) {
+      isResetting = false;
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: err.message }));
     }
