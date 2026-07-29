@@ -8,6 +8,7 @@ let sock = null;
 let connectionStatus = "disconnected"; // 'disconnected', 'connecting', 'qr', 'connected'
 let lastQr = null;
 let isResetting = false; // flag to abort auto-reconnect during manual reset
+let reconnectDelay = 3000; // starts at 3s, doubles on each failure (max 60s)
 
 function destroySocket() {
   if (sock) {
@@ -22,13 +23,17 @@ function destroySocket() {
 function clearAuthFiles() {
   const authDir = path.join(__dirname, "auth_info_baileys");
   if (fs.existsSync(authDir)) {
-    try {
-      const files = fs.readdirSync(authDir);
-      for (const file of files) {
-        fs.unlinkSync(path.join(authDir, file));
+    const entries = fs.readdirSync(authDir);
+    for (const entry of entries) {
+      const fullPath = path.join(authDir, entry);
+      try {
+        const stat = fs.statSync(fullPath);
+        if (stat.isFile()) {
+          fs.unlinkSync(fullPath); // only delete files, skip dirs like lost+found
+        }
+      } catch (e) {
+        console.error("Error removing auth entry:", fullPath, e.message);
       }
-    } catch (e) {
-      console.error("Error clearing auth files:", e);
     }
   }
 }
@@ -65,7 +70,7 @@ async function connectToWhatsApp() {
     if (connection === "close") {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-      console.log("Connection closed, reconnecting: ", shouldReconnect);
+      console.log("Connection closed, reconnecting: ", shouldReconnect, "| delay:", reconnectDelay, "ms");
 
       if (isResetting) return;
 
@@ -73,13 +78,17 @@ async function connectToWhatsApp() {
       lastQr = null;
 
       if (shouldReconnect) {
-        setTimeout(connectToWhatsApp, 3000);
+        const delay = reconnectDelay;
+        reconnectDelay = Math.min(reconnectDelay * 2, 60000); // exponential backoff, cap at 60s
+        setTimeout(connectToWhatsApp, delay);
       } else {
+        reconnectDelay = 3000; // reset backoff on clean logout
         console.log("Logged out from WhatsApp. Clearing auth info and generating new QR.");
         clearAuthFiles();
         setTimeout(connectToWhatsApp, 2000);
       }
     } else if (connection === "open") {
+      reconnectDelay = 3000; // reset backoff on successful connection
       console.log("Opened connection successfully");
       connectionStatus = "connected";
       lastQr = null;
@@ -136,7 +145,8 @@ const server = http.createServer(async (req, res) => {
       // Wipe saved credentials so next connection asks for a new QR
       clearAuthFiles();
 
-      // Re-enable connection and start fresh
+      // Re-enable connection and start fresh (reset backoff too)
+      reconnectDelay = 3000;
       isResetting = false;
       setTimeout(connectToWhatsApp, 500);
 
