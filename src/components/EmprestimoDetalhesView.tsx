@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -241,11 +241,17 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   return (
     <div className="max-w-5xl mx-auto pb-12 space-y-4">
 
+      {/* Prefetch silencioso da lista — pré-carrega em background */}
+      <Link href="/emprestimos" prefetch className="hidden" aria-hidden tabIndex={-1} />
+
       {/* Top bar */}
       <div className="flex items-center justify-between py-1">
-        <Link href="/emprestimos" className="flex items-center gap-1.5 text-zinc-400 hover:text-zinc-800 dark:hover:text-white text-sm font-semibold transition-colors group">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-zinc-400 hover:text-zinc-800 dark:hover:text-white text-sm font-semibold transition-colors group active:scale-95"
+        >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Voltar
-        </Link>
+        </button>
         {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />}
         <button onClick={() => setModal("delete")} className="flex items-center gap-1.5 text-sm font-black text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 border border-rose-200 dark:border-rose-500/20 px-3 py-1.5 rounded-xl transition-all">
           <Trash2 className="w-3.5 h-3.5" /> Excluir
