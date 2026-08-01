@@ -295,8 +295,8 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                 </div>
                 <div className="flex gap-6 items-end pb-1">
                   <div>
-                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Contrato</p>
-                    <p className="text-sm font-black text-zinc-400 dark:text-zinc-500 leading-none">{fmt(totalEstimado)}</p>
+                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Juros</p>
+                    <p className="text-sm font-black text-zinc-400 dark:text-zinc-500 leading-none">{fmt(totalEstimado - emprestimo.valor_emprestado)}</p>
                   </div>
                   <div>
                     <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Recebido</p>
