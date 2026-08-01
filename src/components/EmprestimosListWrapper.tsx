@@ -251,12 +251,13 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
   // Filtrar + Ordenar
   const emprestimosFiltrados = useMemo(() => {
     let lista = emprestimosProcessados.filter((emp) => {
-      const query = search.toLowerCase().trim();
+      const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const query = norm(search.trim());
       const bateTexto =
         !query ||
-        emp.cliente.nome.toLowerCase().includes(query) ||
+        norm(emp.cliente.nome).includes(query) ||
         emp.cliente.telefone.includes(query) ||
-        emp.cliente.cidade.toLowerCase().includes(query);
+        norm(emp.cliente.cidade).includes(query);
 
       if (!bateTexto) return false;
 

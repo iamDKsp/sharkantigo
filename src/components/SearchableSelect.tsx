@@ -35,8 +35,9 @@ export default function SearchableSelect({ options, value, onChange, placeholder
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const filteredOptions = options.filter((opt) => 
-    opt.nome.toLowerCase().includes(search.toLowerCase()) || 
+    norm(opt.nome).includes(norm(search)) || 
     (opt.telefone && opt.telefone.includes(search))
   );
 

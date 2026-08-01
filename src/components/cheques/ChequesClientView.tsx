@@ -57,8 +57,9 @@ export default function ChequesClientView({ cheques, clientes, parceiros }: Cheq
   const totalBruto = cheques.reduce((acc, curr) => acc + Number(curr.valor), 0);
 
   const filteredCheques = cheques.filter((c) => {
-    const term = searchQuery.toLowerCase();
-    const clienteNome = c.cliente?.nome?.toLowerCase() || "";
+    const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const term = norm(searchQuery);
+    const clienteNome = norm(c.cliente?.nome || "");
     const telefone = c.cliente?.telefone || "";
     return clienteNome.includes(term) || telefone.includes(term);
   });

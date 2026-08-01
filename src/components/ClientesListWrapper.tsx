@@ -103,7 +103,7 @@ export default function ClientesListWrapper() {
       if (pageNum === 1 && !append) setLoading(true);
       else setLoadingMore(true);
 
-      const response = await fetch(`/api/clientes?query=${encodeURIComponent(searchQuery)}&page=${pageNum}&limit=16`);
+      const response = await fetch(`/api/clientes?query=${encodeURIComponent(searchQuery.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))}&page=${pageNum}&limit=16`);
       const data = await response.json();
 
       if (data.clientes) {
