@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import DeleteClientButton from "@/components/DeleteClientButton";
+import DocumentosLightbox from "@/components/DocumentosLightbox";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -324,49 +325,13 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
             documentos = [];
           }
         }
-
         if (documentos.length === 0) return null;
-
         return (
           <div className="premium-card p-6 bg-white dark:bg-[#13221b] space-y-4">
             <h2 className="text-md font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-emerald-950 pb-2">
               Documentos Anexados
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {documentos.map((url, idx) => {
-                const isPdf = url.toLowerCase().endsWith(".pdf");
-                return (
-                  <div key={idx} className="relative group border border-slate-200 dark:border-emerald-950 rounded-xl overflow-hidden bg-slate-50 dark:bg-[#0b130e] aspect-video sm:aspect-square flex items-center justify-center">
-                    {isPdf ? (
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex flex-col items-center justify-center p-4 text-center hover:bg-slate-100 dark:hover:bg-emerald-900/40 w-full h-full transition-colors"
-                      >
-                        <span className="text-red-500 font-bold text-sm">PDF</span>
-                        <span className="text-sm text-slate-500 dark:text-emerald-400 mt-1 truncate max-w-full">
-                          Documento {idx + 1}
-                        </span>
-                      </a>
-                    ) : (
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative block w-full h-full group"
-                      >
-                        <img
-                          src={url}
-                          alt={`Documento ${idx + 1}`}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-200"
-                        />
-                      </a>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <DocumentosLightbox documentos={documentos} />
           </div>
         );
       })()}
