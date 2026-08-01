@@ -3,9 +3,13 @@ import ClientCobrancasView from "./ClientCobrancasView";
 
 export const revalidate = 0;
 
-export default async function CobrancasPage() {
+export default async function CobrancasPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
+  const params = await searchParams;
+  const initialFiltro = params?.filtro || "atrasados";
   const hoje = new Date();
   const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
+  const ontemUTC = new Date(hojeUTC);
+  ontemUTC.setUTCDate(hojeUTC.getUTCDate() - 1);
 
   // Buscar todos os empréstimos ativos com suas parcelas abertas
   const emprestimos = await prisma.emprestimo.findMany({
@@ -25,7 +29,8 @@ export default async function CobrancasPage() {
     },
   });
 
-  const atrasados: any[] = [];
+  const atrasadosOntem: any[] = [];
+  const atrasadosAnteriores: any[] = [];
   const hojeLista: any[] = [];
   const aVencer: any[] = [];
 
@@ -60,7 +65,11 @@ export default async function CobrancasPage() {
       };
 
       if (vencimentoUTC < hojeUTC) {
-        atrasados.push(serializedParcela);
+        if (vencimentoUTC.getTime() === ontemUTC.getTime()) {
+          atrasadosOntem.push(serializedParcela);
+        } else {
+          atrasadosAnteriores.push(serializedParcela);
+        }
       } else if (vencimentoUTC.getTime() === hojeUTC.getTime()) {
         hojeLista.push(serializedParcela);
       } else if (vencimentoUTC > hojeUTC && vencimentoUTC <= limite3DiasUTC) {
@@ -70,15 +79,18 @@ export default async function CobrancasPage() {
   }
 
   const sortByDate = (a: any, b: any) => new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime();
-  atrasados.sort(sortByDate);
+  atrasadosOntem.sort(sortByDate);
+  atrasadosAnteriores.sort(sortByDate);
   hojeLista.sort(sortByDate);
   aVencer.sort(sortByDate);
 
   return (
     <ClientCobrancasView 
-      atrasados={atrasados}
+      atrasadosOntem={atrasadosOntem}
+      atrasadosAnteriores={atrasadosAnteriores}
       hojeLista={hojeLista}
       aVencer={aVencer}
+      initialFiltro={initialFiltro}
     />
   );
 }

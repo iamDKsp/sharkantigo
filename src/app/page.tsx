@@ -23,6 +23,8 @@ export const revalidate = 0;
 export default async function DashboardPage() {
   const hoje = new Date();
   const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
+  const ontemUTC = new Date(hojeUTC);
+  ontemUTC.setUTCDate(hojeUTC.getUTCDate() - 1);
 
   const anoAtualInicio = new Date(Date.UTC(hoje.getFullYear(), 0, 1));
   const mesAtualInicio = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), 1));
@@ -55,6 +57,8 @@ export default async function DashboardPage() {
   let totalEmprestado = 0;
   let totalAReceber = 0;
   let totalAtrasadosCount = 0;
+  let atrasadosOntemCount = 0;
+  let atrasadosAnterioresCount = 0;
   let vencendoHojeCount = 0;
   let receberHoje = 0;
   let receberSemana = 0;
@@ -88,9 +92,14 @@ export default async function DashboardPage() {
 
     const venceHoje = vencimentoUTC.getTime() === hojeUTC.getTime();
     const estaAtrasado = vencimentoUTC < hojeUTC;
+    const atrasouOntem = vencimentoUTC.getTime() === ontemUTC.getTime();
 
-    if (estaAtrasado) totalAtrasadosCount++;
-    if (venceHoje) vencendoHojeCount++;
+    if (estaAtrasado) {
+      totalAtrasadosCount++;
+      if (atrasouOntem) atrasadosOntemCount++;
+      else atrasadosAnterioresCount++;
+    }
+    if (venceHoje) vencendoHojeCount++;;
 
     const isParceiro = emp.parceiro_id !== null;
     const parceiroNome = emp.parceiro?.nome || "Próprio";
@@ -251,10 +260,10 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* ── ROW 1: CARTEIRA + ALERTAS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── ROW 1: CAPITAL + A RECEBER ── */}
+      <div className="grid grid-cols-2 gap-4">
 
-        {/* Total Emprestado */}
+        {/* Capital em Campo */}
         <Link href="/emprestimos" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-black uppercase tracking-widest text-zinc-400">Capital em Campo</span>
@@ -289,24 +298,12 @@ export default async function DashboardPage() {
           </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-emerald-50/50 dark:bg-emerald-950/10 group-hover:scale-110 transition-transform duration-500" />
         </Link>
+      </div>
 
-        {/* Atrasados */}
-        <Link href="/cobrancas" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-5 shadow-sm hover:shadow-rose-500/10 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-black uppercase tracking-widest text-rose-500">Atrasados</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center group-hover:bg-rose-100 dark:group-hover:bg-rose-900/40 transition-colors">
-              <AlertCircle className="w-4 h-4 text-rose-500" />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black tracking-tight text-rose-600 dark:text-rose-400 leading-none break-words">
-            {totalAtrasadosCount}
-          </div>
-          <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
-            <span>empréstimos vencidos</span>
-            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-rose-500" />
-          </div>
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-rose-50/50 dark:bg-rose-950/10 group-hover:scale-110 transition-transform duration-500" />
-        </Link>
+      {/* ── ROW 2: ALERTAS (3 cards) ── */}
+      {/* Mobile: 2 colunas — Vencendo Hoje + Atrasados Ontem, Atrasados Anteriores largura total */}
+      {/* Desktop: 3 colunas iguais */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
 
         {/* Vencendo Hoje */}
         <Link href="/emprestimos?filtro=hoje" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-5 shadow-sm hover:shadow-amber-500/10 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
@@ -316,7 +313,7 @@ export default async function DashboardPage() {
               <Clock3 className="w-4 h-4 text-amber-500" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 leading-none break-words">
+          <div className="text-xl sm:text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 leading-none">
             {vencendoHojeCount}
           </div>
           <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
@@ -324,6 +321,52 @@ export default async function DashboardPage() {
             <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-amber-500" />
           </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-50/50 dark:bg-amber-950/10 group-hover:scale-110 transition-transform duration-500" />
+        </Link>
+
+        {/* Atrasados Ontem */}
+        <Link href="/cobrancas?filtro=ontem" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-orange-200 dark:border-orange-500/20 rounded-2xl p-5 shadow-sm hover:shadow-orange-500/10 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-black uppercase tracking-widest text-orange-500">Atrasados Ontem</span>
+            <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center group-hover:bg-orange-100 dark:group-hover:bg-orange-900/40 transition-colors">
+              <Clock3 className="w-4 h-4 text-orange-500" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black tracking-tight text-orange-600 dark:text-orange-400 leading-none">
+            {atrasadosOntemCount}
+          </div>
+          <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
+            <span>venceram ontem</span>
+            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-orange-500" />
+          </div>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-orange-50/50 dark:bg-orange-950/10 group-hover:scale-110 transition-transform duration-500" />
+        </Link>
+
+        {/* Atrasados Anteriores — ocupa 2 colunas no mobile (linha inteira), 1 coluna no sm+ */}
+        <Link href="/cobrancas?filtro=anteriores" className="col-span-2 sm:col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-5 shadow-sm hover:shadow-rose-500/10 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-black uppercase tracking-widest text-rose-500">Atrasados Anteriores</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center group-hover:bg-rose-100 dark:group-hover:bg-rose-900/40 transition-colors">
+              <AlertCircle className="w-4 h-4 text-rose-500" />
+            </div>
+          </div>
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="text-xl sm:text-2xl font-black tracking-tight text-rose-600 dark:text-rose-400 leading-none">
+                {atrasadosAnterioresCount}
+              </div>
+              <div className="mt-2 text-sm text-zinc-400 flex items-center gap-2">
+                <span>emp. vencidos há 2+ dias</span>
+                <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-rose-500" />
+              </div>
+            </div>
+            {/* Barra visual de urgência no mobile */}
+            <div className="sm:hidden text-right">
+              <span className="text-xs font-bold text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-1 rounded-full">
+                Total: {totalAtrasadosCount}
+              </span>
+            </div>
+          </div>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-rose-50/50 dark:bg-rose-950/10 group-hover:scale-110 transition-transform duration-500" />
         </Link>
       </div>
 

@@ -24,12 +24,31 @@ interface Parcela {
 }
 
 interface ClientCobrancasViewProps {
-  atrasados: Parcela[];
+  atrasadosOntem: Parcela[];
+  atrasadosAnteriores: Parcela[];
   hojeLista: Parcela[];
   aVencer: Parcela[];
+  initialFiltro?: string;
 }
 
-export default function ClientCobrancasView({ atrasados, hojeLista, aVencer }: ClientCobrancasViewProps) {
+type TabId = "atrasados" | "ontem" | "anteriores" | "hoje" | "aVencer";
+
+export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriores, hojeLista, aVencer, initialFiltro }: ClientCobrancasViewProps) {
+  // Combina ontem + anteriores para manter compatibilidade com lógica existente
+  const atrasados = [...atrasadosOntem, ...atrasadosAnteriores].sort(
+    (a, b) => new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime()
+  );
+
+  // Resolve aba inicial a partir do filtro da URL
+  const resolveTab = (f?: string): TabId => {
+    if (f === "ontem") return "ontem";
+    if (f === "anteriores") return "anteriores";
+    if (f === "hoje") return "hoje";
+    if (f === "aVencer") return "aVencer";
+    return "atrasados";
+  };
+
+  const [activeTab, setActiveTab] = useState<TabId>(resolveTab(initialFiltro));
   const [isPending, startTransition] = useTransition();
 
   // Estados de Seleção para cada Grupo
@@ -115,7 +134,10 @@ export default function ClientCobrancasView({ atrasados, hojeLista, aVencer }: C
     setSimulateProgress(0);
     setSimulateLogs([]);
 
-    const fullList = type === "atrasados" ? atrasados : type === "hoje" ? hojeLista : aVencer;
+    const fullList =
+      type === "atrasados" ? atrasados
+      : type === "hoje" ? hojeLista
+      : aVencer;
     const itemsToProcess = fullList.filter((p) => targetIds.includes(p.id));
     let currentIndex = 0;
 
@@ -195,6 +217,11 @@ export default function ClientCobrancasView({ atrasados, hojeLista, aVencer }: C
     }
   };
 
+  // Variáveis derivadas do tab ativo (calculadas fora do JSX)
+  const listaAtrasados = activeTab === "ontem" ? atrasadosOntem : activeTab === "anteriores" ? atrasadosAnteriores : atrasados;
+  const tituloAtrasados = activeTab === "ontem" ? "Atrasados Ontem" : activeTab === "anteriores" ? "Atrasados Anteriores (2+ dias)" : "Todos Atrasados / Vencidos";
+  const corAtrasados = activeTab === "anteriores" ? "red" : activeTab === "ontem" ? "orange" : "rose";
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-1 animate-fade-in">
       {/* Header */}
@@ -216,119 +243,160 @@ export default function ClientCobrancasView({ atrasados, hojeLista, aVencer }: C
         </button>
       </div>
 
-      {/* 1. GRUPO: ATRASADOS */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between border-b border-rose-500/10 dark:border-rose-500/20 pb-2">
-          <div className="flex items-center space-x-2">
-            <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
-            <h2 className="text-md font-extrabold text-rose-600 dark:text-rose-455">Grupo: Atrasados / Vencidos</h2>
-          </div>
-          <span className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
-            Total: {formatBRL(atrasados.reduce((acc, p) => acc + p.valor, 0))} ({atrasados.length} parcelas)
-          </span>
-        </div>
-
-        <div className="premium-card overflow-hidden">
-          <div className="p-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/20 dark:bg-white/[0.01]">
-            <div className="flex items-center space-x-2.5">
-              <input
-                type="checkbox"
-                checked={atrasados.length > 0 && selectedAtrasados.length === atrasados.length}
-                onChange={(e) => toggleSelectAll(atrasados, selectedAtrasados, setSelectedAtrasados, e.target.checked)}
-                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-rose-550 focus:ring-rose-500 cursor-pointer accent-rose-500"
-                disabled={atrasados.length === 0}
-              />
-              <span className="text-sm font-black text-slate-550 dark:text-zinc-400 uppercase tracking-wider">
-                {selectedAtrasados.length} de {atrasados.length} selecionados
-              </span>
-            </div>
-            {selectedAtrasados.length > 0 && (
-              <button
-                onClick={() => handleMassTrigger(selectedAtrasados, "atrasados")}
-                className="flex items-center justify-center space-x-1.5 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Disparo em Massa ({selectedAtrasados.length})</span>
-              </button>
-            )}
-          </div>
-
-          <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
-            {atrasados.length === 0 ? (
-              <div className="p-8 text-center text-sm font-medium text-slate-550 dark:text-zinc-500">
-                Nenhuma parcela vencida no momento.
-              </div>
-            ) : (
-              atrasados.map((p) => {
-                const isChecked = selectedAtrasados.includes(p.id);
-                const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(
-                  getMessageText(p, "atrasados")
-                )}`;
-
-                return (
-                  <div
-                    key={p.id}
-                    className={`p-4 flex flex-col md:flex-row md:items-center justify-between transition-all duration-200 ${
-                      isChecked ? "bg-rose-500/[0.03]" : "hover:bg-slate-50/30 dark:hover:bg-white/[0.02]"
-                    }`}
-                  >
-                    <div className="flex items-start space-x-3.5">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) => toggleSelectOne(setSelectedAtrasados, p.id, e.target.checked)}
-                        className="mt-1.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-rose-550 focus:ring-rose-500 cursor-pointer accent-rose-500"
-                      />
-                      <div>
-                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                          <span className="font-extrabold text-sm text-slate-900 dark:text-white">{p.emprestimo.cliente.nome}</span>
-                          <span className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-md text-[8px] font-black uppercase">
-                            Parcela {p.numero}
-                          </span>
-                        </div>
-                        <div className="text-sm text-zinc-400 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-                          <span className="flex items-center space-x-1">
-                            <Calendar className="w-3.5 h-3.5 text-zinc-550" />
-                            <span>Vencimento: {formatData(p.data_vencimento)}</span>
-                          </span>
-                          <span>Tel: {p.emprestimo.cliente.telefone}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between md:justify-end space-x-4 mt-3 md:mt-0 pl-8 md:pl-0">
-                      <div className="text-left md:text-right">
-                        <span className="text-sm font-black text-slate-950 dark:text-white">{formatBRL(p.valor)}</span>
-                      </div>
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-1.5 border border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500/10 px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all shadow-sm"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span>WhatsApp</span>
-                      </a>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+      {/* Tabs de Filtro */}
+      <div className="flex overflow-x-auto gap-2 pb-1 -mx-1 px-1">
+        {([
+          { id: "atrasados" as TabId, label: "Todos Atrasados",  count: atrasados.length,           color: "rose"    },
+          { id: "ontem" as TabId,     label: "Atrasados Ontem",  count: atrasadosOntem.length,      color: "orange"  },
+          { id: "anteriores" as TabId,label: "Anteriores",       count: atrasadosAnteriores.length, color: "red"     },
+          { id: "hoje" as TabId,      label: "Vencem Hoje",      count: hojeLista.length,           color: "amber"   },
+          { id: "aVencer" as TabId,   label: "A Vencer",         count: aVencer.length,             color: "emerald" },
+        ] as const).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${
+              activeTab === tab.id
+                ? tab.color === "rose"   ? "bg-rose-500 text-white shadow-md shadow-rose-500/20"
+                : tab.color === "orange" ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+                : tab.color === "red"    ? "bg-red-600 text-white shadow-md shadow-red-600/20"
+                : tab.color === "amber"  ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
+                :                         "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                : "bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-zinc-300"
+            }`}
+          >
+            <span>{tab.label}</span>
+            <span className={`text-xs px-1.5 py-0.5 rounded-full font-black ${
+              activeTab === tab.id ? "bg-white/20" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
+            }`}>{tab.count}</span>
+          </button>
+        ))}
       </div>
 
-      {/* 2. GRUPO: VENCENDO HOJE */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between border-b border-amber-500/10 dark:border-amber-500/20 pb-2">
-          <div className="flex items-center space-x-2">
-            <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-            <h2 className="text-md font-extrabold text-amber-600 dark:text-amber-455">Grupo: Vencendo Hoje</h2>
+      {/* GRUPO ATRASADOS */}
+      {(activeTab === "atrasados" || activeTab === "ontem" || activeTab === "anteriores") && (
+        <div className="space-y-3">
+          <div className={`flex items-center justify-between border-b pb-2 ${
+            corAtrasados === "orange" ? "border-orange-500/20" :
+            corAtrasados === "red"    ? "border-red-500/20" :
+            "border-rose-500/20"
+          }`}>
+            <div className="flex items-center space-x-2">
+              <span className={`h-2 w-2 rounded-full animate-pulse ${
+                corAtrasados === "orange" ? "bg-orange-500" : corAtrasados === "red" ? "bg-red-600" : "bg-rose-500"
+              }`} />
+              <h2 className={`text-md font-extrabold ${
+                corAtrasados === "orange" ? "text-orange-600 dark:text-orange-400" :
+                corAtrasados === "red"    ? "text-red-700 dark:text-red-400" :
+                "text-rose-600 dark:text-rose-400"
+              }`}>{tituloAtrasados}</h2>
+            </div>
+            <span className={`text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider ${
+              corAtrasados === "orange" ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20" :
+              corAtrasados === "red"    ? "bg-red-600/10 text-red-600 dark:text-red-400 border border-red-600/20" :
+              "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+            }`}>
+              {formatBRL(listaAtrasados.reduce((acc, p) => acc + p.valor, 0))} ({listaAtrasados.length} parcelas)
+            </span>
           </div>
-          <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
-            Total: {formatBRL(hojeLista.reduce((acc, p) => acc + p.valor, 0))} ({hojeLista.length} parcelas)
-          </span>
+
+          <div className="premium-card overflow-hidden">
+            <div className="p-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/20 dark:bg-white/[0.01]">
+              <div className="flex items-center space-x-2.5">
+                <input
+                  type="checkbox"
+                  checked={listaAtrasados.length > 0 && selectedAtrasados.length === listaAtrasados.length}
+                  onChange={(e) => toggleSelectAll(listaAtrasados, selectedAtrasados, setSelectedAtrasados, e.target.checked)}
+                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-rose-500"
+                  disabled={listaAtrasados.length === 0}
+                />
+                <span className="text-sm font-black text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                  {selectedAtrasados.length} de {listaAtrasados.length} selecionados
+                </span>
+              </div>
+              {selectedAtrasados.length > 0 && (
+                <button
+                  onClick={() => handleMassTrigger(selectedAtrasados, "atrasados")}
+                  className="flex items-center justify-center space-x-1.5 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Disparo em Massa ({selectedAtrasados.length})</span>
+                </button>
+              )}
+            </div>
+
+            <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+              {listaAtrasados.length === 0 ? (
+                <div className="p-8 text-center text-sm font-medium text-zinc-500">
+                  Nenhuma parcela nesta categoria no momento.
+                </div>
+              ) : (
+                listaAtrasados.map((p) => {
+                  const isChecked = selectedAtrasados.includes(p.id);
+                  const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(getMessageText(p, "atrasados"))}`;
+                  return (
+                    <div
+                      key={p.id}
+                      className={`p-4 flex flex-col md:flex-row md:items-center justify-between transition-all duration-200 ${
+                        isChecked ? "bg-rose-500/[0.03]" : "hover:bg-slate-50/30 dark:hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      <div className="flex items-start space-x-3.5">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => toggleSelectOne(setSelectedAtrasados, p.id, e.target.checked)}
+                          className="mt-1.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-rose-500"
+                        />
+                        <div>
+                          <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                            <span className="font-extrabold text-sm text-slate-900 dark:text-white">{p.emprestimo.cliente.nome}</span>
+                            <span className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-md text-[8px] font-black uppercase">
+                              Parcela {p.numero}
+                            </span>
+                          </div>
+                          <div className="text-sm text-zinc-400 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                            <span className="flex items-center space-x-1">
+                              <Calendar className="w-3.5 h-3.5" />
+                              <span>Vencimento: {formatData(p.data_vencimento)}</span>
+                            </span>
+                            <span>Tel: {p.emprestimo.cliente.telefone}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between md:justify-end space-x-4 mt-3 md:mt-0 pl-8 md:pl-0">
+                        <span className="text-sm font-black text-slate-950 dark:text-white">{formatBRL(p.valor)}</span>
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center space-x-1.5 border border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all shadow-sm"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>WhatsApp</span>
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* 2. GRUPO: VENCENDO HOJE */}
+      {activeTab === "hoje" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between border-b border-amber-500/10 dark:border-amber-500/20 pb-2">
+            <div className="flex items-center space-x-2">
+              <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+              <h2 className="text-md font-extrabold text-amber-600 dark:text-amber-400">Grupo: Vencendo Hoje</h2>
+            </div>
+            <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
+              Total: {formatBRL(hojeLista.reduce((acc, p) => acc + p.valor, 0))} ({hojeLista.length} parcelas)
+            </span>
+          </div>
 
         <div className="premium-card overflow-hidden">
           <div className="p-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/20 dark:bg-white/[0.01]">
@@ -418,19 +486,20 @@ export default function ClientCobrancasView({ atrasados, hojeLista, aVencer }: C
             )}
           </div>
         </div>
-      </div>
+      </div>)}
 
       {/* 3. GRUPO: A VENCER */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between border-b border-emerald-500/10 dark:border-emerald-500/20 pb-2">
-          <div className="flex items-center space-x-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-            <h2 className="text-md font-extrabold text-emerald-600 dark:text-emerald-455">Grupo: A Vencer (em até 3 dias)</h2>
+      {activeTab === "aVencer" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between border-b border-emerald-500/10 dark:border-emerald-500/20 pb-2">
+            <div className="flex items-center space-x-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+              <h2 className="text-md font-extrabold text-emerald-600 dark:text-emerald-400">Grupo: A Vencer (em até 3 dias)</h2>
+            </div>
+            <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
+              Total: {formatBRL(aVencer.reduce((acc, p) => acc + p.valor, 0))} ({aVencer.length} parcelas)
+            </span>
           </div>
-          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
-            Total: {formatBRL(aVencer.reduce((acc, p) => acc + p.valor, 0))} ({aVencer.length} parcelas)
-          </span>
-        </div>
 
         <div className="premium-card overflow-hidden">
           <div className="p-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/20 dark:bg-white/[0.01]">
@@ -521,6 +590,7 @@ export default function ClientCobrancasView({ atrasados, hojeLista, aVencer }: C
           </div>
         </div>
       </div>
+      )}
 
       {/* Modal de Simulação de Disparo */}
       {showSimulate && (
