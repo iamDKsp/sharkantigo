@@ -223,52 +223,58 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   const corAtrasados = activeTab === "anteriores" ? "red" : activeTab === "ontem" ? "orange" : "rose";
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-1 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+    <div className="space-y-5 max-w-7xl mx-auto px-1 animate-fade-in">
+      {/* Header mobile-compacto */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-sm font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-zinc-800 to-zinc-950 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
-            Painel de Cobranças
+          <h1 className="text-base font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-zinc-800 to-zinc-950 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
+            Cobranças
           </h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-            Gerenciamento estratégico de lembretes e cobranças em massa.
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 hidden sm:block">
+            Gerenciamento de lembretes e cobranças.
           </p>
         </div>
         <button
           onClick={() => setShowConfigModal(true)}
-          className="flex items-center space-x-1.5 border border-zinc-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900/50 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm self-start md:self-center"
+          className="flex items-center gap-1.5 border border-zinc-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900/50 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm"
         >
-          <Settings className="w-4 h-4 text-emerald-500" />
-          <span>Configurar Mensagens</span>
+          <Settings className="w-3.5 h-3.5 text-emerald-500" />
+          <span>Mensagens</span>
         </button>
       </div>
 
-      {/* Tabs de Filtro */}
-      <div className="flex overflow-x-auto gap-2 pb-1 -mx-1 px-1">
+      {/* Tabs de Filtro — grade 2 colunas mobile, 3 sm, 5 md */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
         {([
-          { id: "atrasados" as TabId, label: "Todos Atrasados",  count: atrasados.length,           color: "rose"    },
-          { id: "ontem" as TabId,     label: "Atrasados Ontem",  count: atrasadosOntem.length,      color: "orange"  },
-          { id: "anteriores" as TabId,label: "Anteriores",       count: atrasadosAnteriores.length, color: "red"     },
-          { id: "hoje" as TabId,      label: "Vencem Hoje",      count: hojeLista.length,           color: "amber"   },
-          { id: "aVencer" as TabId,   label: "A Vencer",         count: aVencer.length,             color: "emerald" },
+          { id: "atrasados" as TabId, label: "Todos",    sublabel: "Atrasados", count: atrasados.length,           color: "rose"    },
+          { id: "ontem" as TabId,     label: "Ontem",    sublabel: "Atrasados", count: atrasadosOntem.length,      color: "orange"  },
+          { id: "anteriores" as TabId,label: "Anteriores",sublabel: "+ 2 dias", count: atrasadosAnteriores.length, color: "red"     },
+          { id: "hoje" as TabId,      label: "Hoje",     sublabel: "Vencem",    count: hojeLista.length,           color: "amber"   },
+          { id: "aVencer" as TabId,   label: "A Vencer", sublabel: "3 dias",    count: aVencer.length,             color: "emerald" },
         ] as const).map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${
+            className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all ${
               activeTab === tab.id
-                ? tab.color === "rose"   ? "bg-rose-500 text-white shadow-md shadow-rose-500/20"
-                : tab.color === "orange" ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
-                : tab.color === "red"    ? "bg-red-600 text-white shadow-md shadow-red-600/20"
-                : tab.color === "amber"  ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
-                :                         "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
-                : "bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-zinc-300"
+                ? tab.color === "rose"    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
+                : tab.color === "orange"  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                : tab.color === "red"     ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
+                : tab.color === "amber"   ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                :                          "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                : "bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400"
             }`}
           >
-            <span>{tab.label}</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded-full font-black ${
-              activeTab === tab.id ? "bg-white/20" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
+            <span className={`text-lg font-black leading-none ${
+              activeTab === tab.id ? "text-white" :
+              tab.color === "rose"   ? "text-rose-500" :
+              tab.color === "orange" ? "text-orange-500" :
+              tab.color === "red"    ? "text-red-600" :
+              tab.color === "amber"  ? "text-amber-500" :
+              "text-emerald-500"
             }`}>{tab.count}</span>
+            <span className="font-extrabold text-[11px] leading-tight">{tab.label}</span>
+            <span className={`text-[9px] leading-tight opacity-70`}>{tab.sublabel}</span>
           </button>
         ))}
       </div>
@@ -327,8 +333,8 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
             <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
               {listaAtrasados.length === 0 ? (
-                <div className="p-8 text-center text-sm font-medium text-zinc-500">
-                  Nenhuma parcela nesta categoria no momento.
+                <div className="py-10 text-center text-sm font-medium text-zinc-500">
+                  Nenhuma parcela nesta categoria.
                 </div>
               ) : (
                 listaAtrasados.map((p) => {
@@ -337,43 +343,49 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                   return (
                     <div
                       key={p.id}
-                      className={`p-4 flex flex-col md:flex-row md:items-center justify-between transition-all duration-200 ${
-                        isChecked ? "bg-rose-500/[0.03]" : "hover:bg-slate-50/30 dark:hover:bg-white/[0.02]"
+                      className={`px-3 py-3 flex items-center gap-3 transition-all duration-150 ${
+                        isChecked ? "bg-rose-500/[0.04]" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
                       }`}
                     >
-                      <div className="flex items-start space-x-3.5">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => toggleSelectOne(setSelectedAtrasados, p.id, e.target.checked)}
-                          className="mt-1.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-rose-500"
-                        />
-                        <div>
-                          <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                            <span className="font-extrabold text-sm text-slate-900 dark:text-white">{p.emprestimo.cliente.nome}</span>
-                            <span className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-md text-[8px] font-black uppercase">
-                              Parcela {p.numero}
-                            </span>
-                          </div>
-                          <div className="text-sm text-zinc-400 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-                            <span className="flex items-center space-x-1">
-                              <Calendar className="w-3.5 h-3.5" />
-                              <span>Vencimento: {formatData(p.data_vencimento)}</span>
-                            </span>
-                            <span>Tel: {p.emprestimo.cliente.telefone}</span>
-                          </div>
+                      {/* Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => toggleSelectOne(setSelectedAtrasados, p.id, e.target.checked)}
+                        className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-rose-500 flex-shrink-0"
+                      />
+
+                      {/* Info — cresce */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{p.emprestimo.cliente.nome}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${
+                            corAtrasados === "orange" ? "bg-orange-500/10 text-orange-600 border-orange-500/20" :
+                            corAtrasados === "red"    ? "bg-red-600/10 text-red-600 border-red-600/20" :
+                            "bg-rose-500/10 text-rose-600 border-rose-500/20"
+                          }`}>Parc. {p.numero}</span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
+                          <span className="flex items-center gap-0.5">
+                            <Calendar className="w-3 h-3" />
+                            {formatData(p.data_vencimento)}
+                          </span>
+                          <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                          <span>{p.emprestimo.cliente.telefone}</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between md:justify-end space-x-4 mt-3 md:mt-0 pl-8 md:pl-0">
-                        <span className="text-sm font-black text-slate-950 dark:text-white">{formatBRL(p.valor)}</span>
+
+                      {/* Valor + WhatsApp */}
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                        <span className="text-sm font-black text-slate-900 dark:text-white">{formatBRL(p.valor)}</span>
                         <a
                           href={whatsappUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center space-x-1.5 border border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all shadow-sm"
+                          className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all"
                         >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>WhatsApp</span>
+                          <MessageSquare className="w-3 h-3" />
+                          <span>Zap</span>
                         </a>
                       </div>
                     </div>
@@ -425,59 +437,42 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
           <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
             {hojeLista.length === 0 ? (
-              <div className="p-8 text-center text-sm font-medium text-slate-550 dark:text-zinc-500">
+              <div className="py-10 text-center text-sm font-medium text-zinc-500">
                 Nenhuma parcela vencendo hoje.
               </div>
             ) : (
               hojeLista.map((p) => {
                 const isChecked = selectedHoje.includes(p.id);
-                const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(
-                  getMessageText(p, "hoje")
-                )}`;
-
+                const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(getMessageText(p, "hoje"))}`;
                 return (
                   <div
                     key={p.id}
-                    className={`p-4 flex flex-col md:flex-row md:items-center justify-between transition-all duration-200 ${
-                      isChecked ? "bg-amber-500/[0.03]" : "hover:bg-slate-50/30 dark:hover:bg-white/[0.02]"
+                    className={`px-3 py-3 flex items-center gap-3 transition-all duration-150 ${
+                      isChecked ? "bg-amber-500/[0.04]" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
                     }`}
                   >
-                    <div className="flex items-start space-x-3.5">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) => toggleSelectOne(setSelectedHoje, p.id, e.target.checked)}
-                        className="mt-1.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-amber-550 focus:ring-amber-500 cursor-pointer accent-amber-500"
-                      />
-                      <div>
-                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                          <span className="font-extrabold text-sm text-slate-900 dark:text-white">{p.emprestimo.cliente.nome}</span>
-                          <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-md text-[8px] font-black uppercase">
-                            Parcela {p.numero}
-                          </span>
-                        </div>
-                        <div className="text-sm text-zinc-400 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-                          <span className="flex items-center space-x-1">
-                            <Calendar className="w-3.5 h-3.5 text-zinc-550" />
-                            <span>Vencimento: {formatData(p.data_vencimento)}</span>
-                          </span>
-                          <span>Tel: {p.emprestimo.cliente.telefone}</span>
-                        </div>
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => toggleSelectOne(setSelectedHoje, p.id, e.target.checked)}
+                      className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-amber-500 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{p.emprestimo.cliente.nome}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-amber-500/10 text-amber-600 border-amber-500/20">Parc. {p.numero}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
+                        <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>
+                        <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                        <span>{p.emprestimo.cliente.telefone}</span>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-between md:justify-end space-x-4 mt-3 md:mt-0 pl-8 md:pl-0">
-                      <div className="text-left md:text-right">
-                        <span className="text-sm font-black text-slate-950 dark:text-white">{formatBRL(p.valor)}</span>
-                      </div>
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-1.5 border border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500/10 px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all shadow-sm"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span>WhatsApp</span>
+                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <span className="text-sm font-black text-slate-900 dark:text-white">{formatBRL(p.valor)}</span>
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">
+                        <MessageSquare className="w-3 h-3" /><span>Zap</span>
                       </a>
                     </div>
                   </div>
@@ -528,59 +523,42 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
           <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
             {aVencer.length === 0 ? (
-              <div className="p-8 text-center text-sm font-medium text-slate-550 dark:text-zinc-500">
+              <div className="py-10 text-center text-sm font-medium text-zinc-500">
                 Nenhuma parcela vencendo nos próximos 3 dias.
               </div>
             ) : (
               aVencer.map((p) => {
                 const isChecked = selectedAVencer.includes(p.id);
-                const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(
-                  getMessageText(p, "aVencer")
-                )}`;
-
+                const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(getMessageText(p, "aVencer"))}`;
                 return (
                   <div
                     key={p.id}
-                    className={`p-4 flex flex-col md:flex-row md:items-center justify-between transition-all duration-200 ${
-                      isChecked ? "bg-emerald-500/[0.03]" : "hover:bg-slate-50/30 dark:hover:bg-white/[0.02]"
+                    className={`px-3 py-3 flex items-center gap-3 transition-all duration-150 ${
+                      isChecked ? "bg-emerald-500/[0.04]" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
                     }`}
                   >
-                    <div className="flex items-start space-x-3.5">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={(e) => toggleSelectOne(setSelectedAVencer, p.id, e.target.checked)}
-                        className="mt-1.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-emerald-555 focus:ring-emerald-500 cursor-pointer accent-emerald-500"
-                      />
-                      <div>
-                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                          <span className="font-extrabold text-sm text-slate-900 dark:text-white">{p.emprestimo.cliente.nome}</span>
-                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20 px-2 py-0.5 rounded-md text-[8px] font-black uppercase">
-                            Parcela {p.numero}
-                          </span>
-                        </div>
-                        <div className="text-sm text-zinc-400 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-                          <span className="flex items-center space-x-1">
-                            <Calendar className="w-3.5 h-3.5 text-zinc-555" />
-                            <span>Vencimento: {formatData(p.data_vencimento)}</span>
-                          </span>
-                          <span>Tel: {p.emprestimo.cliente.telefone}</span>
-                        </div>
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => toggleSelectOne(setSelectedAVencer, p.id, e.target.checked)}
+                      className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-emerald-500 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{p.emprestimo.cliente.nome}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Parc. {p.numero}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
+                        <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>
+                        <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                        <span>{p.emprestimo.cliente.telefone}</span>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-between md:justify-end space-x-4 mt-3 md:mt-0 pl-8 md:pl-0">
-                      <div className="text-left md:text-right">
-                        <span className="text-sm font-black text-slate-950 dark:text-white">{formatBRL(p.valor)}</span>
-                      </div>
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-1.5 border border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500/10 px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all shadow-sm"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        <span>WhatsApp</span>
+                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <span className="text-sm font-black text-slate-900 dark:text-white">{formatBRL(p.valor)}</span>
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">
+                        <MessageSquare className="w-3 h-3" /><span>Zap</span>
                       </a>
                     </div>
                   </div>
