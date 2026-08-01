@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
+// Remove acentos e normaliza para comparação
+const norm = (s: string) =>
+  (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query") || "";
@@ -9,14 +13,27 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   try {
-    let clientes: any[] = [];
-    let totalCount = 0;
+    if (!query.trim()) {
+      // Sem busca: retorna paginado normalmente
+      const [clientes, totalCount] = await Promise.all([
+        prisma.cliente.findMany({
+          orderBy: { nome: "asc" },
+          skip: offset,
+          take: limit,
+        }),
+        prisma.cliente.count(),
+      ]);
+      return NextResponse.json({
+        clientes,
+        totalCount,
+        hasMore: offset + clientes.length < totalCount,
+      });
+    }
 
-    if (query.trim()) {
-      // Usa unaccent() do Postgres para busca insensível a acentos nos dois lados
-      // Ex: "arielstal" encontra "ÁRIELSTAL", "jose" encontra "José"
+    // Com busca: primeiro tenta unaccent no Postgres
+    // Se não disponível, faz fallback com filtragem JS no servidor
+    try {
       const term = `%${query.trim()}%`;
-
       const [clientesRaw, countRaw] = await Promise.all([
         prisma.$queryRaw<any[]>`
           SELECT * FROM clientes
@@ -35,46 +52,40 @@ export async function GET(request: Request) {
              OR unaccent(documento) ILIKE unaccent(${term})
         `,
       ]);
-
-      clientes = clientesRaw;
-      totalCount = Number(countRaw[0].total);
-    } else {
-      // Sem query: busca paginada normal
-      [clientes, totalCount] = await Promise.all([
-        prisma.cliente.findMany({
-          orderBy: { nome: "asc" },
-          skip: offset,
-          take: limit,
-        }),
-        prisma.cliente.count(),
-      ]);
-    }
-
-    const hasMore = offset + clientes.length < totalCount;
-
-    return NextResponse.json({ clientes, totalCount, hasMore });
-  } catch (error: any) {
-    // Fallback: se unaccent não estiver instalado, usa busca normalizada no JS
-    if (error?.message?.includes("unaccent") || error?.code === "42883") {
-      const norm = (s: string) =>
-        s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const totalCount = Number(countRaw[0].total);
+      return NextResponse.json({
+        clientes: clientesRaw,
+        totalCount,
+        hasMore: offset + clientesRaw.length < totalCount,
+      });
+    } catch {
+      // Fallback: busca todos e filtra com norm() no servidor
+      // Busca por telefone (exato, sem acento) OU pelo nome/cidade/doc normalizados
       const q = norm(query);
-      const whereClause = q
-        ? {
-            OR: [
-              { nome: { contains: q, mode: "insensitive" as const } },
-              { telefone: { contains: q, mode: "insensitive" as const } },
-              { cidade: { contains: q, mode: "insensitive" as const } },
-              { documento: { contains: q, mode: "insensitive" as const } },
-            ],
-          }
-        : undefined;
-      const [clientes, totalCount] = await Promise.all([
-        prisma.cliente.findMany({ where: whereClause, orderBy: { nome: "asc" }, skip: offset, take: limit }),
-        prisma.cliente.count({ where: whereClause }),
-      ]);
-      return NextResponse.json({ clientes, totalCount, hasMore: offset + clientes.length < totalCount });
+
+      // Busca ampla: pega candidatos por telefone (ILIKE) + fallback completo
+      const todos = await prisma.cliente.findMany({
+        orderBy: { nome: "asc" },
+      });
+
+      const filtrados = todos.filter(
+        (c) =>
+          norm(c.nome).includes(q) ||
+          (c.telefone || "").includes(query.trim()) ||
+          norm(c.cidade).includes(q) ||
+          norm(c.documento).includes(q)
+      );
+
+      const totalCount = filtrados.length;
+      const paginados = filtrados.slice(offset, offset + limit);
+
+      return NextResponse.json({
+        clientes: paginados,
+        totalCount,
+        hasMore: offset + paginados.length < totalCount,
+      });
     }
+  } catch (error) {
     console.error("Erro na busca de clientes:", error);
     return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });
   }
