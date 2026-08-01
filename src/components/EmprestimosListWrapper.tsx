@@ -37,9 +37,10 @@ interface Emprestimo {
 
 interface EmprestimosListWrapperProps {
   initialEmprestimos: any[];
+  initialFiltro?: string;
 }
 
-type StatusFilter = "todos" | "ativos" | "atrasados" | "quitados";
+type StatusFilter = "todos" | "ativos" | "atrasados" | "quitados" | "hoje";
 type SortOption = "padrao" | "maior_valor" | "menor_valor" | "mais_proximo" | "mais_distante";
 
 const sortLabels: Record<SortOption, string> = {
@@ -50,9 +51,11 @@ const sortLabels: Record<SortOption, string> = {
   mais_distante: "Vence Depois",
 };
 
-export default function EmprestimosListWrapper({ initialEmprestimos }: EmprestimosListWrapperProps) {
+export default function EmprestimosListWrapper({ initialEmprestimos, initialFiltro }: EmprestimosListWrapperProps) {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ativos");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+    initialFiltro === "hoje" ? "hoje" : "ativos"
+  );
   const [parceiroFilter, setParceiroFilter] = useState<string>("todos");
   const [sortOption, setSortOption] = useState<SortOption>("padrao");
   const [sortOpen, setSortOpen] = useState(false);
@@ -260,6 +263,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos }: Emprestim
       if (statusFilter === "ativos" && (emp.statusReal !== "ativo" || emp.estaAtrasado)) return false;
       if (statusFilter === "atrasados" && !emp.estaAtrasado) return false;
       if (statusFilter === "quitados" && emp.statusReal !== "quitado") return false;
+      if (statusFilter === "hoje" && !emp.venceHoje) return false;
 
       if (parceiroFilter !== "todos") {
         if (parceiroFilter === "sem_parceiro") {

@@ -255,68 +255,76 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
         {/* Total Emprestado */}
-        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group">
+        <Link href="/emprestimos" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 card-accent border border-zinc-200 dark:border-white/8 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-black uppercase tracking-widest text-zinc-400">Capital em Campo</span>
-            <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 flex items-center justify-center group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700 transition-colors">
               <Wallet className="w-4 h-4 text-zinc-500 dark:text-zinc-300" />
             </div>
           </div>
           <div className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900 dark:text-white leading-none break-words">
             {formatBRL(totalEmprestado)}
           </div>
-          <div className="mt-2 text-sm text-zinc-400">
-            {emprestimosAtivos.length} empréstimos ativos
+          <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
+            <span>{emprestimosAtivos.length} empréstimos ativos</span>
+            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-zinc-100/50 dark:bg-zinc-800/20 group-hover:scale-110 transition-transform duration-500" />
-        </div>
+        </Link>
 
         {/* Total a Receber */}
-        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-5 shadow-sm hover:shadow-emerald-500/10 hover:shadow-lg transition-all group">
+        <Link href="/emprestimos" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-5 shadow-sm hover:shadow-emerald-500/10 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">A Receber</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 transition-colors">
               <TrendingUp className="w-4 h-4 text-emerald-500" />
             </div>
           </div>
           <div className="text-xl sm:text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 leading-none break-words">
             {formatBRL(totalAReceber)}
           </div>
-          <div className="mt-2 text-sm text-zinc-400">
-            Juros incluso: <span className="text-emerald-500 font-bold">{formatBRL(lucroEstimado)}</span>
+          <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
+            <span>Juros incluso: <span className="text-emerald-500 font-bold">{formatBRL(lucroEstimado)}</span></span>
+            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-emerald-500" />
           </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-emerald-50/50 dark:bg-emerald-950/10 group-hover:scale-110 transition-transform duration-500" />
-        </div>
+        </Link>
 
         {/* Atrasados */}
-        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-5 shadow-sm hover:shadow-rose-500/10 hover:shadow-lg transition-all group">
+        <Link href="/cobrancas" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-rose-200 dark:border-rose-500/20 rounded-2xl p-5 shadow-sm hover:shadow-rose-500/10 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-black uppercase tracking-widest text-rose-500">Atrasados</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center group-hover:bg-rose-100 dark:group-hover:bg-rose-900/40 transition-colors">
               <AlertCircle className="w-4 h-4 text-rose-500" />
             </div>
           </div>
           <div className="text-xl sm:text-2xl font-black tracking-tight text-rose-600 dark:text-rose-400 leading-none break-words">
             {totalAtrasadosCount}
           </div>
-          <div className="mt-2 text-sm text-zinc-400">empréstimos vencidos</div>
+          <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
+            <span>empréstimos vencidos</span>
+            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-rose-500" />
+          </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-rose-50/50 dark:bg-rose-950/10 group-hover:scale-110 transition-transform duration-500" />
-        </div>
+        </Link>
 
         {/* Vencendo Hoje */}
-        <div className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-5 shadow-sm hover:shadow-amber-500/10 hover:shadow-lg transition-all group">
+        <Link href="/emprestimos?filtro=hoje" className="col-span-1 relative overflow-hidden bg-white dark:bg-slate-900/60 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-5 shadow-sm hover:shadow-amber-500/10 hover:shadow-lg hover:-translate-y-0.5 transition-all group cursor-pointer active:scale-[0.98]">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">Vencendo Hoje</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-900/40 transition-colors">
               <Clock3 className="w-4 h-4 text-amber-500" />
             </div>
           </div>
           <div className="text-xl sm:text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 leading-none break-words">
             {vencendoHojeCount}
           </div>
-          <div className="mt-2 text-sm text-zinc-400">parcelas vencem hoje</div>
+          <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
+            <span>parcelas vencem hoje</span>
+            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-amber-500" />
+          </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-50/50 dark:bg-amber-950/10 group-hover:scale-110 transition-transform duration-500" />
-        </div>
+        </Link>
       </div>
 
       {/* ── ROW 2: RECEBÍVEIS POR PERÍODO ── */}

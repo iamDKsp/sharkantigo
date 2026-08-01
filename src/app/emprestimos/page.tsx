@@ -6,7 +6,9 @@ import ExportarEmprestimosButton from "@/components/ExportarEmprestimosButton";
 
 export const revalidate = 0;
 
-export default async function EmprestimosPage() {
+export default async function EmprestimosPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
+  const params = await searchParams;
+  const filtroInicial = params?.filtro === "hoje" ? "hoje" : undefined;
   // Buscar todos os empréstimos de uma só vez para possibilitar busca instantânea no client-side
   const emprestimos = await prisma.emprestimo.findMany({
     include: {
@@ -72,7 +74,7 @@ export default async function EmprestimosPage() {
       </div>
 
       {/* Busca, Filtros e Lista (Componente de Cliente Instantâneo) */}
-      <EmprestimosListWrapper initialEmprestimos={serializedEmprestimos} />
+      <EmprestimosListWrapper initialEmprestimos={serializedEmprestimos} initialFiltro={filtroInicial} />
     </div>
   );
 }
