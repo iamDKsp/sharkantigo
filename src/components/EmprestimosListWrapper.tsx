@@ -40,7 +40,7 @@ interface EmprestimosListWrapperProps {
   initialFiltro?: string;
 }
 
-type StatusFilter = "todos" | "ativos" | "atrasados" | "quitados" | "hoje";
+type StatusFilter = "todos" | "ativos" | "atrasados" | "ontem" | "quitados" | "hoje";
 type SortOption = "padrao" | "maior_valor" | "menor_valor" | "mais_proximo" | "mais_distante";
 
 const sortLabels: Record<SortOption, string> = {
@@ -54,7 +54,10 @@ const sortLabels: Record<SortOption, string> = {
 export default function EmprestimosListWrapper({ initialEmprestimos, initialFiltro }: EmprestimosListWrapperProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(
-    initialFiltro === "hoje" ? "hoje" : "ativos"
+    initialFiltro === "hoje" ? "hoje" :
+    initialFiltro === "ontem" ? "ontem" :
+    initialFiltro === "atrasados" ? "atrasados" :
+    "ativos"
   );
   const [parceiroFilter, setParceiroFilter] = useState<string>("todos");
   const [sortOption, setSortOption] = useState<SortOption>("padrao");
@@ -184,6 +187,10 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
       let temAtrasada = false;
       let venceHoje = false;
 
+      let temAtrasadaOntem = false;
+      const ontemUTC = new Date(hojeUTC);
+      ontemUTC.setUTCDate(hojeUTC.getUTCDate() - 1);
+
       if (emp.parcelas && emp.parcelas.length > 0) {
         const todasPagas = emp.parcelas.every((p: any) => p.status.startsWith("pago"));
         if (todasPagas) {
@@ -195,6 +202,12 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
             const vObj = new Date(p.data_vencimento);
             const vUTC = new Date(Date.UTC(vObj.getUTCFullYear(), vObj.getUTCMonth(), vObj.getUTCDate()));
             return vUTC < hojeUTC;
+          });
+          temAtrasadaOntem = emp.parcelas.some((p: any) => {
+            if (p.status !== "aberto") return false;
+            const vObj = new Date(p.data_vencimento);
+            const vUTC = new Date(Date.UTC(vObj.getUTCFullYear(), vObj.getUTCMonth(), vObj.getUTCDate()));
+            return vUTC.getTime() === ontemUTC.getTime();
           });
           venceHoje = emp.parcelas.some((p: any) => {
             if (p.status !== "aberto") return false;
@@ -240,6 +253,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
         totalEstimado,
         statusReal,
         estaAtrasado: temAtrasada,
+        estaAtrasadoOntem: temAtrasadaOntem,
         venceHoje,
         venceEmBreve,
         proxVencimentoUTC,
@@ -263,6 +277,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
 
       if (statusFilter === "ativos" && (emp.statusReal !== "ativo" || emp.estaAtrasado)) return false;
       if (statusFilter === "atrasados" && !emp.estaAtrasado) return false;
+      if (statusFilter === "ontem" && !emp.estaAtrasadoOntem) return false;
       if (statusFilter === "quitados" && emp.statusReal !== "quitado") return false;
       if (statusFilter === "hoje" && !emp.venceHoje) return false;
 
@@ -312,10 +327,20 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
     currentPage * ITEMS_PER_PAGE
   );
 
+  // Contadores por categoria (usados nos badges das tabs)
+  const contadores = useMemo(() => ({
+    todos:     emprestimosProcessados.length,
+    ativos:    emprestimosProcessados.filter(e => e.statusReal === "ativo" && !e.estaAtrasado).length,
+    atrasados: emprestimosProcessados.filter(e => e.estaAtrasado).length,
+    ontem:     emprestimosProcessados.filter(e => e.estaAtrasadoOntem).length,
+    hoje:      emprestimosProcessados.filter(e => e.venceHoje).length,
+    quitados:  emprestimosProcessados.filter(e => e.statusReal === "quitado").length,
+  }), [emprestimosProcessados]);
+
   return (
-    <div className="space-y-5">
-      {/* Busca, Filtros de Status e Ordenação */}
-      <div className="flex flex-col md:flex-row md:items-center gap-3">
+    <div className="space-y-4">
+      {/* Busca + Ordenação */}
+      <div className="flex items-center gap-3">
         {/* Campo de busca */}
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-emerald-500" />
@@ -326,26 +351,6 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
             placeholder="Buscar por cliente, telefone ou cidade..."
             className="w-full bg-white dark:bg-[#13221b] border border-slate-200 dark:border-emerald-950 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 transition-all text-slate-900 dark:text-white shadow-sm"
           />
-        </div>
-
-        {/* Abas de Status */}
-        <div className="flex flex-wrap gap-1 bg-slate-100 dark:bg-[#13221b] p-1 rounded-2xl self-start shadow-sm border border-slate-200 dark:border-emerald-950/50">
-          {(["todos", "ativos", "atrasados", "quitados"] as const).map((tab) => {
-            const isSelected = statusFilter === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setStatusFilter(tab)}
-                className={`px-4 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${
-                  isSelected
-                    ? "bg-white dark:bg-emerald-800 text-emerald-900 dark:text-white shadow-md scale-[1.02]"
-                    : "text-slate-500 dark:text-emerald-500/70 hover:text-slate-900 hover:bg-slate-200/50 dark:hover:bg-emerald-900/30"
-                }`}
-              >
-                {tab}
-              </button>
-            );
-          })}
         </div>
 
         {/* Dropdown Combinado de Ordenação e Parceiros */}
@@ -442,6 +447,49 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
             </div>
           )}
         </div>
+      </div>
+
+      {/* Filtros de Status — grade 3 colunas mobile, 6 em sm+ */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+        {([
+          { id: "todos"     as StatusFilter, label: "Todos",      sublabel: "Empréstimos",  color: "slate"   },
+          { id: "ativos"    as StatusFilter, label: "Ativos",     sublabel: "Em dia",        color: "emerald" },
+          { id: "atrasados" as StatusFilter, label: "Atrasados",  sublabel: "Todos",          color: "rose"    },
+          { id: "ontem"     as StatusFilter, label: "Ontem",      sublabel: "Atrasados",     color: "orange"  },
+          { id: "hoje"      as StatusFilter, label: "Hoje",       sublabel: "Vencem",         color: "amber"   },
+          { id: "quitados"  as StatusFilter, label: "Quitados",   sublabel: "Pagos",          color: "blue"    },
+        ] as const).map((tab) => {
+          const isSelected = statusFilter === tab.id;
+          const count = contadores[tab.id];
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-bold transition-all ${
+                isSelected
+                  ? tab.color === "emerald" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                  : tab.color === "rose"    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
+                  : tab.color === "orange"  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                  : tab.color === "amber"   ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                  : tab.color === "blue"    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                  : "bg-slate-700 text-white shadow-lg"
+                  : "bg-white dark:bg-[#13221b] border border-slate-200 dark:border-emerald-950/50 text-slate-500 dark:text-emerald-500/70"
+              }`}
+            >
+              <span className={`text-lg font-black leading-none ${
+                isSelected ? "text-white" :
+                tab.color === "emerald" ? "text-emerald-600 dark:text-emerald-400" :
+                tab.color === "rose"    ? "text-rose-500" :
+                tab.color === "orange"  ? "text-orange-500" :
+                tab.color === "amber"   ? "text-amber-500" :
+                tab.color === "blue"    ? "text-blue-500" :
+                "text-slate-600 dark:text-slate-300"
+              }`}>{count}</span>
+              <span className="font-extrabold text-[11px] leading-tight uppercase tracking-wide">{tab.label}</span>
+              <span className="text-[9px] leading-tight opacity-60">{tab.sublabel}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Contador de resultados */}
