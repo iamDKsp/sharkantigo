@@ -7,7 +7,7 @@ import {
   ArrowLeft, Trash2, Calendar, MessageSquare, AlertCircle,
   Clock, CheckCircle2, X, Loader2, Phone, TrendingUp,
   RefreshCw, CalendarClock, ShieldOff, Shield, Layers,
-  BadgeCheck, AlertTriangle, ChevronRight, Wallet, DollarSign,
+  BadgeCheck, AlertTriangle, ChevronRight, Wallet, DollarSign, Pencil,
 } from "lucide-react";
 import {
   payNextInstallment, payFullLoan, renegociarEmprestimo,
@@ -253,9 +253,17 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Voltar
         </button>
         {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />}
-        <button onClick={() => setModal("delete")} className="flex items-center gap-1.5 text-sm font-black text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 border border-rose-200 dark:border-rose-500/20 px-3 py-1.5 rounded-xl transition-all">
-          <Trash2 className="w-3.5 h-3.5" /> Excluir
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/emprestimos/${emprestimo.id}/editar`}
+            className="flex items-center gap-1.5 text-sm font-black text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-500/20 px-3 py-1.5 rounded-xl transition-all"
+          >
+            <Pencil className="w-3.5 h-3.5" /> Editar
+          </Link>
+          <button onClick={() => setModal("delete")} className="flex items-center gap-1.5 text-sm font-black text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 border border-rose-200 dark:border-rose-500/20 px-3 py-1.5 rounded-xl transition-all">
+            <Trash2 className="w-3.5 h-3.5" /> Excluir
+          </button>
+        </div>
       </div>
 
       {/* ── LAYOUT PRINCIPAL 2-col ── */}

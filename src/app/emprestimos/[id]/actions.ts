@@ -395,3 +395,86 @@ export async function receberSoJurosEmprestimo(emprestimoId: string) {
   revalidatePath("/clientes");
   return { success: true };
 }
+
+// 8. Editar Empréstimo Completo
+export async function updateEmprestimo(emprestimoId: string, formData: FormData) {
+  const clienteId    = formData.get("clienteId") as string;
+  const parceiroId   = (formData.get("parceiroId") as string) || null;
+  const valorEmprestado  = Number(formData.get("valorEmprestado"));
+  const tipoPagamento    = formData.get("tipoPagamento") as string;
+  const frequencia       = formData.get("frequencia") as string;
+  const taxaJuros        = Number(formData.get("taxaJuros")) || 0;
+  const taxaMulta        = Number(formData.get("taxaMulta")) || 0;
+  const dataInicioStr    = formData.get("dataInicio") as string;
+  const dataVencimentoStr= formData.get("dataVencimento") as string;
+  const categoria        = formData.get("categoria") as string;
+  const observacoes      = formData.get("observacoes") as string;
+  const parcelasJson     = formData.get("parcelasJson") as string;
+  const recriarParcelas  = formData.get("recriarParcelas") === "true";
+
+  if (!clienteId || !valorEmprestado || !dataInicioStr || !dataVencimentoStr) {
+    throw new Error("Preencha todos os campos obrigatórios.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Atualizar os dados principais do empréstimo
+    await tx.emprestimo.update({
+      where: { id: emprestimoId },
+      data: {
+        cliente_id:       clienteId,
+        parceiro_id:      parceiroId,
+        valor_emprestado: valorEmprestado,
+        taxa_juros:       taxaJuros,
+        taxa_multa:       taxaMulta,
+        juros_atraso:     taxaMulta,
+        data_inicio:      new Date(dataInicioStr),
+        data_vencimento:  new Date(dataVencimentoStr),
+        tipo_pagamento:   tipoPagamento,
+        frequencia:       frequencia,
+        categoria:        categoria || "Sem categoria",
+        observacoes:      observacoes || null,
+      },
+    });
+
+    // 2. Se solicitado, recriar as parcelas abertas
+    if (recriarParcelas && parcelasJson) {
+      let novasParcelas: { numero: number; valor: number; data_vencimento: string }[] = [];
+      try {
+        novasParcelas = JSON.parse(parcelasJson);
+      } catch {
+        throw new Error("Erro ao processar as parcelas.");
+      }
+
+      if (novasParcelas.length > 0) {
+        // Deletar apenas as parcelas em aberto (preservar pagas)
+        await tx.parcela.deleteMany({
+          where: { emprestimo_id: emprestimoId, status: "aberto" },
+        });
+
+        // Descobrir o maior número de parcela atual (pagas) para continuar a numeração
+        const ultimaPaga = await tx.parcela.findFirst({
+          where: { emprestimo_id: emprestimoId },
+          orderBy: { numero: "desc" },
+        });
+        const offsetNumero = ultimaPaga ? ultimaPaga.numero : 0;
+
+        // Criar novas parcelas a partir do offset
+        await tx.parcela.createMany({
+          data: novasParcelas.map((p, i) => ({
+            emprestimo_id:   emprestimoId,
+            numero:          offsetNumero + i + 1,
+            valor:           p.valor,
+            data_vencimento: new Date(p.data_vencimento),
+            status:          "aberto",
+          })),
+        });
+      }
+    }
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true, redirectUrl: `/emprestimos/${emprestimoId}` };
+}
+
