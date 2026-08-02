@@ -64,18 +64,29 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
   // Modelos de Mensagens Configuráveis
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [msgAtrasados, setMsgAtrasados] = useState(`Olá, {nome}! Notamos que a parcela nº {num} no valor de {valor} de seu empréstimo está pendente (venceu em {data}). Por favor, entre em contato conosco para regularizar.`);
+  // Templates parcelado (com nº de parcela)
+  const [msgAtrasados, setMsgAtrasados] = useState(`Olá, {nome}! Notamos que a parcela nº {num} no valor de {valor} do seu empréstimo está pendente (venceu em {data}). Por favor, regularize o quanto antes.`);
   const [msgHoje, setMsgHoje] = useState(`Olá, {nome}! Passando para lembrar que hoje ({data}) vence a sua parcela nº {num} no valor de {valor}. Caso já tenha pago, por favor desconsidere.`);
-  const [msgAVencer, setMsgAVencer] = useState(`Olá, {nome}! Este é um lembrete amigável de que a sua parcela nº {num} no valor de {valor} vencerá em breve, no dia {data}.`);
+  const [msgAVencer, setMsgAVencer] = useState(`Olá, {nome}! Lembrete: a sua parcela nº {num} no valor de {valor} vencerá em breve, no dia {data}.`);
+  // Templates à vista (sem nº de parcela)
+  const [msgAtrasadosAvista, setMsgAtrasadosAvista] = useState(`Olá, {nome}! Notamos que o pagamento de {valor} do seu empréstimo está pendente (venceu em {data}). Por favor, regularize o quanto antes.`);
+  const [msgHojeAvista, setMsgHojeAvista] = useState(`Olá, {nome}! Passando para lembrar que hoje ({data}) vence o pagamento de {valor} do seu empréstimo. Caso já tenha pago, por favor desconsidere.`);
+  const [msgAVencerAvista, setMsgAVencerAvista] = useState(`Olá, {nome}! Lembrete: o pagamento de {valor} do seu empréstimo vencerá em breve, no dia {data}.`);
 
   useEffect(() => {
     const savedAtrasados = localStorage.getItem("template_atrasados");
     const savedHoje = localStorage.getItem("template_hoje");
     const savedAVencer = localStorage.getItem("template_aVencer");
+    const savedAtrasadosAv = localStorage.getItem("template_atrasados_avista");
+    const savedHojeAv = localStorage.getItem("template_hoje_avista");
+    const savedAVencerAv = localStorage.getItem("template_avencer_avista");
 
     if (savedAtrasados) setMsgAtrasados(savedAtrasados);
     if (savedHoje) setMsgHoje(savedHoje);
     if (savedAVencer) setMsgAVencer(savedAVencer);
+    if (savedAtrasadosAv) setMsgAtrasadosAvista(savedAtrasadosAv);
+    if (savedHojeAv) setMsgHojeAvista(savedHojeAv);
+    if (savedAVencerAv) setMsgAVencerAvista(savedAVencerAv);
   }, []);
 
   const handleSaveTemplates = (e: React.FormEvent) => {
@@ -83,6 +94,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     localStorage.setItem("template_atrasados", msgAtrasados);
     localStorage.setItem("template_hoje", msgHoje);
     localStorage.setItem("template_aVencer", msgAVencer);
+    localStorage.setItem("template_atrasados_avista", msgAtrasadosAvista);
+    localStorage.setItem("template_hoje_avista", msgHojeAvista);
+    localStorage.setItem("template_avencer_avista", msgAVencerAvista);
     setShowConfigModal(false);
   };
 
@@ -102,27 +116,33 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     }).format(new Date(dateStr));
   };
 
+  // Rodapé fixo de pagamento — Pix + instrução + renovação
+  const PIX_RODAPE = `\n\n💳 *Para pagar:*\nPix: 14991185521 (Itaú)\nNome: Ronivaldo Gabriel Oscar\n\nSe preferir, podemos combinar para buscar pessoalmente em dinheiro. 😊\n\n🔄 *Ou, se preferir, podemos fazer a renovação do empréstimo!* Entre em contato e combinamos as condições.`;
+
   // Mensagens Customizadas por Tipo
   const getMessageText = (p: Parcela, type: "atrasados" | "hoje" | "aVencer") => {
     const nome = p.emprestimo.cliente.nome.split(" ")[0];
     const data = formatData(p.data_vencimento);
     const valor = formatBRL(p.valor);
     const num = p.numero;
+    const isAvista = p.emprestimo.tipo_pagamento === "a_vista";
 
     let template = "";
     if (type === "atrasados") {
-      template = msgAtrasados;
+      template = isAvista ? msgAtrasadosAvista : msgAtrasados;
     } else if (type === "hoje") {
-      template = msgHoje;
+      template = isAvista ? msgHojeAvista : msgHoje;
     } else {
-      template = msgAVencer;
+      template = isAvista ? msgAVencerAvista : msgAVencer;
     }
 
-    return template
+    const corpo = template
       .replace(/{nome}/g, nome)
       .replace(/{data}/g, data)
       .replace(/{valor}/g, valor)
       .replace(/{num}/g, String(num));
+
+    return corpo + PIX_RODAPE;
   };
 
   // Disparo em Massa para um grupo específico
@@ -645,44 +665,80 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
               </button>
             </div>
 
-            <div className="space-y-4 text-sm">
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 dark:text-zinc-350">Mensagem: Atrasados / Vencidos</label>
-                <textarea
-                  value={msgAtrasados}
-                  onChange={(e) => setMsgAtrasados(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-205 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white"
-                />
+            <div className="space-y-5 text-sm overflow-y-auto max-h-[70vh] pr-1">
+
+              {/* Banner Pix Fixo */}
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-3.5 space-y-1">
+                <span className="font-extrabold text-emerald-700 dark:text-emerald-400 block text-xs uppercase tracking-wider">💳 Rodapé fixo (enviado em todas as mensagens)</span>
+                <p className="text-xs text-emerald-800 dark:text-emerald-300/80 font-medium leading-relaxed">
+                  Pix: 14991185521 (Itaú) · Ronivaldo Gabriel Oscar<br />
+                  Opção de pagamento em dinheiro pessoalmente<br />
+                  Opção de renovação do empréstimo
+                </p>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 dark:text-zinc-350">Mensagem: Vencendo Hoje</label>
-                <textarea
-                  value={msgHoje}
-                  onChange={(e) => setMsgHoje(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-205 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white"
-                />
+              {/* Grupo Parcelado */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 px-2">Empréstimos Parcelados</span>
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-600 dark:text-zinc-400">Atrasado / Vencido</label>
+                  <textarea value={msgAtrasados} onChange={(e) => setMsgAtrasados(e.target.value)} rows={3}
+                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-600 dark:text-zinc-400">Vencendo Hoje</label>
+                  <textarea value={msgHoje} onChange={(e) => setMsgHoje(e.target.value)} rows={3}
+                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-600 dark:text-zinc-400">A Vencer (Lembrete)</label>
+                  <textarea value={msgAVencer} onChange={(e) => setMsgAVencer(e.target.value)} rows={3}
+                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700 dark:text-zinc-350">Mensagem: A Vencer (Lembrete)</label>
-                <textarea
-                  value={msgAVencer}
-                  onChange={(e) => setMsgAVencer(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-205 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white"
-                />
+              {/* Grupo À Vista */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400 px-2">Empréstimos À Vista</span>
+                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-600 dark:text-zinc-400">Atrasado / Vencido</label>
+                  <textarea value={msgAtrasadosAvista} onChange={(e) => setMsgAtrasadosAvista(e.target.value)} rows={3}
+                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-600 dark:text-zinc-400">Vencendo Hoje</label>
+                  <textarea value={msgHojeAvista} onChange={(e) => setMsgHojeAvista(e.target.value)} rows={3}
+                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-600 dark:text-zinc-400">A Vencer (Lembrete)</label>
+                  <textarea value={msgAVencerAvista} onChange={(e) => setMsgAVencerAvista(e.target.value)} rows={3}
+                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                  />
+                </div>
               </div>
 
-              <div className="bg-emerald-500/[0.04] dark:bg-emerald-950/20 border border-emerald-500/10 rounded-xl p-4.5 space-y-2 text-slate-650 dark:text-emerald-400">
-                <span className="font-extrabold block uppercase tracking-wider text-sm">Variáveis Dinâmicas</span>
-                <div className="grid grid-cols-2 gap-2 text-sm font-mono leading-relaxed">
-                  <span><strong className="text-emerald-650 dark:text-emerald-300 font-bold">{`{nome}`}</strong> - Primeiro nome</span>
-                  <span><strong className="text-emerald-650 dark:text-emerald-300 font-bold">{`{valor}`}</strong> - Valor parcela</span>
-                  <span><strong className="text-emerald-650 dark:text-emerald-300 font-bold">{`{data}`}</strong> - Vencimento</span>
-                  <span><strong className="text-emerald-650 dark:text-emerald-300 font-bold">{`{num}`}</strong> - Nº parcela</span>
+              {/* Variáveis */}
+              <div className="bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 space-y-2">
+                <span className="font-extrabold block uppercase tracking-wider text-xs text-slate-500 dark:text-zinc-400">Variáveis disponíveis</span>
+                <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
+                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{nome}`}</strong> — Primeiro nome</span>
+                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{valor}`}</strong> — Valor da parcela</span>
+                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{data}`}</strong> — Data de vencimento</span>
+                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{num}`}</strong> — Nº da parcela (parcelados)</span>
                 </div>
               </div>
             </div>
