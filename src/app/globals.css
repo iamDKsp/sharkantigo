@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f4f5;
-  --foreground: #09090b;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   
-  --primary: #18181b;
+  --primary: #059669;
   --primary-foreground: #ffffff;
   
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #0f172a;
   
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
   
-  --border: #d4d4d8;
+  --border: #e2e8f0;
   
   --success: #10b981;
   --success-foreground: #ffffff;
@@ -25,24 +25,6 @@
   --destructive-foreground: #ffffff;
 
   --font-geist-sans: var(--font-geist-sans), Inter, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #090d16;
-    --foreground: #f8fafc;
-    
-    --primary: #38bdf8;
-    --primary-foreground: #090d16;
-    
-    --card: rgba(15, 23, 42, 0.45);
-    --card-foreground: #f8fafc;
-    
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    
-    --border: rgba(255, 255, 255, 0.08);
-  }
 }
 
 body {
@@ -77,12 +59,12 @@ body {
   border-radius: 20px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .premium-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border-color: var(--border);
   border-left-color: rgba(0, 0, 0, 0.2);
   transform: translateY(-1px);
@@ -94,8 +76,3 @@ body {
   border-left-color: rgba(0, 0, 0, 0.13) !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  .card-accent {
-    border-left-color: rgba(255, 255, 255, 0.12) !important;
-  }
-}

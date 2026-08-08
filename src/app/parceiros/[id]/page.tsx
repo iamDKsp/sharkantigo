@@ -94,7 +94,7 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
       <div>
         <Link
           href="/parceiros"
-          className="inline-flex items-center space-x-1.5 text-sm font-bold text-slate-500 hover:text-emerald-600 dark:text-emerald-500/70 dark:hover:text-emerald-400 transition-colors mb-4"
+          className="inline-flex items-center space-x-1.5 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors mb-4"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>Voltar para Parceiros</span>
@@ -102,10 +102,10 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 uppercase">
               {parceiro.nome}
             </h1>
-            <p className="text-sm font-bold text-slate-500 dark:text-emerald-500/70 mt-1">
+            <p className="text-sm font-bold text-slate-500 mt-1">
               {parceiro.telefone ? `📞 ${parceiro.telefone}` : "Sem telefone cadastrado"}
             </p>
           </div>
@@ -114,72 +114,72 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
 
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="premium-card p-5 bg-white dark:bg-[#13221b] border border-slate-100 dark:border-emerald-950 flex items-center space-x-4">
-          <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+        <div className="premium-card p-5 bg-white border border-slate-200 shadow-sm rounded-2xl flex items-center space-x-4">
+          <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
             <Wallet className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-400 dark:text-emerald-500/60 uppercase tracking-wider">Total Emprestado</p>
-            <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{formatBRL(totalInvestido)}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Emprestado</p>
+            <p className="text-lg font-black text-slate-900 mt-0.5">{formatBRL(totalInvestido)}</p>
           </div>
         </div>
         
-        <div className="premium-card p-5 bg-white dark:bg-[#13221b] border border-slate-100 dark:border-emerald-950 flex items-center space-x-4">
-          <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/20 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-500">
+        <div className="premium-card p-5 bg-white border border-slate-200 shadow-sm rounded-2xl flex items-center space-x-4">
+          <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-400 dark:text-emerald-500/60 uppercase tracking-wider">Capital Ativo</p>
-            <p className="text-lg font-black text-amber-600 dark:text-amber-500 mt-0.5">{formatBRL(totalAtivo)}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Capital Ativo</p>
+            <p className="text-lg font-black text-amber-600 mt-0.5">{formatBRL(totalAtivo)}</p>
           </div>
         </div>
 
-        <div className="premium-card p-5 bg-white dark:bg-[#13221b] border border-slate-100 dark:border-emerald-950 flex items-center space-x-4">
-          <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800/50 rounded-xl flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+        <div className="premium-card p-5 bg-white border border-slate-200 shadow-sm rounded-2xl flex items-center space-x-4">
+          <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500">
             <HandCoins className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-400 dark:text-emerald-500/60 uppercase tracking-wider">Capital Quitado</p>
-            <p className="text-lg font-black text-zinc-600 dark:text-zinc-400 mt-0.5">{formatBRL(totalQuitado)}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Capital Quitado</p>
+            <p className="text-lg font-black text-slate-600 mt-0.5">{formatBRL(totalQuitado)}</p>
           </div>
         </div>
 
-        <div className="premium-card p-5 bg-white dark:bg-[#13221b] border border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/20 flex items-center space-x-4">
-          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/60 rounded-xl flex items-center justify-center text-emerald-700 dark:text-emerald-300">
+        <div className="premium-card p-5 bg-white border border-emerald-200 bg-emerald-50/40 shadow-sm rounded-2xl flex items-center space-x-4">
+          <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700">
             <Wallet className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Lucro (Cheques)</p>
-            <p className="text-lg font-black text-emerald-700 dark:text-emerald-300 mt-0.5">{formatBRL(lucroCheques)}</p>
+            <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Lucro (Cheques)</p>
+            <p className="text-lg font-black text-emerald-700 mt-0.5">{formatBRL(lucroCheques)}</p>
           </div>
         </div>
       </div>
 
-      <div className="pt-4 border-t border-slate-100 dark:border-emerald-950/40">
-        <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white mb-4 uppercase">
+      <div className="pt-4 border-t border-slate-100">
+        <h2 className="text-base font-bold tracking-tight text-slate-900 mb-4 uppercase">
           Empréstimos do Parceiro
         </h2>
         {/* Usamos o mesmo wrapper de empréstimos para que a lista seja idêntica, já com as propriedades de WhatsApp e ordenação */}
         <EmprestimosListWrapper initialEmprestimos={serializedEmprestimos} />
       </div>
 
-      <div className="pt-8 border-t border-slate-100 dark:border-emerald-950/40">
+      <div className="pt-8 border-t border-slate-100">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white uppercase">
+          <h2 className="text-base font-bold tracking-tight text-slate-900 uppercase">
             Cheques do Parceiro
           </h2>
           <Link
             href={`/cheques`}
-            className="flex items-center space-x-1 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 p-2 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition-colors"
+            className="flex items-center space-x-1 bg-emerald-50 text-emerald-700 p-2 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors"
           >
             <span>Ir para Cheques</span>
           </Link>
         </div>
 
-        <div className="premium-card overflow-hidden bg-white dark:bg-[#13221b]">
-          <div className="divide-y divide-slate-100 dark:divide-emerald-950">
+        <div className="premium-card overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="divide-y divide-slate-100">
             {!parceiro.cheques || parceiro.cheques.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 dark:text-emerald-400/60">
+              <div className="p-8 text-center text-slate-500">
                 Nenhum cheque vinculado a este parceiro.
               </div>
             ) : (
@@ -195,44 +195,44 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
                 };
 
                 return (
-                  <div key={cheque.id} className="p-4 flex flex-col space-y-3 hover:bg-slate-50/60 dark:hover:bg-emerald-950/20 transition-colors">
+                  <div key={cheque.id} className="p-4 flex flex-col space-y-3 hover:bg-slate-50/60 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-bold text-slate-950 dark:text-white">
+                        <span className="text-xs font-bold text-slate-900">
                           Vencimento: {formatData(cheque.data_compensacao)}
                         </span>
                         {cheque.status === "compensado" ? (
-                          <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
                             Compensado
                           </span>
                         ) : cheque.status === "devolvido" ? (
-                          <span className="bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                          <span className="bg-rose-100 text-rose-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
                             Devolvido
                           </span>
                         ) : (
-                          <span className="bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                          <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
                             Pendente
                           </span>
                         )}
                       </div>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">
+                      <span className="text-xs font-bold text-slate-500 uppercase">
                         {cheque.cliente?.nome || cheque.titular || "Cliente desconhecido"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="border border-slate-200 dark:border-emerald-900 rounded-lg px-3 py-1.5 bg-white dark:bg-[#0b130e]">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-emerald-500 block">Cheque</span>
-                          <span className="text-sm font-bold text-slate-900 dark:text-white">{formatBRL(valorBruto)}</span>
+                        <div className="border border-slate-200 rounded-lg px-3 py-1.5 bg-white">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Cheque</span>
+                          <span className="text-sm font-bold text-slate-900">{formatBRL(valorBruto)}</span>
                         </div>
-                        <div className="border border-slate-200 dark:border-emerald-900 rounded-lg px-3 py-1.5 bg-white dark:bg-[#0b130e]">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-emerald-500 block">Taxa {taxa}%</span>
-                          <span className="text-sm font-bold text-slate-900 dark:text-white">{formatBRL(valorBruto - valorLiquido)}</span>
+                        <div className="border border-slate-200 rounded-lg px-3 py-1.5 bg-white">
+                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Taxa {taxa}%</span>
+                          <span className="text-sm font-bold text-slate-900">{formatBRL(valorBruto - valorLiquido)}</span>
                         </div>
                       </div>
-                      <div className="text-right border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg px-3 py-1.5">
-                        <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">Líquido</span>
-                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{formatBRL(valorLiquido)}</span>
+                      <div className="text-right border border-emerald-200 bg-emerald-50 rounded-lg px-3 py-1.5">
+                        <span className="text-[10px] uppercase font-bold text-emerald-600 block">Líquido</span>
+                        <span className="text-sm font-bold text-emerald-700">{formatBRL(valorLiquido)}</span>
                       </div>
                     </div>
                   </div>

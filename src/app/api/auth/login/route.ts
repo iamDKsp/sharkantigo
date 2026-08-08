@@ -9,7 +9,7 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, rememberMe } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email e senha são obrigatórios" }, { status: 400 });
@@ -42,10 +42,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
     }
 
+    // Tempo de expiração: 30 dias se "Lembrar-me" estiver marcado, senão 24h
+    const tokenExp = rememberMe ? "30d" : "24h";
+    const cookieMaxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // 30 dias ou 24 horas
+
     // Gerar token
     const token = await new SignJWT({ sub: user.id, email: user.email, nome: user.nome })
       .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("24h")
+      .setExpirationTime(tokenExp)
       .sign(JWT_SECRET);
 
     const response = NextResponse.json({ success: true });
@@ -57,7 +61,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       path: "/",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24, // 24 hours
+      maxAge: cookieMaxAge,
     });
 
     return response;

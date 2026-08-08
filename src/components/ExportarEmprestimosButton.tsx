@@ -186,9 +186,9 @@ export default function ExportarEmprestimosButton({ emprestimos, cheques = [] }:
     <button
       onClick={handleExport}
       disabled={isExporting}
-      className="flex items-center space-x-1.5 bg-white dark:bg-[#13221b] text-slate-700 dark:text-emerald-400 border border-slate-200 dark:border-emerald-900/50 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-emerald-950/30 transition-colors shadow-sm disabled:opacity-50"
+      className="flex items-center space-x-1.5 bg-white text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
     >
-      <Download className="w-4 h-4" />
+      <Download className="w-4 h-4 text-emerald-600" />
       <span>{isExporting ? "Extraindo..." : "Extrair Backup (Excel)"}</span>
     </button>
   );

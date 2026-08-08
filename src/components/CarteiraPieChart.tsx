@@ -16,12 +16,12 @@ const fmtFull = (v: number) =>
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-zinc-900 dark:bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 shadow-2xl">
-        <p className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1">
+      <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xl">
+        <p className="text-sm font-black uppercase tracking-widest text-slate-500 mb-1">
           {payload[0].name}
         </p>
-        <p className="text-sm font-black text-white">{fmtFull(payload[0].value)}</p>
-        <p className="text-sm text-emerald-400 font-bold mt-0.5">
+        <p className="text-sm font-black text-slate-900">{fmtFull(payload[0].value)}</p>
+        <p className="text-sm text-emerald-600 font-bold mt-0.5">
           {payload[0].payload.pct.toFixed(1)}% do total
         </p>
       </div>
@@ -33,10 +33,10 @@ const CustomTooltip = ({ active, payload }: any) => {
 // Label customizado dentro do donut (centro)
 const CenterLabel = ({ cx, cy, total }: { cx: number; cy: number; total: number }) => (
   <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central">
-    <tspan x={cx} dy="-10" fontSize="9" fontWeight={800} fill="#a1a1aa" letterSpacing="0.08em">
+    <tspan x={cx} dy="-10" fontSize="9" fontWeight={800} fill="#64748b" letterSpacing="0.08em">
       TOTAL
     </tspan>
-    <tspan x={cx} dy="20" fontSize="13" fontWeight={900} fill="#18181b">
+    <tspan x={cx} dy="20" fontSize="13" fontWeight={900} fill="#0f172a">
       {new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(total)}
     </tspan>
   </text>
@@ -103,7 +103,7 @@ export function CarteiraPieChart({
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
           <div className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Total</div>
-          <div className="text-sm font-black text-zinc-900 dark:text-white leading-tight">
+          <div className="text-sm font-black text-zinc-900 leading-tight">
             {new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 }).format(totalRecebivel)}
           </div>
         </div>

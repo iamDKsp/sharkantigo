@@ -247,16 +247,16 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       {/* Header mobile-compacto */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-base font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-zinc-800 to-zinc-950 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Cobranças
           </h1>
-          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 hidden sm:block">
+          <p className="text-xs text-slate-500 mt-0.5 hidden sm:block">
             Gerenciamento de lembretes e cobranças.
           </p>
         </div>
         <button
           onClick={() => setShowConfigModal(true)}
-          className="flex items-center gap-1.5 border border-zinc-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900/50 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm"
+          className="flex items-center gap-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
         >
           <Settings className="w-3.5 h-3.5 text-emerald-500" />
           <span>Mensagens</span>
@@ -275,14 +275,14 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all ${
+            className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === tab.id
                 ? tab.color === "rose"    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
                 : tab.color === "orange"  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
                 : tab.color === "red"     ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
                 : tab.color === "amber"   ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                :                          "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                : "bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400"
+                :                          "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
             }`}
           >
             <span className={`text-lg font-black leading-none ${
@@ -291,7 +291,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
               tab.color === "orange" ? "text-orange-500" :
               tab.color === "red"    ? "text-red-600" :
               tab.color === "amber"  ? "text-amber-500" :
-              "text-emerald-500"
+              "text-emerald-600"
             }`}>{tab.count}</span>
             <span className="font-extrabold text-[11px] leading-tight">{tab.label}</span>
             <span className={`text-[9px] leading-tight opacity-70`}>{tab.sublabel}</span>
@@ -312,38 +312,38 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                 corAtrasados === "orange" ? "bg-orange-500" : corAtrasados === "red" ? "bg-red-600" : "bg-rose-500"
               }`} />
               <h2 className={`text-md font-extrabold ${
-                corAtrasados === "orange" ? "text-orange-600 dark:text-orange-400" :
-                corAtrasados === "red"    ? "text-red-700 dark:text-red-400" :
-                "text-rose-600 dark:text-rose-400"
+                corAtrasados === "orange" ? "text-orange-600" :
+                corAtrasados === "red"    ? "text-red-700" :
+                "text-rose-600"
               }`}>{tituloAtrasados}</h2>
             </div>
-            <span className={`text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider ${
-              corAtrasados === "orange" ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20" :
-              corAtrasados === "red"    ? "bg-red-600/10 text-red-600 dark:text-red-400 border border-red-600/20" :
-              "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+            <span className={`text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider ${
+              corAtrasados === "orange" ? "bg-orange-50 text-orange-600 border border-orange-200" :
+              corAtrasados === "red"    ? "bg-red-50 text-red-600 border border-red-200" :
+              "bg-rose-50 text-rose-600 border border-rose-200"
             }`}>
               {formatBRL(listaAtrasados.reduce((acc, p) => acc + p.valor, 0))} ({listaAtrasados.length} parcelas)
             </span>
           </div>
 
-          <div className="premium-card overflow-hidden">
-            <div className="p-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/20 dark:bg-white/[0.01]">
+          <div className="premium-card overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center space-x-2.5">
                 <input
                   type="checkbox"
                   checked={listaAtrasados.length > 0 && selectedAtrasados.length === listaAtrasados.length}
                   onChange={(e) => toggleSelectAll(listaAtrasados, selectedAtrasados, setSelectedAtrasados, e.target.checked)}
-                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-rose-500"
+                  className="w-4 h-4 rounded border-slate-300 cursor-pointer accent-rose-500"
                   disabled={listaAtrasados.length === 0}
                 />
-                <span className="text-sm font-black text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">
                   {selectedAtrasados.length} de {listaAtrasados.length} selecionados
                 </span>
               </div>
               {selectedAtrasados.length > 0 && (
                 <button
                   onClick={() => handleMassTrigger(selectedAtrasados, "atrasados")}
-                  className="flex items-center justify-center space-x-1.5 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md"
+                  className="flex items-center justify-center space-x-1.5 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>Disparo em Massa ({selectedAtrasados.length})</span>
@@ -351,9 +351,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
               )}
             </div>
 
-            <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+            <div className="divide-y divide-slate-100">
               {listaAtrasados.length === 0 ? (
-                <div className="py-10 text-center text-sm font-medium text-zinc-500">
+                <div className="py-10 text-center text-sm font-medium text-slate-500">
                   Nenhuma parcela nesta categoria.
                 </div>
               ) : (
@@ -364,7 +364,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                     <div
                       key={p.id}
                       className={`px-3 py-3 flex items-center gap-3 transition-all duration-150 ${
-                        isChecked ? "bg-rose-500/[0.04]" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
+                        isChecked ? "bg-rose-50/60" : "hover:bg-slate-50/50"
                       }`}
                     >
                       {/* Checkbox */}
@@ -372,37 +372,37 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                         type="checkbox"
                         checked={isChecked}
                         onChange={(e) => toggleSelectOne(setSelectedAtrasados, p.id, e.target.checked)}
-                        className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-rose-500 flex-shrink-0"
+                        className="w-4 h-4 rounded border-slate-300 cursor-pointer accent-rose-500 flex-shrink-0"
                       />
 
                       {/* Info — cresce */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{p.emprestimo.cliente.nome}</span>
+                          <span className="font-bold text-sm text-slate-900 truncate">{p.emprestimo.cliente.nome}</span>
                           <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${
-                            corAtrasados === "orange" ? "bg-orange-500/10 text-orange-600 border-orange-500/20" :
-                            corAtrasados === "red"    ? "bg-red-600/10 text-red-600 border-red-600/20" :
-                            "bg-rose-500/10 text-rose-600 border-rose-500/20"
+                            corAtrasados === "orange" ? "bg-orange-50 text-orange-600 border-orange-200" :
+                            corAtrasados === "red"    ? "bg-red-50 text-red-600 border-red-200" :
+                            "bg-rose-50 text-rose-600 border-rose-200"
                           }`}>Parc. {p.numero}</span>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
+                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                           <span className="flex items-center gap-0.5">
                             <Calendar className="w-3 h-3" />
                             {formatData(p.data_vencimento)}
                           </span>
-                          <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                          <span className="text-slate-300">·</span>
                           <span>{p.emprestimo.cliente.telefone}</span>
                         </div>
                       </div>
 
                       {/* Valor + WhatsApp */}
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        <span className="text-sm font-black text-slate-900 dark:text-white">{formatBRL(p.valor)}</span>
+                        <span className="text-sm font-black text-slate-900">{formatBRL(p.valor)}</span>
                         <a
                           href={whatsappUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all"
+                          className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all"
                         >
                           <MessageSquare className="w-3 h-3" />
                           <span>Zap</span>
@@ -420,34 +420,34 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       {/* 2. GRUPO: VENCENDO HOJE */}
       {activeTab === "hoje" && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-amber-500/10 dark:border-amber-500/20 pb-2">
+          <div className="flex items-center justify-between border-b border-amber-500/10 pb-2">
             <div className="flex items-center space-x-2">
               <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-              <h2 className="text-md font-extrabold text-amber-600 dark:text-amber-400">Grupo: Vencendo Hoje</h2>
+              <h2 className="text-md font-extrabold text-amber-600">Grupo: Vencendo Hoje</h2>
             </div>
-            <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
+            <span className="bg-amber-50 text-amber-600 border border-amber-200 text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
               Total: {formatBRL(hojeLista.reduce((acc, p) => acc + p.valor, 0))} ({hojeLista.length} parcelas)
             </span>
           </div>
 
-        <div className="premium-card overflow-hidden">
-          <div className="p-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/20 dark:bg-white/[0.01]">
+        <div className="premium-card overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
             <div className="flex items-center space-x-2.5">
               <input
                 type="checkbox"
                 checked={hojeLista.length > 0 && selectedHoje.length === hojeLista.length}
                 onChange={(e) => toggleSelectAll(hojeLista, selectedHoje, setSelectedHoje, e.target.checked)}
-                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-amber-550 focus:ring-amber-500 cursor-pointer accent-amber-500"
+                className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500 cursor-pointer accent-amber-500"
                 disabled={hojeLista.length === 0}
               />
-              <span className="text-sm font-black text-slate-550 dark:text-zinc-400 uppercase tracking-wider">
+              <span className="text-xs font-black text-slate-500 uppercase tracking-wider">
                 {selectedHoje.length} de {hojeLista.length} selecionados
               </span>
             </div>
             {selectedHoje.length > 0 && (
               <button
                 onClick={() => handleMassTrigger(selectedHoje, "hoje")}
-                className="flex items-center justify-center space-x-1.5 bg-amber-500 hover:bg-amber-650 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md"
+                className="flex items-center justify-center space-x-1.5 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Disparo em Massa ({selectedHoje.length})</span>
@@ -455,9 +455,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
             )}
           </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+          <div className="divide-y divide-slate-100">
             {hojeLista.length === 0 ? (
-              <div className="py-10 text-center text-sm font-medium text-zinc-500">
+              <div className="py-10 text-center text-sm font-medium text-slate-500">
                 Nenhuma parcela vencendo hoje.
               </div>
             ) : (
@@ -468,30 +468,30 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                   <div
                     key={p.id}
                     className={`px-3 py-3 flex items-center gap-3 transition-all duration-150 ${
-                      isChecked ? "bg-amber-500/[0.04]" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
+                      isChecked ? "bg-amber-50/60" : "hover:bg-slate-50/50"
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={(e) => toggleSelectOne(setSelectedHoje, p.id, e.target.checked)}
-                      className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-amber-500 flex-shrink-0"
+                      className="w-4 h-4 rounded border-slate-300 cursor-pointer accent-amber-500 flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{p.emprestimo.cliente.nome}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-amber-500/10 text-amber-600 border-amber-500/20">Parc. {p.numero}</span>
+                        <span className="font-bold text-sm text-slate-900 truncate">{p.emprestimo.cliente.nome}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-amber-50 text-amber-600 border-amber-200">Parc. {p.numero}</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                         <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>
-                        <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                        <span className="text-slate-300">·</span>
                         <span>{p.emprestimo.cliente.telefone}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                      <span className="text-sm font-black text-slate-900 dark:text-white">{formatBRL(p.valor)}</span>
+                      <span className="text-sm font-black text-slate-900">{formatBRL(p.valor)}</span>
                       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">
+                        className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">
                         <MessageSquare className="w-3 h-3" /><span>Zap</span>
                       </a>
                     </div>
@@ -506,34 +506,34 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       {/* 3. GRUPO: A VENCER */}
       {activeTab === "aVencer" && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-emerald-500/10 dark:border-emerald-500/20 pb-2">
+          <div className="flex items-center justify-between border-b border-emerald-500/10 pb-2">
             <div className="flex items-center space-x-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-              <h2 className="text-md font-extrabold text-emerald-600 dark:text-emerald-400">Grupo: A Vencer (em até 3 dias)</h2>
+              <h2 className="text-md font-extrabold text-emerald-600">Grupo: A Vencer (em até 3 dias)</h2>
             </div>
-            <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-sm font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
+            <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
               Total: {formatBRL(aVencer.reduce((acc, p) => acc + p.valor, 0))} ({aVencer.length} parcelas)
             </span>
           </div>
 
-        <div className="premium-card overflow-hidden">
-          <div className="p-4 border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/20 dark:bg-white/[0.01]">
+        <div className="premium-card overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
             <div className="flex items-center space-x-2.5">
               <input
                 type="checkbox"
                 checked={aVencer.length > 0 && selectedAVencer.length === aVencer.length}
                 onChange={(e) => toggleSelectAll(aVencer, selectedAVencer, setSelectedAVencer, e.target.checked)}
-                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-emerald-550 focus:ring-emerald-500 cursor-pointer accent-emerald-500"
+                className="w-4 h-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 cursor-pointer accent-emerald-500"
                 disabled={aVencer.length === 0}
               />
-              <span className="text-sm font-black text-slate-555 dark:text-zinc-400 uppercase tracking-wider">
+              <span className="text-xs font-black text-slate-500 uppercase tracking-wider">
                 {selectedAVencer.length} de {aVencer.length} selecionados
               </span>
             </div>
             {selectedAVencer.length > 0 && (
               <button
                 onClick={() => handleMassTrigger(selectedAVencer, "aVencer")}
-                className="flex items-center justify-center space-x-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md"
+                className="flex items-center justify-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Disparo em Massa ({selectedAVencer.length})</span>
@@ -541,9 +541,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
             )}
           </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+          <div className="divide-y divide-slate-100">
             {aVencer.length === 0 ? (
-              <div className="py-10 text-center text-sm font-medium text-zinc-500">
+              <div className="py-10 text-center text-sm font-medium text-slate-500">
                 Nenhuma parcela vencendo nos próximos 3 dias.
               </div>
             ) : (
@@ -554,30 +554,30 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                   <div
                     key={p.id}
                     className={`px-3 py-3 flex items-center gap-3 transition-all duration-150 ${
-                      isChecked ? "bg-emerald-500/[0.04]" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
+                      isChecked ? "bg-emerald-50/60" : "hover:bg-slate-50/50"
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={isChecked}
                       onChange={(e) => toggleSelectOne(setSelectedAVencer, p.id, e.target.checked)}
-                      className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 cursor-pointer accent-emerald-500 flex-shrink-0"
+                      className="w-4 h-4 rounded border-slate-300 cursor-pointer accent-emerald-500 flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{p.emprestimo.cliente.nome}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Parc. {p.numero}</span>
+                        <span className="font-bold text-sm text-slate-900 truncate">{p.emprestimo.cliente.nome}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-emerald-50 text-emerald-600 border-emerald-200">Parc. {p.numero}</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                         <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>
-                        <span className="text-zinc-300 dark:text-zinc-600">·</span>
+                        <span className="text-slate-300">·</span>
                         <span>{p.emprestimo.cliente.telefone}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                      <span className="text-sm font-black text-slate-900 dark:text-white">{formatBRL(p.valor)}</span>
+                      <span className="text-sm font-black text-slate-900">{formatBRL(p.valor)}</span>
                       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">
+                        className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all">
                         <MessageSquare className="w-3 h-3" /><span>Zap</span>
                       </a>
                     </div>
@@ -592,15 +592,15 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
       {/* Modal de Simulação de Disparo */}
       {showSimulate && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white dark:bg-[#13221b] border border-slate-200 dark:border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-6 space-y-4 text-slate-900 dark:text-white animate-scale-up">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-6 space-y-4 text-slate-900 animate-scale-up">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-extrabold text-sm">Disparo de Lembretes em Massa</h3>
               {!isSimulating && (
                 <button
                   type="button"
                   onClick={() => setShowSimulate(false)}
-                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -609,20 +609,20 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
             {/* Progresso */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm font-black text-slate-500 dark:text-zinc-400 uppercase tracking-wide">
+              <div className="flex items-center justify-between text-xs font-black text-slate-500 uppercase tracking-wide">
                 <span>Progresso de Envio</span>
                 <span>{simulateProgress}%</span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-zinc-800 rounded-full h-2.5 overflow-hidden">
+              <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                 <div
-                  className="bg-emerald-500 h-full transition-all duration-300"
+                  className="bg-emerald-600 h-full transition-all duration-300"
                   style={{ width: `${simulateProgress}%` }}
                 ></div>
               </div>
             </div>
 
             {/* Log visual */}
-            <div className="bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 h-48 overflow-y-auto font-mono text-sm text-slate-700 dark:text-emerald-400 space-y-1.5 scrollbar-thin">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 h-48 overflow-y-auto font-mono text-xs text-slate-700 space-y-1.5 scrollbar-thin">
               {simulateLogs.map((log, index) => (
                 <div key={index} className="leading-relaxed">
                   {log}
@@ -630,12 +630,12 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
               ))}
             </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
               <button
                 type="button"
                 disabled={isSimulating}
                 onClick={() => setShowSimulate(false)}
-                className="px-5 py-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-350 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-xl text-sm font-bold disabled:opacity-50 transition-all"
+                className="px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold disabled:opacity-50 transition-all cursor-pointer"
               >
                 {isSimulating ? "Processando..." : "Fechar"}
               </button>
@@ -646,20 +646,20 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
       {/* Modal de Configuração de Mensagens */}
       {showConfigModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <form 
             onSubmit={handleSaveTemplates}
-            className="bg-white dark:bg-[#13221b] border border-slate-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl p-6 space-y-4 text-slate-900 dark:text-white animate-scale-up"
+            className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl p-6 space-y-4 text-slate-900 animate-scale-up"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
-              <h3 className="font-extrabold text-sm flex items-center space-x-1.5 text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-sm flex items-center space-x-1.5 text-emerald-600">
                 <Settings className="w-5 h-5 animate-spin-slow" />
                 <span>Configurar Modelos de Cobrança</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setShowConfigModal(false)}
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -668,9 +668,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
             <div className="space-y-5 text-sm overflow-y-auto max-h-[70vh] pr-1">
 
               {/* Banner Pix Fixo */}
-              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-3.5 space-y-1">
-                <span className="font-extrabold text-emerald-700 dark:text-emerald-400 block text-xs uppercase tracking-wider">💳 Rodapé fixo (enviado em todas as mensagens)</span>
-                <p className="text-xs text-emerald-800 dark:text-emerald-300/80 font-medium leading-relaxed">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-1">
+                <span className="font-extrabold text-emerald-700 block text-xs uppercase tracking-wider">💳 Rodapé fixo (enviado em todas as mensagens)</span>
+                <p className="text-xs text-emerald-800 font-medium leading-relaxed">
                   Pix: 14991185521 (Itaú) · Ronivaldo Gabriel Oscar<br />
                   Opção de pagamento em dinheiro pessoalmente<br />
                   Opção de renovação do empréstimo
@@ -680,26 +680,26 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
               {/* Grupo Parcelado */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 px-2">Empréstimos Parcelados</span>
-                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-blue-600 px-2">Empréstimos Parcelados</span>
+                  <div className="h-px flex-1 bg-slate-200" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 dark:text-zinc-400">Atrasado / Vencido</label>
+                  <label className="font-bold text-slate-600 text-xs uppercase">Atrasado / Vencido</label>
                   <textarea value={msgAtrasados} onChange={(e) => setMsgAtrasados(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 text-xs"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 dark:text-zinc-400">Vencendo Hoje</label>
+                  <label className="font-bold text-slate-600 text-xs uppercase">Vencendo Hoje</label>
                   <textarea value={msgHoje} onChange={(e) => setMsgHoje(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 text-xs"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 dark:text-zinc-400">A Vencer (Lembrete)</label>
+                  <label className="font-bold text-slate-600 text-xs uppercase">A Vencer (Lembrete)</label>
                   <textarea value={msgAVencer} onChange={(e) => setMsgAVencer(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 text-xs"
                   />
                 </div>
               </div>
@@ -707,53 +707,53 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
               {/* Grupo À Vista */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400 px-2">Empréstimos À Vista</span>
-                  <div className="h-px flex-1 bg-slate-200 dark:bg-zinc-700" />
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-amber-600 px-2">Empréstimos À Vista</span>
+                  <div className="h-px flex-1 bg-slate-200" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 dark:text-zinc-400">Atrasado / Vencido</label>
+                  <label className="font-bold text-slate-600 text-xs uppercase">Atrasado / Vencido</label>
                   <textarea value={msgAtrasadosAvista} onChange={(e) => setMsgAtrasadosAvista(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 text-xs"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 dark:text-zinc-400">Vencendo Hoje</label>
+                  <label className="font-bold text-slate-600 text-xs uppercase">Vencendo Hoje</label>
                   <textarea value={msgHojeAvista} onChange={(e) => setMsgHojeAvista(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 text-xs"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 dark:text-zinc-400">A Vencer (Lembrete)</label>
+                  <label className="font-bold text-slate-600 text-xs uppercase">A Vencer (Lembrete)</label>
                   <textarea value={msgAVencerAvista} onChange={(e) => setMsgAVencerAvista(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 dark:text-white text-xs"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 text-xs"
                   />
                 </div>
               </div>
 
               {/* Variáveis */}
-              <div className="bg-slate-50 dark:bg-[#090d16] border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 space-y-2">
-                <span className="font-extrabold block uppercase tracking-wider text-xs text-slate-500 dark:text-zinc-400">Variáveis disponíveis</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                <span className="font-extrabold block uppercase tracking-wider text-xs text-slate-500">Variáveis disponíveis</span>
                 <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
-                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{nome}`}</strong> — Primeiro nome</span>
-                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{valor}`}</strong> — Valor da parcela</span>
-                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{data}`}</strong> — Data de vencimento</span>
-                  <span className="text-slate-700 dark:text-emerald-300"><strong>{`{num}`}</strong> — Nº da parcela (parcelados)</span>
+                  <span className="text-slate-700"><strong>{`{nome}`}</strong> — Primeiro nome</span>
+                  <span className="text-slate-700"><strong>{`{valor}`}</strong> — Valor da parcela</span>
+                  <span className="text-slate-700"><strong>{`{data}`}</strong> — Data de vencimento</span>
+                  <span className="text-slate-700"><strong>{`{num}`}</strong> — Nº da parcela (parcelados)</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowConfigModal(false)}
-                className="px-5 py-2.5 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-350 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-xl text-sm font-bold transition-all"
+                className="px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-slate-900 rounded-xl text-sm font-bold transition-all shadow-md"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
               >
                 Salvar Configurações
               </button>

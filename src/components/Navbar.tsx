@@ -147,7 +147,7 @@ export default function Navbar() {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#13221b] border-t border-slate-200 dark:border-emerald-950 flex justify-around items-center h-16 z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center h-16 z-50 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.path || (item.path !== "/" && pathname.startsWith(item.path));
@@ -157,11 +157,11 @@ export default function Navbar() {
               href={item.path}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-200 active:scale-90 ${
                 isActive
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-slate-400 dark:text-emerald-500/60 hover:text-emerald-500"
+                  ? "text-emerald-600"
+                  : "text-slate-400 hover:text-emerald-600"
               }`}
             >
-              <div className={`relative p-1 rounded-xl transition-all duration-300 ${isActive ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''}`}>
+              <div className={`relative p-1 rounded-xl transition-all duration-300 ${isActive ? 'bg-emerald-50' : ''}`}>
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
               </div>
               <span className={`text-[10px] tracking-wide transition-all ${isActive ? 'font-black' : 'font-semibold'}`}>

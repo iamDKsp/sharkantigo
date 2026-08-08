@@ -244,38 +244,38 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
       {/* Voltar */}
       <Link
         href="/emprestimos"
-        className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 dark:text-emerald-400 dark:hover:text-white text-sm font-medium transition-colors"
+        className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Voltar para Empréstimos</span>
       </Link>
 
       <div>
-        <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Novo empréstimo</h1>
-        <p className="text-slate-500 dark:text-emerald-400/80">Configure os parâmetros do novo empréstimo em dinheiro.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Novo empréstimo</h1>
+        <p className="text-slate-500">Configure os parâmetros do novo empréstimo em dinheiro.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 pb-20">
         {/* Seção 1: Cliente */}
-        <div className="premium-card bg-white dark:bg-[#13221b] border border-slate-300 dark:border-emerald-900 shadow-md rounded-2xl relative transition-shadow hover:shadow-lg z-10">
+        <div className="premium-card bg-white border border-slate-200 shadow-md rounded-2xl relative transition-shadow hover:shadow-lg z-10">
           <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-2xl"></div>
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl">
-                <User className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2.5 bg-emerald-50 rounded-xl">
+                <User className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Dados do Cliente</h2>
-                <p className="text-sm text-slate-500 dark:text-emerald-500/80 mt-0.5">Vincule o empréstimo a uma pessoa e parceiro.</p>
+                <h2 className="text-base font-black text-slate-800 tracking-tight">Dados do Cliente</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Vincule o empréstimo a uma pessoa e parceiro.</p>
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label htmlFor="clienteId" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <label htmlFor="clienteId" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                   Pessoa <span className="text-rose-500">*</span>
                 </label>
-                <div className="bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 hover:border-emerald-400 transition-colors">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-emerald-500 hover:border-emerald-400 transition-colors">
                   <SearchableSelect
                     name="clienteId"
                     value={clienteId}
@@ -287,7 +287,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="parceiroId" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <label htmlFor="parceiroId" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                   Quem Emprestou? <span className="text-rose-500">*</span>
                 </label>
                 <select
@@ -295,7 +295,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                   name="parceiroId"
                   value={parceiroId}
                   onChange={(e) => setParceiroId(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white font-medium hover:border-emerald-400 transition-colors cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 font-medium hover:border-emerald-400 transition-colors cursor-pointer"
                 >
                   <option value="">Eu (Administrador)</option>
                   {parceiros.map((p) => (
@@ -310,27 +310,27 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         </div>
 
         {/* Seção 2: Valores e Modalidade */}
-        <div className="premium-card bg-white dark:bg-[#13221b] border border-slate-300 dark:border-emerald-900 shadow-md rounded-2xl relative overflow-hidden transition-shadow hover:shadow-lg mt-6">
+        <div className="premium-card bg-white border border-slate-200 shadow-md rounded-2xl relative overflow-hidden transition-shadow hover:shadow-lg mt-6">
           <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 rounded-xl">
-                <Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-2.5 bg-blue-50 rounded-xl">
+                <Wallet className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Valores e Modalidade</h2>
-                <p className="text-sm text-slate-500 dark:text-emerald-500/80 mt-0.5">Defina o montante e a forma como será pago.</p>
+                <h2 className="text-base font-black text-slate-800 tracking-tight">Valores e Modalidade</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Defina o montante e a forma como será pago.</p>
               </div>
             </div>
 
             <div className="space-y-8">
               <div className="space-y-3">
-                <label htmlFor="valorEmprestado" className="text-sm font-black text-slate-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <label htmlFor="valorEmprestado" className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1">
                   Valor Principal <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative group max-w-sm">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">R$</span>
+                    <span className="text-sm font-black text-emerald-600">R$</span>
                   </div>
                   <input
                     type="number"
@@ -342,13 +342,13 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     placeholder="0,00"
                     value={valor || ""}
                     onChange={(e) => setValor(Number(e.target.value))}
-                    className="w-full bg-emerald-50/50 dark:bg-emerald-950/20 border-2 border-emerald-500/50 dark:border-emerald-500/30 rounded-xl pl-10 pr-4 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 dark:focus:ring-emerald-400/20 dark:focus:border-emerald-400 text-emerald-700 dark:text-[#84cc16] font-black transition-all shadow-sm placeholder:text-emerald-500/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full bg-emerald-50/50 border-2 border-emerald-500/50 rounded-xl pl-10 pr-4 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 text-emerald-700 font-black transition-all shadow-sm placeholder:text-emerald-500/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <label className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                   Tipo de Pagamento <span className="text-rose-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -364,10 +364,10 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                       key={tipo.id}
                       type="button"
                       onClick={() => setTipoPagamento(tipo.id as TipoPagamento)}
-                      className={`relative py-3.5 px-4 rounded-xl border text-sm font-bold transition-all text-center overflow-hidden flex items-center justify-center gap-2 ${
+                      className={`relative py-3.5 px-4 rounded-xl border text-sm font-bold transition-all text-center overflow-hidden flex items-center justify-center gap-2 cursor-pointer ${
                         tipoPagamento === tipo.id
-                          ? "bg-emerald-500 text-white border-emerald-500 shadow-md transform scale-[1.02]"
-                          : "bg-white dark:bg-[#0b130e] text-slate-600 dark:text-emerald-300 border-slate-800 dark:border-emerald-900 hover:bg-slate-50 dark:hover:bg-emerald-950/40 hover:border-emerald-400"
+                          ? "bg-emerald-600 text-white border-emerald-600 shadow-md transform scale-[1.02]"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-emerald-400"
                       }`}
                     >
                       {tipoPagamento === tipo.id && <CheckCircle2 className="w-4 h-4 absolute left-3 opacity-50" />}
@@ -375,16 +375,16 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     </button>
                   ))}
                 </div>
-                <div className="bg-blue-50 dark:bg-blue-950/20 p-3.5 rounded-xl border border-blue-100 dark:border-blue-900/40 flex items-start gap-3 mt-2">
+                <div className="bg-blue-50 p-3.5 rounded-xl border border-blue-100 flex items-start gap-3 mt-2">
                   <Calculator className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-blue-800 dark:text-blue-300/80 font-medium leading-relaxed">
+                  <p className="text-sm text-blue-800 font-medium leading-relaxed">
                     {getDescricaoTipo()}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <label className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                   Categoria da Operação
                 </label>
                 <div className="flex flex-wrap gap-2.5">
@@ -400,10 +400,10 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                       key={cat}
                       type="button"
                       onClick={() => setCategoria(cat)}
-                      className={`py-2 px-4 rounded-full border text-sm font-bold transition-all ${
+                      className={`py-2 px-4 rounded-full border text-sm font-bold transition-all cursor-pointer ${
                         categoria === cat
                           ? "bg-blue-600 text-white border-blue-600 shadow-sm transform scale-[1.05]"
-                          : "bg-white dark:bg-[#0b130e] text-slate-600 dark:text-emerald-400 border-slate-800 dark:border-emerald-900 hover:bg-slate-50 dark:hover:bg-emerald-950/20"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                       }`}
                     >
                       {cat}
@@ -416,24 +416,24 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         </div>
 
         {/* Seção 3: Datas e Detalhes */}
-        <div className="premium-card bg-white dark:bg-[#13221b] border border-slate-300 dark:border-emerald-900 shadow-md rounded-2xl relative overflow-hidden transition-shadow hover:shadow-lg mt-6">
+        <div className="premium-card bg-white border border-slate-200 shadow-md rounded-2xl relative overflow-hidden transition-shadow hover:shadow-lg mt-6">
           <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-amber-500"></div>
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl">
-                <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="p-2.5 bg-amber-50 rounded-xl">
+                <Calendar className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Datas e Detalhes</h2>
-                <p className="text-sm text-slate-500 dark:text-emerald-500/80 mt-0.5">Determine os juros e os prazos.</p>
+                <h2 className="text-base font-black text-slate-800 tracking-tight">Datas e Detalhes</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Determine os juros e os prazos.</p>
               </div>
             </div>
 
             {/* Dinâmico: Mostrar Vencimento Calculado Simples */}
             {(tipoPagamento === "a_vista" || tipoPagamento === "a_vista_juros") && (
-              <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-900/40 text-sm mb-6 shadow-sm">
-                <span className="text-amber-800 dark:text-amber-500 font-bold">Vencimento calculado automaticamente:</span>
-                <span className="font-black text-amber-600 dark:text-amber-400 text-sm">{formatDataBr(dataVencimentoFinal)}</span>
+              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200 text-sm mb-6 shadow-sm">
+                <span className="text-amber-800 font-bold">Vencimento calculado automaticamente:</span>
+                <span className="font-black text-amber-600 text-sm">{formatDataBr(dataVencimentoFinal)}</span>
               </div>
             )}
 
@@ -441,7 +441,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               {/* Taxa de Juros */}
               {tipoPagamento !== "a_vista" && (
                 <div className="space-y-2 col-span-1">
-                  <label htmlFor="taxaJuros" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                  <label htmlFor="taxaJuros" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     {tipoPagamento === "juros_compostos" || tipoPagamento === "juros_mensais" || tipoPagamento === "parcela_juros_mes"
                       ? "Taxa de Juros por Período (%) *"
                       : "Taxa de Juros (%) - Opcional"}
@@ -457,7 +457,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                       value={taxaJuros}
                       onChange={(e) => setTaxaJuros(Number(e.target.value))}
                       placeholder="Ex: 5.5"
-                      className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 text-slate-900 dark:text-white font-semibold hover:border-amber-400 transition-colors"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
                   </div>
@@ -467,7 +467,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               {/* Número de parcelas */}
               {tipoPagamento !== "a_vista" && tipoPagamento !== "a_vista_juros" && (
                 <div className="space-y-2 col-span-1">
-                  <label htmlFor="periodos" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                  <label htmlFor="periodos" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     {tipoPagamento === "juros_compostos"
                       ? "Número de Períodos *"
                       : tipoPagamento === "juros_mensais"
@@ -483,14 +483,14 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     value={periodos}
                     onChange={(e) => setPeriodos(Number(e.target.value))}
                     placeholder="Ex: 12"
-                    className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 text-slate-900 dark:text-white font-semibold hover:border-amber-400 transition-colors"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors"
                   />
                 </div>
               )}
 
               {/* Data de Início */}
               <div className="space-y-2">
-                <label htmlFor="dataInicio" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <label htmlFor="dataInicio" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                   Data de Início <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -500,14 +500,14 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                   required
                   value={dataInicio}
                   onChange={(e) => setDataInicio(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 text-slate-900 dark:text-white font-semibold hover:border-amber-400 transition-colors cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors cursor-pointer"
                 />
               </div>
 
               {/* Vencimento 1ª Parcela */}
               {tipoPagamento !== "a_vista" && tipoPagamento !== "a_vista_juros" && tipoPagamento !== "juros_compostos" && (
                 <div className="space-y-2">
-                  <label htmlFor="vencimentoPrimeira" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                  <label htmlFor="vencimentoPrimeira" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     Vencimento da 1ª Parcela <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -516,14 +516,14 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     required
                     value={vencimentoPrimeira}
                     onChange={(e) => setVencimentoPrimeira(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 text-slate-900 dark:text-white font-semibold hover:border-amber-400 transition-colors cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors cursor-pointer"
                   />
                 </div>
               )}
             </div>
 
-            <div className="mt-8 space-y-3 pt-6 border-t border-slate-100 dark:border-emerald-900/30">
-              <label className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+            <div className="mt-8 space-y-3 pt-6 border-t border-slate-100">
+              <label className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                 Frequência de Cobrança <span className="text-rose-500">*</span>
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -537,10 +537,10 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     key={freq.id}
                     type="button"
                     onClick={() => setFrequencia(freq.id as Frequencia)}
-                    className={`py-2.5 px-2 rounded-xl border text-sm font-bold transition-all text-center ${
+                    className={`py-2.5 px-2 rounded-xl border text-sm font-bold transition-all text-center cursor-pointer ${
                       frequencia === freq.id
                         ? "bg-amber-500 text-white border-amber-500 shadow-md"
-                        : "bg-white dark:bg-[#0b130e] text-slate-600 dark:text-emerald-300 border-slate-800 dark:border-emerald-900 hover:bg-slate-50 dark:hover:bg-emerald-950/40 hover:border-slate-400"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-400"
                     }`}
                   >
                     {freq.label}
@@ -552,26 +552,26 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         </div>
 
         {/* Seção 4: Configurações Avançadas */}
-        <div className="premium-card bg-white dark:bg-[#13221b] border border-slate-300 dark:border-emerald-900 shadow-md rounded-2xl relative overflow-hidden transition-shadow hover:shadow-lg mt-6">
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-slate-400 dark:bg-emerald-800"></div>
+        <div className="premium-card bg-white border border-slate-200 shadow-md rounded-2xl relative overflow-hidden transition-shadow hover:shadow-lg mt-6">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-slate-400"></div>
           <div className="p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-slate-100 dark:bg-emerald-950/40 rounded-xl">
-                <Settings className="w-5 h-5 text-slate-600 dark:text-emerald-400" />
+              <div className="p-2.5 bg-slate-100 rounded-xl">
+                <Settings className="w-5 h-5 text-slate-600" />
               </div>
               <div>
-                <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Opções Avançadas</h2>
-                <p className="text-sm text-slate-500 dark:text-emerald-500/80 mt-0.5">Juros de atraso e anotações extras.</p>
+                <h2 className="text-base font-black text-slate-800 tracking-tight">Opções Avançadas</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Juros de atraso e anotações extras.</p>
               </div>
             </div>
 
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 dark:bg-[#0b130e] rounded-xl border border-slate-800 dark:border-emerald-900">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="mb-4 sm:mb-0">
-                  <span className="block text-sm font-bold text-slate-800 dark:text-white">
+                  <span className="block text-sm font-bold text-slate-800">
                     Cobrar juros automáticos por atraso
                   </span>
-                  <span className="text-sm text-slate-500 dark:text-emerald-500/80 mt-1 block">
+                  <span className="text-sm text-slate-500 mt-1 block">
                     Quando ativado, é acrescida uma porcentagem ao valor das parcelas em atraso.
                   </span>
                 </div>
@@ -582,13 +582,13 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     onChange={(e) => setCobrarAtraso(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-slate-300 dark:bg-emerald-950 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  <div className="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                 </label>
               </div>
 
               {cobrarAtraso && (
                 <div className="space-y-2 max-w-xs animate-fade-in pl-1">
-                  <label htmlFor="taxaMulta" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                  <label htmlFor="taxaMulta" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     Juros por atraso (%) <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
@@ -602,7 +602,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                       value={jurosAtraso}
                       onChange={(e) => setJurosAtraso(Number(e.target.value))}
                       placeholder="Ex: 2"
-                      className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white font-semibold hover:border-emerald-400 transition-colors"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 font-semibold hover:border-emerald-400 transition-colors"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
                   </div>
@@ -610,7 +610,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               )}
 
               <div className="space-y-2 pt-2">
-                <label htmlFor="observacoes" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                <label htmlFor="observacoes" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                   Observações
                 </label>
                 <div className="relative">
@@ -624,7 +624,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     value={observacoes}
                     onChange={(e) => setObservacoes(e.target.value)}
                     placeholder="Notas sobre o empréstimo..."
-                    className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white font-medium hover:border-emerald-400 transition-colors resize-y"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 font-medium hover:border-emerald-400 transition-colors resize-y"
                   />
                 </div>
               </div>
@@ -634,37 +634,37 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
 
         {/* Tabela de Simulação de Parcelas */}
         {parcelasSimuladas.length > 0 && (
-          <div className="premium-card p-0 bg-white dark:bg-[#13221b] border border-slate-300 dark:border-emerald-900 shadow-lg rounded-2xl relative overflow-hidden transition-all transform scale-[1.01] mt-10">
+          <div className="premium-card p-0 bg-white border border-slate-200 shadow-lg rounded-2xl relative overflow-hidden transition-all transform scale-[1.01] mt-10">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500"></div>
-            <div className="p-6 border-b border-slate-100 dark:border-emerald-950/50 flex justify-between items-center bg-slate-50/50 dark:bg-[#0f1c14]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div>
-                <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">
+                <h3 className="text-sm font-black text-slate-900 tracking-tight">
                   Cronograma de Recebimentos Simulado
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-emerald-500/70 mt-1">Veja a projeção antes de confirmar.</p>
+                <p className="text-sm text-slate-500 mt-1">Veja a projeção antes de confirmar.</p>
               </div>
             </div>
             
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-slate-500 dark:text-emerald-400">
-                <thead className="text-sm text-slate-400 dark:text-emerald-500/80 uppercase font-black tracking-widest border-b border-slate-100 dark:border-emerald-950 bg-slate-50/30 dark:bg-[#0b130e]">
+              <table className="w-full text-sm text-left text-slate-500">
+                <thead className="text-xs text-slate-400 uppercase font-black tracking-widest border-b border-slate-100 bg-slate-50/80">
                   <tr>
                     <th className="py-3 px-6 w-24 text-center">Nº</th>
                     <th className="py-3 px-6">Vencimento</th>
                     <th className="py-3 px-6 text-right">Valor da Parcela</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-emerald-950/40">
+                <tbody className="divide-y divide-slate-100">
                   {parcelasSimuladas.map((p) => (
-                    <tr key={p.numero} className="hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors group">
-                      <td className="py-3.5 px-6 font-black text-slate-800 dark:text-white text-center">
+                    <tr key={p.numero} className="hover:bg-emerald-50/50 transition-colors group">
+                      <td className="py-3.5 px-6 font-black text-slate-800 text-center">
                         {p.numero}
                       </td>
-                      <td className="py-3.5 px-6 font-semibold flex items-center space-x-2 text-slate-600 dark:text-emerald-300">
-                        <Calendar className="w-4 h-4 text-slate-300 dark:text-emerald-500/50 group-hover:text-emerald-500 transition-colors" />
+                      <td className="py-3.5 px-6 font-semibold flex items-center space-x-2 text-slate-600">
+                        <Calendar className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
                         <span>{formatDataBr(p.data_vencimento)}</span>
                       </td>
-                      <td className="py-3.5 px-6 text-right font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                      <td className="py-3.5 px-6 text-right font-black text-emerald-600 text-sm">
                         {formatBRL(p.valor)}
                       </td>
                     </tr>
@@ -674,11 +674,11 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             </div>
 
             {/* Totalizador */}
-            <div className="flex items-center justify-between p-6 bg-emerald-50 dark:bg-emerald-950/40 border-t border-emerald-100 dark:border-emerald-900/50">
-              <span className="text-sm font-black text-emerald-800 dark:text-emerald-400 uppercase tracking-widest">
+            <div className="flex items-center justify-between p-6 bg-emerald-50 border-t border-emerald-100">
+              <span className="text-sm font-black text-emerald-800 uppercase tracking-widest">
                 Total Estimado
               </span>
-              <span className="text-sm font-black text-emerald-700 dark:text-[#84cc16]">
+              <span className="text-base font-black text-emerald-700">
                 {formatBRL(parcelasSimuladas.reduce((acc, p) => acc + p.valor, 0))}
               </span>
             </div>
@@ -686,17 +686,17 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         )}
 
         {/* Ações */}
-        <div className="flex items-center justify-end space-x-4 pt-6 mt-8 border-t border-slate-200 dark:border-emerald-950/50">
+        <div className="flex items-center justify-end space-x-4 pt-6 mt-8 border-t border-slate-200">
           <Link
             href="/emprestimos"
-            className="px-6 py-3.5 bg-white dark:bg-[#13221b] text-slate-600 dark:text-emerald-400 border border-slate-800 dark:border-emerald-900/80 rounded-xl text-sm font-black tracking-wide hover:bg-slate-50 hover:text-slate-900 dark:hover:bg-emerald-900 dark:hover:text-white transition-all shadow-sm"
+            className="px-6 py-3.5 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-black tracking-wide hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={isPending}
-            className="flex items-center space-x-2 bg-emerald-500 text-white px-8 py-3.5 rounded-xl text-sm font-black tracking-wide hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:hover:shadow-none shadow-md transform hover:-translate-y-0.5 active:translate-y-0"
+            className="flex items-center space-x-2 bg-emerald-600 text-white px-8 py-3.5 rounded-xl text-sm font-black tracking-wide hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:hover:shadow-none shadow-md transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
           >
             {isPending ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -711,9 +711,9 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
       {/* Overlay Animado de Criação */}
       {showOverlay && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity">
-          <div className="bg-white dark:bg-[#13221b] p-8 rounded-3xl max-w-sm w-full mx-4 shadow-2xl border border-slate-200 dark:border-emerald-900/50 flex flex-col items-center justify-center space-y-6 text-center transform animate-in zoom-in-95 duration-300">
+          <div className="bg-white p-8 rounded-3xl max-w-sm w-full mx-4 shadow-2xl border border-slate-200 flex flex-col items-center justify-center space-y-6 text-center transform animate-in zoom-in-95 duration-300">
             {/* Ícone dinâmico dependendo do step */}
-            <div className="relative flex items-center justify-center w-28 h-28 bg-emerald-50 dark:bg-emerald-950/40 rounded-full overflow-hidden">
+            <div className="relative flex items-center justify-center w-28 h-28 bg-emerald-50 rounded-full overflow-hidden">
                {overlayStep === 2 ? (
                  <div className="w-full h-full flex items-center justify-center animate-in zoom-in duration-300">
                    <CheckCircle2 className="w-16 h-16 text-emerald-500 drop-shadow-md" />
@@ -724,12 +724,12 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">
+              <h3 className="text-base font-black text-slate-800 tracking-tight">
                 {overlayStep === 0 && "Validando dados..."}
                 {overlayStep === 1 && "Calculando parcelas..."}
                 {overlayStep === 2 && "Contrato gerado!"}
               </h3>
-              <p className="text-sm font-medium text-slate-500 dark:text-emerald-500/70">
+              <p className="text-sm font-medium text-slate-500">
                 {overlayStep === 0 && "Verificando informações do cliente e parceiro."}
                 {overlayStep === 1 && "Projetando recebimentos e juros."}
                 {overlayStep === 2 && "Tudo pronto! Redirecionando..."}
@@ -737,7 +737,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             </div>
 
             {/* Progress bar */}
-            <div className="w-full h-2 bg-slate-100 dark:bg-emerald-950/50 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                <div 
                  className="h-full bg-emerald-500 transition-all duration-700 ease-in-out"
                  style={{ width: overlayStep === 0 ? "33%" : overlayStep === 1 ? "66%" : "100%" }}

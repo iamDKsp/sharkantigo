@@ -284,28 +284,28 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
       {/* Voltar */}
       <Link
         href={`/clientes/${cliente.id}`}
-        className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 dark:text-emerald-400 dark:hover:text-white text-sm font-medium transition-colors"
+        className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Voltar para Detalhes</span>
       </Link>
 
       <div>
-        <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Editar cliente</h1>
-        <p className="text-slate-500 dark:text-emerald-400/80">Altere os dados cadastrais deste cliente.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Editar cliente</h1>
+        <p className="text-slate-500">Altere os dados cadastrais deste cliente.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Dados pessoais */}
-        <div className="premium-card p-6 space-y-4 bg-white dark:bg-[#13221b]">
-          <h2 className="text-md font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-emerald-950 pb-2">
+        <div className="premium-card p-6 space-y-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
             Dados pessoais
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nome */}
             <div className="space-y-1.5">
-              <label htmlFor="nome" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="nome" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Nome completo *
               </label>
               <input
@@ -314,13 +314,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 name="nome"
                 required
                 defaultValue={cliente.nome}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* Telefone */}
             <div className="space-y-1.5">
-              <label htmlFor="telefone" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="telefone" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Telefone (WhatsApp) *
               </label>
               <input
@@ -329,13 +329,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 name="telefone"
                 required
                 defaultValue={cliente.telefone}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* Cidade */}
             <div className="space-y-1.5">
-              <label htmlFor="cidade" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="cidade" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Cidade
               </label>
               <input
@@ -343,13 +343,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 id="cidade"
                 name="cidade"
                 defaultValue={cliente.cidade}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* Quem indicou */}
             <div className="space-y-1.5">
-              <label htmlFor="quemIndicou" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="quemIndicou" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Quem indicou
               </label>
               <input
@@ -357,13 +357,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 id="quemIndicou"
                 name="quemIndicou"
                 defaultValue={cliente.quem_indicou || ""}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* CPF / RG */}
             <div className="space-y-1.5">
-              <label htmlFor="documento" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="documento" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 CPF / RG
               </label>
               <input
@@ -371,13 +371,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 id="documento"
                 name="documento"
                 defaultValue={cliente.documento}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* Endereço */}
             <div className="space-y-1.5">
-              <label htmlFor="endereco" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="endereco" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Endereço
               </label>
               <input
@@ -385,13 +385,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 id="endereco"
                 name="endereco"
                 defaultValue={cliente.endereco || ""}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* Referência */}
             <div className="space-y-1.5">
-              <label htmlFor="referencia" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="referencia" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Referência
               </label>
               <input
@@ -399,13 +399,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 id="referencia"
                 name="referencia"
                 defaultValue={cliente.referencia || ""}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label htmlFor="email" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="email" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Email
               </label>
               <input
@@ -413,13 +413,13 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 id="email"
                 name="email"
                 defaultValue={cliente.email || ""}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
             {/* Observações */}
             <div className="space-y-1.5 col-span-1 md:col-span-2">
-              <label htmlFor="observacoes" className="text-sm font-bold text-slate-500 dark:text-emerald-400 uppercase tracking-wider">
+              <label htmlFor="observacoes" className="text-xs font-bold text-slate-600 uppercase tracking-wider">
                 Observações
               </label>
               <textarea
@@ -427,7 +427,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 name="observacoes"
                 rows={3}
                 defaultValue={cliente.observacoes || ""}
-                className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-800 dark:border-emerald-900/80 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-slate-900 dark:text-white"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
               />
             </div>
 
@@ -439,9 +439,9 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                 name="blacklist"
                 value="true"
                 defaultChecked={cliente.blacklist}
-                className="w-4.5 h-4.5 accent-red-650"
+                className="w-4 h-4 accent-rose-600 cursor-pointer"
               />
-              <label htmlFor="blacklist" className="text-sm font-bold text-red-500 uppercase tracking-wider cursor-pointer">
+              <label htmlFor="blacklist" className="text-xs font-bold text-rose-600 uppercase tracking-wider cursor-pointer">
                 Adicionar à Lista Negra (Bloqueado)
               </label>
             </div>
@@ -449,10 +449,10 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
         </div>
 
         {/* Foto do cliente */}
-        <div className="premium-card p-6 space-y-4 bg-white dark:bg-[#13221b]">
+        <div className="premium-card p-6 space-y-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
           <div>
-            <h2 className="text-md font-bold text-slate-900 dark:text-white">Foto do cliente</h2>
-            <p className="text-sm text-slate-400 dark:text-emerald-500 mt-0.5">
+            <h2 className="text-base font-bold text-slate-900">Foto do cliente</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
               Tire uma foto ou selecione da galeria.
             </p>
           </div>
@@ -461,7 +461,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
             <button
               type="button"
               onClick={() => triggerFotoSelect(false)}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded-lg text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             >
               <ImageIcon className="w-3.5 h-3.5" />
               <span>Galeria</span>
@@ -469,7 +469,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
             <button
               type="button"
               onClick={() => triggerFotoSelect(true)}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded-lg text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             >
               <Paperclip className="w-3.5 h-3.5" />
               <span>Arquivo</span>
@@ -477,7 +477,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
             <button
               type="button"
               onClick={() => startWebcam("foto")}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded-lg text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             >
               <Camera className="w-3.5 h-3.5" />
               <span>Webcam</span>
@@ -500,7 +500,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
           />
 
           {fotoPreview && (
-            <div className="relative w-44 aspect-square rounded-2xl overflow-hidden border border-slate-200 dark:border-emerald-800 shadow-sm mt-2">
+            <div className="relative w-44 aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm mt-2">
               <img
                 src={fotoPreview}
                 alt="Foto do cliente"
@@ -513,7 +513,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                   setFotoBase64(null);
                   setRemoveFoto(true);
                 }}
-                className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-650 transition-colors shadow"
+                className="absolute top-2 right-2 bg-rose-500 text-white p-1.5 rounded-full hover:bg-rose-600 transition-colors shadow cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -522,10 +522,10 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
         </div>
 
         {/* Documentos */}
-        <div className="premium-card p-6 space-y-4 bg-white dark:bg-[#13221b]">
+        <div className="premium-card p-6 space-y-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
           <div>
-            <h2 className="text-md font-bold text-slate-900 dark:text-white">Documentos (RG, CPF, comprovantes...)</h2>
-            <p className="text-sm text-slate-400 dark:text-emerald-500 mt-0.5">
+            <h2 className="text-base font-bold text-slate-900">Documentos (RG, CPF, comprovantes...)</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
               Aceita imagens (JPG/PNG) e PDFs.
             </p>
           </div>
@@ -534,7 +534,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
             <button
               type="button"
               onClick={() => triggerDocsSelect(false)}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded-lg text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             >
               <ImageIcon className="w-3.5 h-3.5" />
               <span>Galeria</span>
@@ -542,7 +542,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
             <button
               type="button"
               onClick={() => triggerDocsSelect(true)}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded-lg text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             >
               <Paperclip className="w-3.5 h-3.5" />
               <span>Arquivo</span>
@@ -550,7 +550,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
             <button
               type="button"
               onClick={() => startWebcam("documento")}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded-lg text-sm font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+              className="flex items-center space-x-1 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
             >
               <Camera className="w-3.5 h-3.5" />
               <span>Webcam</span>
@@ -581,11 +581,11 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
               {documentosMantidos.map((url, idx) => {
                 const isPdf = url.toLowerCase().endsWith(".pdf");
                 return (
-                  <div key={`old-${idx}`} className="relative group border border-slate-200 dark:border-emerald-950 rounded-xl overflow-hidden aspect-video sm:aspect-square flex items-center justify-center bg-slate-50 dark:bg-[#0b130e]">
+                  <div key={`old-${idx}`} className="relative group border border-slate-200 rounded-xl overflow-hidden aspect-video sm:aspect-square flex items-center justify-center bg-slate-50">
                     {isPdf ? (
                       <div className="flex flex-col items-center justify-center p-4">
-                        <span className="text-red-500 font-bold">PDF</span>
-                        <span className="text-sm text-slate-400 mt-1 truncate max-w-full">Documento</span>
+                        <span className="text-rose-500 font-bold">PDF</span>
+                        <span className="text-xs text-slate-400 mt-1 truncate max-w-full">Documento</span>
                       </div>
                     ) : (
                       <img src={url} alt="Documento" className="w-full h-full object-cover" />
@@ -593,7 +593,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                     <button
                       type="button"
                       onClick={() => removeMantidoDoc(url)}
-                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-650 text-white p-1 rounded-full shadow"
+                      className="absolute top-2 right-2 bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full shadow cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -605,11 +605,11 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
               {novosDocumentos.map((doc) => {
                 const isPdf = doc.preview === "pdf";
                 return (
-                  <div key={doc.id} className="relative group border border-emerald-500/30 rounded-xl overflow-hidden aspect-video sm:aspect-square flex items-center justify-center bg-slate-50 dark:bg-[#0b130e]">
+                  <div key={doc.id} className="relative group border border-emerald-500/30 rounded-xl overflow-hidden aspect-video sm:aspect-square flex items-center justify-center bg-slate-50">
                     {isPdf ? (
                       <div className="flex flex-col items-center justify-center p-4">
-                        <span className="text-red-500 font-bold">PDF</span>
-                        <span className="text-sm text-emerald-500 mt-1 font-semibold">Novo</span>
+                        <span className="text-rose-500 font-bold">PDF</span>
+                        <span className="text-xs text-emerald-600 mt-1 font-semibold">Novo</span>
                       </div>
                     ) : (
                       <img src={doc.preview} alt="Novo Documento" className="w-full h-full object-cover" />
@@ -620,7 +620,7 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
                     <button
                       type="button"
                       onClick={() => removeNovoDoc(doc.id)}
-                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-650 text-white p-1 rounded-full shadow-sm transition-colors"
+                      className="absolute top-2 right-2 bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full shadow-sm transition-colors cursor-pointer"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -635,14 +635,14 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
         <div className="flex items-center justify-end space-x-3">
           <Link
             href={`/clientes/${cliente.id}`}
-            className="px-5 py-2.5 bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-400 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors"
+            className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-colors"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={isPending}
-            className="flex items-center space-x-1.5 bg-[#064e3b] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-850 transition-colors disabled:opacity-50 shadow-sm"
+            className="flex items-center space-x-1.5 bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
           >
             {isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -657,10 +657,10 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
       {/* Modal da Webcam */}
       {webcamTarget !== null && (
         <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between text-white">
-              <h3 className="font-bold text-sm">Capturar foto com a câmera</h3>
-              <button onClick={stopWebcam} className="p-1 hover:bg-slate-800 rounded-lg">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between text-slate-900">
+              <h3 className="font-bold text-xs">Capturar foto com a câmera</h3>
+              <button onClick={stopWebcam} className="p-1 hover:bg-slate-100 rounded-lg cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -674,18 +674,18 @@ export default function FormEditarCliente({ cliente }: FormEditarClienteProps) {
               />
             </div>
 
-            <div className="p-4 flex items-center justify-between bg-slate-900 border-t border-slate-800">
+            <div className="p-4 flex items-center justify-between bg-slate-50 border-t border-slate-100">
               <button
                 type="button"
                 onClick={stopWebcam}
-                className="px-4 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-sm font-semibold transition-colors"
+                className="px-4 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={capturePhoto}
-                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-bold transition-colors flex items-center space-x-1"
+                className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1 cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
                 <span>Tirar Foto</span>

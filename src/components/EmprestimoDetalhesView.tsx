@@ -24,19 +24,19 @@ interface Emprestimo {
   categoria: string; observacoes: string | null; cliente: Cliente; parcelas: Parcela[]; parceiro?: Parceiro | null;
 }
 
-const inputCls = "w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500";
+const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all placeholder:text-slate-400";
 
 function Modal({ onClose, title, subtitle, children }: { onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-sm shadow-2xl">
-        <div className="flex items-start justify-between p-5 border-b border-zinc-100 dark:border-zinc-800">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm shadow-2xl">
+        <div className="flex items-start justify-between p-5 border-b border-slate-100">
           <div>
-            <h3 className="font-black text-sm text-zinc-900 dark:text-white">{title}</h3>
-            {subtitle && <p className="text-sm text-zinc-400 mt-0.5">{subtitle}</p>}
+            <h3 className="font-black text-sm text-slate-900">{title}</h3>
+            {subtitle && <p className="text-sm text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors ml-4 flex-shrink-0">
-            <X className="w-3.5 h-3.5 text-zinc-500" />
+          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors ml-4 flex-shrink-0 cursor-pointer">
+            <X className="w-3.5 h-3.5 text-slate-500" />
           </button>
         </div>
         <div className="p-5 space-y-4">{children}</div>
@@ -140,10 +140,10 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   }
 
   const STATUS = {
-    quitado:  { label: "Quitado",        icon: <CheckCircle2 className="w-3 h-3" />, bg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25", bar: "bg-emerald-500", stripe: "from-emerald-500/5 to-transparent" },
-    atrasado: { label: "Atrasado",        icon: <AlertCircle className="w-3 h-3" />, bg: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25", bar: "bg-rose-500", stripe: "from-rose-500/5 to-transparent" },
-    hoje:     { label: "Vence Hoje",      icon: <Clock className="w-3 h-3" />, bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25", bar: "bg-amber-500", stripe: "from-amber-500/5 to-transparent" },
-    emDia:    { label: "Em Dia",          icon: <BadgeCheck className="w-3 h-3" />, bg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25", bar: "bg-emerald-500", stripe: "from-blue-500/5 to-transparent" },
+    quitado:  { label: "Quitado",        icon: <CheckCircle2 className="w-3 h-3" />, bg: "bg-emerald-50 text-emerald-700 border-emerald-200", bar: "bg-emerald-500", stripe: "from-emerald-500/5 to-transparent" },
+    atrasado: { label: "Atrasado",        icon: <AlertCircle className="w-3 h-3" />, bg: "bg-rose-50 text-rose-700 border-rose-200", bar: "bg-rose-500", stripe: "from-rose-500/5 to-transparent" },
+    hoje:     { label: "Vence Hoje",      icon: <Clock className="w-3 h-3" />, bg: "bg-amber-50 text-amber-700 border-amber-200", bar: "bg-amber-500", stripe: "from-amber-500/5 to-transparent" },
+    emDia:    { label: "Em Dia",          icon: <BadgeCheck className="w-3 h-3" />, bg: "bg-blue-50 text-blue-700 border-blue-200", bar: "bg-emerald-500", stripe: "from-blue-500/5 to-transparent" },
   };
   const s = STATUS[statusReal === "quitado" ? "quitado" : atrasado ? "atrasado" : venceHoje ? "hoje" : "emDia"];
 
@@ -228,12 +228,12 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
 
   // ── Button helpers ──
   const BtnPrimary = ({ onClick, children, disabled }: any) => (
-    <button onClick={onClick} disabled={disabled ?? isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white text-sm font-black tracking-wide rounded-xl transition-all shadow-sm shadow-emerald-500/20 disabled:opacity-60">
+    <button onClick={onClick} disabled={disabled ?? isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white text-sm font-black tracking-wide rounded-xl transition-all shadow-sm shadow-emerald-500/20 disabled:opacity-60 cursor-pointer">
       {children}
     </button>
   );
   const BtnSecondary = ({ onClick, children, danger }: any) => (
-    <button onClick={onClick} disabled={isPending} className={`flex items-center justify-center gap-1.5 w-full py-2.5 text-sm font-black tracking-wide rounded-xl border transition-all active:scale-[0.98] disabled:opacity-60 ${danger ? "bg-zinc-50 dark:bg-zinc-800/60 text-rose-500 dark:text-rose-400 border-zinc-200 dark:border-zinc-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:border-rose-300" : "bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700/60"}`}>
+    <button onClick={onClick} disabled={isPending} className={`flex items-center justify-center gap-1.5 w-full py-2.5 text-sm font-black tracking-wide rounded-xl border transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer ${danger ? "bg-slate-50 text-rose-600 border-slate-200 hover:bg-rose-50 hover:border-rose-300" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"}`}>
       {children}
     </button>
   );
@@ -248,19 +248,19 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       <div className="flex items-center justify-between py-1">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-zinc-400 hover:text-zinc-800 dark:hover:text-white text-sm font-semibold transition-colors group active:scale-95"
+          className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 text-sm font-semibold transition-colors group active:scale-95 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Voltar
         </button>
-        {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />}
+        {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
         <div className="flex items-center gap-2">
           <Link
             href={`/emprestimos/${emprestimo.id}/editar`}
-            className="flex items-center gap-1.5 text-sm font-black text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-500/20 px-3 py-1.5 rounded-xl transition-all"
+            className="flex items-center gap-1.5 text-sm font-black text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition-all"
           >
             <Pencil className="w-3.5 h-3.5" /> Editar
           </Link>
-          <button onClick={() => setModal("delete")} className="flex items-center gap-1.5 text-sm font-black text-rose-500 hover:text-rose-600 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 border border-rose-200 dark:border-rose-500/20 px-3 py-1.5 rounded-xl transition-all">
+          <button onClick={() => setModal("delete")} className="flex items-center gap-1.5 text-sm font-black text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer">
             <Trash2 className="w-3.5 h-3.5" /> Excluir
           </button>
         </div>
@@ -273,7 +273,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
         <div className="lg:col-span-2 space-y-4">
 
           {/* HERO CARD */}
-          <div className={`relative overflow-hidden card-accent rounded-2xl border bg-white dark:bg-slate-900/60 border-zinc-200 dark:border-white/8 shadow-sm`}>
+          <div className={`relative overflow-hidden rounded-2xl border bg-white border-slate-200 shadow-sm`}>
             {/* Stripe lateral de status */}
             <div className={`absolute left-0 top-0 bottom-0 w-1 ${s.bar}`} />
             <div className={`absolute inset-0 bg-gradient-to-r ${s.stripe} pointer-events-none`} />
@@ -281,14 +281,14 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
             <div className="relative px-6 pt-5 pb-6">
               {/* Status + valor principal */}
               <div className="flex items-start justify-between mb-5">
-                <span className={`inline-flex items-center gap-1.5 text-sm font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${s.bg}`}>
+                <span className={`inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${s.bg}`}>
                   {s.icon} {s.label}
                 </span>
                 {statusReal !== "quitado" && (
-                  <div className={`text-right text-sm font-black px-2.5 py-1 rounded-xl border ${
-                    diasDiff < 0 ? "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20" :
-                    diasDiff === 0 ? "bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20" :
-                    "bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
+                  <div className={`text-right text-xs font-black px-2.5 py-1 rounded-xl border ${
+                    diasDiff < 0 ? "bg-rose-50 text-rose-700 border-rose-200" :
+                    diasDiff === 0 ? "bg-amber-50 text-amber-700 border-amber-200" :
+                    "bg-slate-50 text-slate-600 border-slate-200"
                   }`}>
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -304,28 +304,28 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
               {/* Valores */}
               <div className="flex flex-wrap gap-x-8 gap-y-3 mb-6">
                 <div>
-                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Saldo a Receber</p>
-                  <p className="text-sm font-black text-zinc-900 dark:text-white leading-none tracking-tight">{fmt(saldoRestante > 0 ? saldoRestante : totalEstimado)}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Saldo a Receber</p>
+                  <p className="text-2xl font-black text-slate-900 leading-none tracking-tight">{fmt(saldoRestante > 0 ? saldoRestante : totalEstimado)}</p>
                 </div>
                 <div className="flex gap-6 items-end pb-1">
                   <div>
-                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Juros</p>
-                    <p className="text-sm font-black text-zinc-400 dark:text-zinc-500 leading-none">{fmt(totalEstimado - emprestimo.valor_emprestado)}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros</p>
+                    <p className="text-sm font-black text-slate-500 leading-none">{fmt(totalEstimado - emprestimo.valor_emprestado)}</p>
                   </div>
                   <div>
-                    <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-1">Recebido</p>
-                    <p className="text-sm font-black text-emerald-600 dark:text-emerald-400 leading-none">{fmt(totalPago)}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Recebido</p>
+                    <p className="text-sm font-black text-emerald-600 leading-none">{fmt(totalPago)}</p>
                   </div>
                 </div>
               </div>
 
               {/* Barra de progresso */}
               <div>
-                <div className="flex justify-between text-sm font-black text-zinc-400 uppercase tracking-widest mb-1.5">
+                <div className="flex justify-between text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">
                   <span>Progresso — {progresso.toFixed(0)}% pago</span>
                   <span>{pagas.length}/{emprestimo.parcelas.length} parcelas</span>
                 </div>
-                <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full ${s.bar} transition-all duration-700`} style={{ width: `${Math.max(progresso, progresso > 0 ? 3 : 0)}%` }} />
                 </div>
               </div>
@@ -334,19 +334,19 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
 
           {/* PARCELAS */}
           {emprestimo.parcelas.length > 0 && (
-            <div className="card-accent rounded-2xl border bg-white dark:bg-slate-900/60 border-zinc-200 dark:border-white/8 shadow-sm overflow-hidden">
-              <div className="px-5 py-3.5 border-b border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
+            <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-zinc-400" />
-                  <span className="text-sm font-black text-zinc-900 dark:text-white">Parcelas</span>
+                  <Layers className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm font-black text-slate-900">Parcelas</span>
                 </div>
-                <div className="flex gap-2 text-sm font-black uppercase tracking-widest">
-                  {pagas.length > 0 && <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">{pagas.length} pagas</span>}
-                  {abertas.length > 0 && <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 px-2 py-0.5 rounded-full">{abertas.length} abertas</span>}
+                <div className="flex gap-2 text-xs font-black uppercase tracking-widest">
+                  {pagas.length > 0 && <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">{pagas.length} pagas</span>}
+                  {abertas.length > 0 && <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{abertas.length} abertas</span>}
                 </div>
               </div>
 
-              <div className="divide-y divide-zinc-100 dark:divide-zinc-800/40 max-h-96 overflow-y-auto">
+              <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
                 {emprestimo.parcelas.map((p) => {
                   const v = new Date(p.data_vencimento);
                   const pUTC = new Date(Date.UTC(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate()));
@@ -356,35 +356,35 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                   const pAtrasoPago = p.status === "pago_com_atraso";
 
                   return (
-                    <div key={p.id} className={`flex items-center justify-between px-5 py-3.5 hover:bg-zinc-50/60 dark:hover:bg-zinc-800/20 transition-colors ${pAtras ? "bg-rose-50/40 dark:bg-rose-950/10" : ""}`}>
+                    <div key={p.id} className={`flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors ${pAtras ? "bg-rose-50/40" : ""}`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${pPago ? "bg-emerald-50 dark:bg-emerald-950/50" : pAtras ? "bg-rose-50 dark:bg-rose-950/40" : pHoje ? "bg-amber-50 dark:bg-amber-950/40" : "bg-zinc-100 dark:bg-zinc-800"}`}>
-                          {pPago ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : pAtras ? <AlertTriangle className="w-3.5 h-3.5 text-rose-500" /> : pHoje ? <Clock className="w-3.5 h-3.5 text-amber-500" /> : <Calendar className="w-3.5 h-3.5 text-zinc-400" />}
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${pPago ? "bg-emerald-50" : pAtras ? "bg-rose-50" : pHoje ? "bg-amber-50" : "bg-slate-100"}`}>
+                          {pPago ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : pAtras ? <AlertTriangle className="w-3.5 h-3.5 text-rose-500" /> : pHoje ? <Clock className="w-3.5 h-3.5 text-amber-500" /> : <Calendar className="w-3.5 h-3.5 text-slate-400" />}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-sm font-black text-zinc-900 dark:text-white">Parcela {p.numero}</span>
-                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full border ${
-                              pPago ? `${pAtrasoPago ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"}` :
-                              pAtras ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" :
-                              pHoje ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" :
-                              "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 border-zinc-200 dark:border-zinc-700"
+                            <span className="text-sm font-black text-slate-900">Parcela {p.numero}</span>
+                            <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full border ${
+                              pPago ? `${pAtrasoPago ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}` :
+                              pAtras ? "bg-rose-50 text-rose-700 border-rose-200" :
+                              pHoje ? "bg-amber-50 text-amber-700 border-amber-200" :
+                              "bg-slate-100 text-slate-500 border-slate-200"
                             }`}>
                               {pPago ? (pAtrasoPago ? "c/ atraso" : "pago") : pAtras ? "atrasada" : pHoje ? "hoje" : "aberta"}
                             </span>
                           </div>
-                          <div className="text-sm text-zinc-400 flex gap-2">
+                          <div className="text-xs text-slate-400 flex gap-2">
                             <span>Vence {fmtDate(p.data_vencimento)}</span>
-                            {p.data_pagamento && <span className="text-emerald-500 font-bold">· Pago {fmtDate(p.data_pagamento)}</span>}
+                            {p.data_pagamento && <span className="text-emerald-600 font-bold">· Pago {fmtDate(p.data_pagamento)}</span>}
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2.5">
-                        <span className="text-sm font-black text-zinc-900 dark:text-white">{fmt(p.valor)}</span>
+                        <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
                         {p.status === "aberto" && (
                           <div className="flex gap-1">
-                            <button onClick={() => pay(false)} disabled={isPending} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-black rounded-lg transition-colors shadow-sm">
+                            <button onClick={() => pay(false)} disabled={isPending} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer">
                               Pagar
                             </button>
                           </div>
@@ -402,60 +402,60 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
         <div className="space-y-4">
 
           {/* CLIENTE */}
-          <div className="card-accent rounded-2xl border bg-white dark:bg-slate-900/60 border-zinc-200 dark:border-white/8 shadow-sm p-5">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-3">Tomador</p>
+          <div className="rounded-2xl border bg-white border-slate-200 shadow-sm p-5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Tomador</p>
             <div className="flex items-center gap-3 mb-4">
               {emprestimo.cliente.foto_url ? (
-                <img src={emprestimo.cliente.foto_url} alt={emprestimo.cliente.nome} className="w-11 h-11 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700 shadow-sm" />
+                <img src={emprestimo.cliente.foto_url} alt={emprestimo.cliente.nome} className="w-11 h-11 rounded-xl object-cover border border-slate-200 shadow-sm" />
               ) : (
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-700 flex items-center justify-center text-white font-black text-sm shadow-sm flex-shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-black text-sm shadow-sm flex-shrink-0">
                   {emprestimo.cliente.nome.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
-                <Link href={`/clientes/${emprestimo.cliente.id}`} className="font-black text-sm text-zinc-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-0.5 group truncate">
+                <Link href={`/clientes/${emprestimo.cliente.id}`} className="font-black text-sm text-slate-900 hover:text-emerald-600 transition-colors flex items-center gap-0.5 group truncate">
                   {emprestimo.cliente.nome}
                   <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 </Link>
-                <a href={`tel:${emprestimo.cliente.telefone}`} className="text-sm text-zinc-400 hover:text-zinc-600 flex items-center gap-1 mt-0.5">
+                <a href={`tel:${emprestimo.cliente.telefone}`} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 mt-0.5">
                   <Phone className="w-3 h-3" /> {emprestimo.cliente.telefone}
                 </a>
               </div>
             </div>
             {emprestimo.cliente.blacklist && (
-              <div className="flex items-center gap-1.5 text-sm font-black uppercase text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/20 px-2.5 py-1.5 rounded-lg">
+              <div className="flex items-center gap-1.5 text-xs font-black uppercase text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-1.5 rounded-lg">
                 <ShieldOff className="w-3 h-3" /> Lista Negra
               </div>
             )}
           </div>
 
           {/* MÉTRICAS */}
-          <div className="card-accent rounded-2xl border bg-white dark:bg-slate-900/60 border-zinc-200 dark:border-white/8 shadow-sm p-5 grid grid-cols-2 gap-4">
+          <div className="rounded-2xl border bg-white border-slate-200 shadow-sm p-5 grid grid-cols-2 gap-4">
             {[
-              { label: "Principal", value: fmt(emprestimo.valor_emprestado), color: "text-zinc-900 dark:text-white" },
-              { label: "Juros", value: `${emprestimo.taxa_juros}%`, color: "text-emerald-600 dark:text-emerald-400" },
-              { label: "Multa", value: `${emprestimo.taxa_multa}%`, color: "text-rose-500 dark:text-rose-400" },
-              { label: "Frequência", value: freqLabel[emprestimo.frequencia] || emprestimo.frequencia, color: "text-zinc-900 dark:text-white" },
+              { label: "Principal", value: fmt(emprestimo.valor_emprestado), color: "text-slate-900" },
+              { label: "Juros", value: `${emprestimo.taxa_juros}%`, color: "text-emerald-600" },
+              { label: "Multa", value: `${emprestimo.taxa_multa}%`, color: "text-rose-500" },
+              { label: "Frequência", value: freqLabel[emprestimo.frequencia] || emprestimo.frequencia, color: "text-slate-900" },
             ].map(({ label, value, color }) => (
               <div key={label}>
-                <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">{label}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{label}</p>
                 <p className={`text-sm font-black ${color}`}>{value}</p>
               </div>
             ))}
           </div>
 
           {/* CONTRATO */}
-          <div className="card-accent rounded-2xl border bg-white dark:bg-slate-900/60 border-zinc-200 dark:border-white/8 shadow-sm overflow-hidden">
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+          <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
+            <div className="divide-y divide-slate-100">
               {[
                 { label: "Vencimento", value: fmtDate(emprestimo.data_vencimento) },
                 { label: "Tipo", value: tipoLabel[emprestimo.tipo_pagamento] || emprestimo.tipo_pagamento },
                 { label: "Categoria", value: emprestimo.categoria || "Sem categoria" },
-                { label: "Emprestou", value: emprestimo.parceiro ? `${emprestimo.parceiro.nome} ·Parceiro` : "Capital próprio" },
+                { label: "Emprestou", value: emprestimo.parceiro ? `${emprestimo.parceiro.nome} · Parceiro` : "Capital próprio" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm font-black uppercase tracking-widest text-zinc-400">{label}</span>
-                  <span className="text-sm font-black text-zinc-900 dark:text-white text-right max-w-[55%] truncate">{value}</span>
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-400">{label}</span>
+                  <span className="text-xs font-black text-slate-900 text-right max-w-[55%] truncate">{value}</span>
                 </div>
               ))}
             </div>
@@ -463,17 +463,17 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
 
           {/* OBSERVAÇÕES */}
           {emprestimo.observacoes && (
-            <div className="rounded-2xl border bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-500/20 p-4 shadow-sm">
-              <p className="text-[8px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-2">Observações</p>
-              <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">{emprestimo.observacoes}</p>
+            <div className="rounded-2xl border bg-amber-50 border-amber-200 p-4 shadow-sm">
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 mb-2">Observações</p>
+              <p className="text-xs text-slate-700 leading-relaxed">{emprestimo.observacoes}</p>
             </div>
           )}
 
           {/* AÇÕES */}
-          <div className="card-accent rounded-2xl border bg-white dark:bg-slate-900/60 border-zinc-200 dark:border-white/8 shadow-sm overflow-hidden">
-            <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800/60 flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5 text-zinc-400" />
-              <span className="text-sm font-black text-zinc-900 dark:text-white">Ações</span>
+          <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+              <TrendingUp className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-sm font-black text-slate-900">Ações</span>
             </div>
             <div className="p-4 space-y-2">
               {statusReal !== "quitado" && (
@@ -482,7 +482,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                     <>
                       <div className="grid grid-cols-2 gap-2">
                         <BtnPrimary onClick={() => pay(false)}><Wallet className="w-3.5 h-3.5" /> Pagar Parcela</BtnPrimary>
-                        <button onClick={() => payAll(false)} disabled={isPending} className="flex items-center justify-center gap-1.5 py-2.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 text-sm font-black rounded-xl transition-all active:scale-[0.98]">
+                        <button onClick={() => payAll(false)} disabled={isPending} className="flex items-center justify-center gap-1.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] cursor-pointer">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Quitar Tudo
                         </button>
                       </div>
@@ -492,7 +492,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                       <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> Marcar como Pago</BtnPrimary>
                     </>
                   )}
-                  <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 text-sm font-black rounded-xl transition-all active:scale-[0.98] shadow-sm">
+                  <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] shadow-sm cursor-pointer">
                     <RefreshCw className="w-4 h-4" /> Receber só os juros (renovar +30d)
                   </button>
                   <div className="grid grid-cols-2 gap-2">
@@ -518,23 +518,23 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
         <Modal onClose={() => setModal(null)} title="Renegociar Dívida" subtitle="Abate um valor do saldo devedor">
           <form onSubmit={submitReneg} className="space-y-4">
             <div>
-              <label className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">Valor Pago Agora (R$) *</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Valor Pago Agora (R$) *</label>
               <input type="number" step="any" required min="0.01" max={saldoRestante} value={valorAbater} onChange={e => setValorAbater(e.target.value)} placeholder="Ex: 500" className={inputCls} />
-              <p className="text-sm text-zinc-400 mt-1">Saldo atual: <span className="font-bold text-zinc-600 dark:text-zinc-300">{fmt(saldoRestante)}</span></p>
+              <p className="text-xs text-slate-400 mt-1">Saldo atual: <span className="font-bold text-slate-600">{fmt(saldoRestante)}</span></p>
             </div>
-            <label className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
-              <span className="text-sm font-bold text-zinc-600 dark:text-zinc-300">Cobrar juros sobre saldo restante</span>
-              <input type="checkbox" checked={aplicarJuros} onChange={e => setAplicarJuros(e.target.checked)} className="w-4 h-4 accent-emerald-500" />
+            <label className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors">
+              <span className="text-xs font-bold text-slate-600">Cobrar juros sobre saldo restante</span>
+              <input type="checkbox" checked={aplicarJuros} onChange={e => setAplicarJuros(e.target.checked)} className="w-4 h-4 accent-emerald-600 cursor-pointer" />
             </label>
             {aplicarJuros && (
               <div>
-                <label className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">Nova Taxa de Juros (%) *</label>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Nova Taxa de Juros (%) *</label>
                 <input type="number" step="any" required value={taxaReneg} onChange={e => setTaxaReneg(e.target.value)} placeholder="Ex: 10" className={inputCls} />
               </div>
             )}
             <div className="flex gap-2 pt-1">
-              <button type="button" onClick={() => setModal(null)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm font-black rounded-xl transition-colors">Cancelar</button>
-              <button type="submit" disabled={isPending} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
+              <button type="button" onClick={() => setModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" disabled={isPending} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
                 {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Confirmar
               </button>
             </div>
@@ -547,11 +547,11 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
         <Modal onClose={() => setModal(null)} title="Reprogramar Vencimento" subtitle="Redefine data e condições do contrato">
           <form onSubmit={submitReprog} className="space-y-4">
             <div>
-              <label className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">Nova Data de Vencimento *</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Nova Data de Vencimento *</label>
               <input type="date" required value={novaData} onChange={e => setNovaData(e.target.value)} className={inputCls} />
             </div>
             <div>
-              <label className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">Frequência das Parcelas *</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Frequência das Parcelas *</label>
               <select value={freqReprog} onChange={e => setFreqReprog(e.target.value)} className={inputCls}>
                 <option value="diario">Diário</option>
                 <option value="semanal">Semanal</option>
@@ -560,16 +560,16 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
               </select>
             </div>
             <div>
-              <label className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">Valor Extra / Adicional (R$)</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Valor Extra / Adicional (R$)</label>
               <input type="number" step="any" value={extra} onChange={e => setExtra(e.target.value)} placeholder="Ex: 200 (adiciona ao saldo)" className={inputCls} />
             </div>
             <div>
-              <label className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1.5 block">Nova Taxa de Juros (%)</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Nova Taxa de Juros (%)</label>
               <input type="number" step="any" value={taxaReprog} onChange={e => setTaxaReprog(e.target.value)} placeholder="Ex: 10 (sobre o novo saldo)" className={inputCls} />
             </div>
             <div className="flex gap-2 pt-1">
-              <button type="button" onClick={() => setModal(null)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm font-black rounded-xl transition-colors">Cancelar</button>
-              <button type="submit" disabled={isPending} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
+              <button type="button" onClick={() => setModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
+              <button type="submit" disabled={isPending} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
                 {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Confirmar
               </button>
             </div>
@@ -580,13 +580,13 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       {/* ── MODAL: Confirmar Exclusão ── */}
       {modal === "delete" && (
         <Modal onClose={() => setModal(null)} title="Excluir Empréstimo?" subtitle="Esta ação é irreversível e não pode ser desfeita.">
-          <div className="flex items-center gap-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/20 rounded-xl p-4">
+          <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-xl p-4">
             <AlertTriangle className="w-5 h-5 text-rose-500 flex-shrink-0" />
-            <p className="text-sm text-rose-700 dark:text-rose-300 font-semibold">Todos os dados deste empréstimo, incluindo parcelas e histórico, serão permanentemente removidos.</p>
+            <p className="text-xs text-rose-700 font-semibold">Todos os dados deste empréstimo, incluindo parcelas e histórico, serão permanentemente removidos.</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setModal(null)} className="flex-1 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm font-black rounded-xl transition-colors">Cancelar</button>
-            <button onClick={() => { setModal(null); excluir(); }} disabled={isPending} className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-sm font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm">
+            <button onClick={() => setModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
+            <button onClick={() => { setModal(null); excluir(); }} disabled={isPending} className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
               {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Excluir Definitivamente
             </button>
           </div>
@@ -596,16 +596,16 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       {/* ── MODAL: Disparo WhatsApp via Plataforma ── */}
       {modal === "wa" && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#13221b] rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 dark:border-emerald-900/50 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-slate-100 dark:border-emerald-900/30 flex justify-between items-center bg-slate-50 dark:bg-emerald-950/20">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
-                <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-black text-slate-900 flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-emerald-500" />
                   Enviar Mensagem
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-emerald-500/70 mt-1">Para {emprestimo.cliente.nome}</p>
+                <p className="text-xs text-slate-500 mt-1">Para {emprestimo.cliente.nome}</p>
               </div>
-              <button onClick={() => setModal(null)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-emerald-900/50 transition-colors">
+              <button onClick={() => setModal(null)} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -613,9 +613,8 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
             <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-bold text-slate-500 dark:text-emerald-500/70 uppercase tracking-wider block">Respostas Rápidas</label>
-                  <button onClick={() => setWaConfigMode(!waConfigMode)} className="text-sm flex items-center gap-1 font-bold text-slate-400 hover:text-emerald-500 transition-colors">
-                    {/* (Using string instead of Settings icon to avoid extra imports if missing) */}
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Respostas Rápidas</label>
+                  <button onClick={() => setWaConfigMode(!waConfigMode)} className="text-xs flex items-center gap-1 font-bold text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer">
                     {waConfigMode ? "Concluir" : "Configurar"}
                   </button>
                 </div>
@@ -626,20 +625,20 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                         <textarea 
                           value={msg}
                           onChange={(e) => handleUpdateTemplate(i, e.target.value)}
-                          className="flex-1 bg-slate-50 dark:bg-[#0b130e] border border-slate-300 dark:border-emerald-900/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white resize-none h-[60px]"
+                          className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 resize-none h-[60px]"
                         />
-                        <button onClick={() => handleRemoveTemplate(i)} className="p-2 mt-2 text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0">
+                        <button onClick={() => handleRemoveTemplate(i)} className="p-2 mt-2 text-rose-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-colors shrink-0 cursor-pointer">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     ) : (
-                      <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 dark:bg-[#0b130e] border border-slate-200 dark:border-emerald-900/50 text-sm text-slate-600 dark:text-emerald-100 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                         {msg}
                       </button>
                     )
                   ))}
                   {waConfigMode && (
-                    <button onClick={handleAddTemplate} className="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-slate-300 dark:border-emerald-900/80 text-sm font-semibold text-slate-500 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors mt-1">
+                    <button onClick={handleAddTemplate} className="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-slate-300 text-xs font-semibold text-slate-500 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 transition-colors mt-1 cursor-pointer">
                       Adicionar Nova Mensagem
                     </button>
                   )}
@@ -647,21 +646,21 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
               </div>
               
               <div>
-                <label className="text-sm font-bold text-slate-500 dark:text-emerald-500/70 uppercase tracking-wider mb-2 block">Mensagem Personalizada</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Mensagem Personalizada</label>
                 <textarea 
                   value={waCustomMsg}
                   onChange={(e) => setWaCustomMsg(e.target.value)}
                   placeholder="Digite sua mensagem livre aqui..."
-                  className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-300 dark:border-emerald-900/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white min-h-[100px] resize-y"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 min-h-[100px] resize-y"
                 />
               </div>
             </div>
             
-            <div className="p-5 border-t border-slate-100 dark:border-emerald-900/30 bg-slate-50 dark:bg-[#0f1c14] flex justify-end">
+            <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end">
               <button 
                 onClick={() => sendWaMsg(waCustomMsg)}
                 disabled={!waCustomMsg.trim() || isWaSending}
-                className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isWaSending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 {isWaSending ? "Enviando..." : "Enviar Mensagem"}

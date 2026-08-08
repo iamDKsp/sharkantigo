@@ -56,8 +56,8 @@ export default async function EmprestimosPage({ searchParams }: { searchParams: 
       {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Empréstimos</h1>
-          <p className="text-slate-500 dark:text-emerald-400/80">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Empréstimos</h1>
+          <p className="text-slate-500">
             {emprestimos.length} no total
           </p>
         </div>
@@ -65,7 +65,7 @@ export default async function EmprestimosPage({ searchParams }: { searchParams: 
           <ExportarEmprestimosButton emprestimos={serializedEmprestimos} cheques={serializedCheques} />
           <Link
             href="/emprestimos/novo"
-            className="flex items-center space-x-1.5 bg-[#064e3b] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-850 transition-colors shadow-sm"
+            className="flex items-center space-x-1.5 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Novo empréstimo</span>

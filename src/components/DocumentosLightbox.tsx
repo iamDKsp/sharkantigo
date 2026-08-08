@@ -72,13 +72,13 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
             <button
               key={idx}
               onClick={() => setAberto(idx)}
-              className="relative group border border-slate-200 dark:border-emerald-950 rounded-xl overflow-hidden bg-slate-50 dark:bg-[#0b130e] aspect-square flex items-center justify-center cursor-pointer hover:border-emerald-500 dark:hover:border-emerald-400 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="relative group border border-slate-200 rounded-xl overflow-hidden bg-slate-50 aspect-square flex items-center justify-center cursor-pointer hover:border-emerald-500 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               aria-label={`Abrir documento ${idx + 1}`}
             >
               {pdf ? (
                 <div className="flex flex-col items-center justify-center gap-2 p-3 w-full h-full">
                   <FileText className="w-8 h-8 text-red-500" />
-                  <span className="text-xs font-bold text-slate-500 dark:text-emerald-400">
+                  <span className="text-xs font-bold text-slate-500">
                     PDF {idx + 1}
                   </span>
                 </div>

@@ -39,9 +39,9 @@ const fmtFull = (v: number) =>
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-zinc-900 dark:bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 shadow-2xl">
-        <p className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-1">{label}</p>
-        <p className="text-sm font-black text-white">{fmtFull(payload[0].value)}</p>
+      <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-xl">
+        <p className="text-sm font-black uppercase tracking-widest text-slate-500 mb-1">{label}</p>
+        <p className="text-sm font-black text-slate-900">{fmtFull(payload[0].value)}</p>
       </div>
     );
   }

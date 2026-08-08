@@ -126,11 +126,11 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-[#f8fcfb] dark:bg-[#0b130e] w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="flex justify-between items-center p-6 border-b border-emerald-100 dark:border-emerald-900/30">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-emerald-50">Cadastrar cheque</h2>
-          <button onClick={onClose} className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-full transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
+      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex justify-between items-center p-6 border-b border-slate-100">
+          <h2 className="text-xl font-bold text-slate-900">Cadastrar cheque</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -139,11 +139,11 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
           <form id="cheque-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Nome do cliente *</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Nome do cliente *</label>
                 <select
                   value={selectedCliente}
                   onChange={(e) => setSelectedCliente(e.target.value)}
-                  className="w-full bg-white dark:bg-[#13221b] border-2 border-emerald-400 dark:border-emerald-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-0 text-slate-900 dark:text-white"
+                  className="w-full bg-white border-2 border-emerald-500 rounded-xl px-4 py-3 text-sm focus:outline-none text-slate-900 cursor-pointer"
                   required
                 >
                   <option value="">Selecione um cliente...</option>
@@ -154,67 +154,67 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Telefone</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Telefone</label>
                 <input
                   type="text"
                   value={telefone}
                   readOnly
-                  className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-200 dark:border-emerald-900/40 rounded-xl px-4 py-3 text-sm text-slate-500 cursor-not-allowed"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-500 cursor-not-allowed"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Valor do cheque (R$) *</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Valor do cheque (R$) *</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0.01"
                   value={valor}
                   onChange={(e) => setValor(e.target.value)}
-                  className="w-full bg-white dark:bg-[#13221b] border border-slate-200 dark:border-emerald-900/60 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Taxa (%)</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Taxa (%)</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   value={taxa}
                   onChange={(e) => setTaxa(e.target.value)}
-                  className="w-full bg-white dark:bg-[#13221b] border border-slate-200 dark:border-emerald-900/60 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Valor líquido pago</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Valor líquido pago</label>
                 <input
                   type="text"
                   value={valorLiquido}
                   readOnly
-                  className="w-full bg-slate-50 dark:bg-[#0b130e] border border-slate-200 dark:border-emerald-900/40 rounded-xl px-4 py-3 text-sm text-slate-500 cursor-not-allowed"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-500 cursor-not-allowed"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Data vencimento *</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Data vencimento *</label>
                 <input
                   type="date"
                   value={dataVencimento}
                   onChange={(e) => setDataVencimento(e.target.value)}
-                  className="w-full bg-white dark:bg-[#13221b] border border-slate-200 dark:border-emerald-900/60 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
                   required
                 />
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Parceiro (Opcional)</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Parceiro (Opcional)</label>
                 <select
                   value={selectedParceiro}
                   onChange={(e) => setSelectedParceiro(e.target.value)}
-                  className="w-full bg-white dark:bg-[#13221b] border border-slate-200 dark:border-emerald-900/60 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 cursor-pointer"
                 >
                   <option value="">Sem parceiro (Próprio)</option>
                   {parceiros.map(p => (
@@ -224,22 +224,22 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Observações</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Observações</label>
                 <textarea
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
                   rows={3}
-                  className="w-full bg-white dark:bg-[#13221b] border border-slate-200 dark:border-emerald-900/60 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white resize-none"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 resize-none"
                 />
               </div>
 
               <div className="space-y-2 sm:col-span-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-emerald-100/70 ml-1">Foto do cheque</label>
+                <label className="text-xs font-bold text-slate-700 uppercase ml-1">Foto do cheque</label>
                 
                 {fotoBase64 ? (
                   <div className="relative inline-block">
                     <img src={fotoBase64} alt="Preview" className="h-32 rounded-xl object-cover border border-emerald-200" />
-                    <button type="button" onClick={() => setFotoBase64("")} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                    <button type="button" onClick={() => setFotoBase64("")} className="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full p-1 hover:bg-rose-600 cursor-pointer">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -248,7 +248,7 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center space-x-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-100 transition-colors"
+                      className="flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
                     >
                       <Upload className="w-4 h-4" />
                       <span>Galeria</span>
@@ -256,7 +256,7 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors"
+                      className="flex items-center space-x-2 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
                     >
                       <Paperclip className="w-4 h-4" />
                       <span>Arquivo</span>
@@ -264,7 +264,7 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
                     <button
                       type="button"
                       onClick={() => cameraInputRef.current?.click()}
-                      className="flex items-center space-x-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-100 transition-colors"
+                      className="flex items-center space-x-2 bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
                     >
                       <Camera className="w-4 h-4" />
                       <span>Webcam</span>
@@ -293,11 +293,11 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
           </form>
         </div>
 
-        <div className="p-6 border-t border-emerald-100 dark:border-emerald-900/30 bg-white dark:bg-[#13221b] flex justify-end space-x-3">
+        <div className="p-6 border-t border-slate-100 bg-white flex justify-end space-x-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+            className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 transition-colors cursor-pointer"
           >
             Cancelar
           </button>
@@ -305,7 +305,7 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
             type="submit"
             form="cheque-form"
             disabled={isLoading}
-            className="flex items-center justify-center space-x-2 bg-[#043e2f] hover:bg-[#065b45] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors disabled:opacity-50"
+            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             <span>{isLoading ? "Salvando..." : "Salvar"}</span>
