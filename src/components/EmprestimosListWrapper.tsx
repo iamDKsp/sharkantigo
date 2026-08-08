@@ -638,7 +638,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col md:flex-row items-center gap-2">
                     {/* Botão de Renovação Rápida */}
                     {!isQuitado && (
                       <button
