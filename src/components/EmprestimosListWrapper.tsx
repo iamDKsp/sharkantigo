@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
 import Link from "next/link";
-import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown } from "lucide-react";
+import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw } from "lucide-react";
+import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
 
 interface Cliente {
   id: string;
@@ -64,6 +65,35 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
   const [sortOpen, setSortOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+
+  // Renovação rápida
+  const [renewModalEmp, setRenewModalEmp] = useState<any>(null);
+  const [isRenewing, setIsRenewing] = useState(false);
+  const [renewError, setRenewError] = useState<string | null>(null);
+  const [isPendingRenew, startRenewTransition] = useTransition();
+
+  const openRenewModal = (e: React.MouseEvent, emp: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRenewError(null);
+    setRenewModalEmp(emp);
+  };
+
+  const confirmRenew = () => {
+    if (!renewModalEmp) return;
+    setIsRenewing(true);
+    setRenewError(null);
+    startRenewTransition(async () => {
+      try {
+        await receberSoJurosEmprestimo(renewModalEmp.id);
+        setRenewModalEmp(null);
+      } catch (err: any) {
+        setRenewError(err.message || "Erro ao renovar o empréstimo.");
+      } finally {
+        setIsRenewing(false);
+      }
+    });
+  };
 
   // WhatsApp Modal State
   const [waModalOpen, setWaModalOpen] = useState(false);
@@ -608,12 +638,26 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
                     </div>
                   </div>
 
-                  <button
-                    onClick={(e) => { e.preventDefault(); openWaModal(emp); }}
-                    className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer"
-                  >
-                    <MessageCircle className="w-5 h-5 pointer-events-none" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {/* Botão de Renovação Rápida */}
+                    {!isQuitado && (
+                      <button
+                        onClick={(e) => openRenewModal(e, emp)}
+                        title="Renovar empréstimo (+30 dias)"
+                        className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer"
+                      >
+                        <RefreshCw className="w-5 h-5 pointer-events-none" />
+                      </button>
+                    )}
+
+                    {/* Botão de WhatsApp */}
+                    <button
+                      onClick={(e) => { e.preventDefault(); openWaModal(emp); }}
+                      className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer"
+                    >
+                      <MessageCircle className="w-5 h-5 pointer-events-none" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -683,6 +727,83 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
         <div className="fixed inset-0 z-40" onClick={() => { setSortOpen(false); }} />
       )}
       
+      {/* Modal de Confirmação de Renovação */}
+      {renewModalEmp && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 flex justify-between items-start bg-amber-50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                  <RefreshCw className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-sm">Renovar Empréstimo</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Receber juros e prorrogar +30 dias</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setRenewModalEmp(null); setRenewError(null); }}
+                disabled={isRenewing}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-700 leading-relaxed">
+                Tem certeza que deseja renovar o empréstimo de{" "}
+                <span className="font-black text-slate-900">{renewModalEmp.cliente.nome}</span>?
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-amber-700 font-semibold">Juros recebidos agora</span>
+                  <span className="font-black text-amber-800">
+                    {formatBRL(Number(renewModalEmp.valor_emprestado) * (Number(renewModalEmp.taxa_juros) / 100))}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600 font-semibold">Novo vencimento</span>
+                  <span className="font-black text-slate-800">+30 dias</span>
+                </div>
+              </div>
+
+              {renewError && (
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 rounded-xl p-3">
+                  <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-rose-700 font-medium">{renewError}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-slate-100 bg-slate-50 flex gap-3 justify-end">
+              <button
+                onClick={() => { setRenewModalEmp(null); setRenewError(null); }}
+                disabled={isRenewing}
+                className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmRenew}
+                disabled={isRenewing || isPendingRenew}
+                className="flex items-center gap-2 px-5 py-2.5 text-xs font-black bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-md shadow-amber-500/30 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {(isRenewing || isPendingRenew) ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                {(isRenewing || isPendingRenew) ? "Renovando..." : "Sim, Renovar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* WhatsApp Modal */}
       {waModalOpen && waSelectedEmp && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
