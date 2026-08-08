@@ -15,6 +15,7 @@ interface Parcela {
     valor_emprestado: number;
     taxa_juros: number;
     tipo_pagamento: string;
+    totalParcelas: number;
     cliente: {
       id: string;
       nome: string;
@@ -116,8 +117,11 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     }).format(new Date(dateStr));
   };
 
-  // Rodapé fixo de pagamento — Pix + instrução + renovação
-  const PIX_RODAPE = `\n\n💳 *Para pagar:*\nPix: 14991185521 (Itaú)\nNome: Ronivaldo Gabriel Oscar\n\nSe preferir, podemos combinar para buscar pessoalmente em dinheiro. 😊\n\n🔄 *Ou, se preferir, podemos fazer a renovação do empréstimo!* Entre em contato e combinamos as condições.`;
+  // Rodapé fixo de pagamento — Pix + instrução + renovação com valor
+  const getPIXRodape = (p: Parcela) => {
+    const valorRenovacao = formatBRL(p.emprestimo.valor_emprestado * (p.emprestimo.taxa_juros / 100));
+    return `\n\n💳 *Para pagar:*\nPix: 14991185521 (Itaú)\nNome: Ronivaldo Gabriel Oscar\n\nSe preferir, podemos combinar para buscar pessoalmente em dinheiro. 😊\n\n🔄 *Ou, se preferir, podemos fazer a renovação do empréstimo!*\nO valor da renovação é de apenas *${valorRenovacao}* (juros do período). Entre em contato e combinamos!`;
+  };
 
   // Mensagens Customizadas por Tipo
   const getMessageText = (p: Parcela, type: "atrasados" | "hoje" | "aVencer") => {
@@ -125,15 +129,16 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     const data = formatData(p.data_vencimento);
     const valor = formatBRL(p.valor);
     const num = p.numero;
-    const isAvista = p.emprestimo.tipo_pagamento === "a_vista";
+    // Empréstimo é "único" se tiver apenas 1 parcela no total
+    const isUnico = p.emprestimo.totalParcelas === 1;
 
     let template = "";
     if (type === "atrasados") {
-      template = isAvista ? msgAtrasadosAvista : msgAtrasados;
+      template = isUnico ? msgAtrasadosAvista : msgAtrasados;
     } else if (type === "hoje") {
-      template = isAvista ? msgHojeAvista : msgHoje;
+      template = isUnico ? msgHojeAvista : msgHoje;
     } else {
-      template = isAvista ? msgAVencerAvista : msgAVencer;
+      template = isUnico ? msgAVencerAvista : msgAVencer;
     }
 
     const corpo = template
@@ -142,7 +147,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       .replace(/{valor}/g, valor)
       .replace(/{num}/g, String(num));
 
-    return corpo + PIX_RODAPE;
+    return corpo + getPIXRodape(p);
   };
 
   // Disparo em Massa para um grupo específico

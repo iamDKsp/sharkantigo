@@ -19,12 +19,7 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
     include: {
       cliente: true,
       parcelas: {
-        where: {
-          status: "aberto",
-        },
-        orderBy: {
-          numero: "asc",
-        },
+        orderBy: { numero: "asc" },
       },
     },
   });
@@ -40,8 +35,10 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
   for (const emp of emprestimos) {
     const valorEmprestadoNum = Number(emp.valor_emprestado);
     const taxaJurosNum = Number(emp.taxa_juros);
+    const totalParcelas = emp.parcelas.length;
+    const parcelasAbertas = emp.parcelas.filter((p: any) => p.status === "aberto");
 
-    for (const p of emp.parcelas) {
+    for (const p of parcelasAbertas) {
       const vencObj = new Date(p.data_vencimento);
       const vencimentoUTC = new Date(Date.UTC(vencObj.getUTCFullYear(), vencObj.getUTCMonth(), vencObj.getUTCDate()));
 
@@ -56,6 +53,7 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
           valor_emprestado: valorEmprestadoNum,
           taxa_juros: taxaJurosNum,
           tipo_pagamento: emp.tipo_pagamento,
+          totalParcelas: totalParcelas,
           cliente: {
             id: emp.cliente.id,
             nome: emp.cliente.nome,
