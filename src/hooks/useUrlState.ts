@@ -1,11 +1,12 @@
 "use client";
 
+import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
 
 /**
  * Sincroniza um valor de estado com um query param da URL.
- * Usa history.replaceState (não cria entradas no histórico ao trocar filtros).
- * Não usa useRouter/usePathname para evitar mismatch de hidratação.
+ * Usa router.replace({ scroll: false }) — soft navigation que NÃO
+ * desmonta componentes cliente, evitando interrupção de eventos de clique.
  *
  * @param key          Nome do query param na URL (ex: "status", "q")
  * @param initial      Valor inicial lido pelo servidor a partir dos searchParams
@@ -16,6 +17,8 @@ export function useUrlState<T extends string>(
   initial: T,
   defaultValue: T
 ): [T, (next: T) => void] {
+  const router   = useRouter();
+  const pathname = usePathname();
   const [value, setInternal] = useState<T>(initial);
 
   const setValue = useCallback(
@@ -30,15 +33,13 @@ export function useUrlState<T extends string>(
         params.set(key, next);
       }
       const qs  = params.toString();
-      const url = qs
-        ? `${window.location.pathname}?${qs}`
-        : window.location.pathname;
+      const url = qs ? `${pathname}?${qs}` : pathname;
 
-      // history.replaceState não dispara eventos de navegação Next.js
-      // e não causa re-renderização — apenas atualiza a barra de URL.
-      window.history.replaceState(window.history.state ?? {}, "", url);
+      // router.replace com scroll:false faz soft navigation:
+      // reconcilia a árvore sem desmontar/remontar o componente cliente.
+      router.replace(url, { scroll: false });
     },
-    [key, defaultValue],
+    [router, pathname, key, defaultValue],
   );
 
   return [value, setValue];
