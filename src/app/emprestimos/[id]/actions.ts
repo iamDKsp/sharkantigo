@@ -479,16 +479,63 @@ export async function updateEmprestimo(emprestimoId: string, formData: FormData)
 }
 
 // ── Data Prevista de Pagamento ──
+
+/** Garante que a coluna existe no banco (idempotente). */
+async function ensureColumnExists() {
+  try {
+    // PostgreSQL
+    await prisma.$executeRaw`
+      ALTER TABLE emprestimos
+      ADD COLUMN IF NOT EXISTS data_prevista_pagamento DATE;
+    `;
+  } catch {
+    try {
+      // MySQL / MariaDB
+      await prisma.$executeRaw`
+        ALTER TABLE \`emprestimos\`
+        ADD COLUMN \`data_prevista_pagamento\` DATE NULL;
+      `;
+    } catch (e2: any) {
+      const msg = String(e2?.message ?? "");
+      // 1060 = Duplicate column — coluna já existe, tudo certo
+      if (!msg.includes("Duplicate column") && !msg.includes("1060") && !msg.includes("already exists")) {
+        throw e2;
+      }
+    }
+  }
+}
+
 export async function salvarDataPrevistaPagamento(
   emprestimoId: string,
   data: string | null
 ) {
-  await prisma.emprestimo.update({
-    where: { id: emprestimoId },
-    data: {
-      data_prevista_pagamento: data ? new Date(data) : null,
-    },
-  });
+  try {
+    await prisma.emprestimo.update({
+      where: { id: emprestimoId },
+      data: {
+        data_prevista_pagamento: data ? new Date(data) : null,
+      },
+    });
+  } catch (err: any) {
+    const msg = String(err?.message ?? "");
+    // Se o erro for "coluna não existe", aplica a migration e tenta de novo
+    if (
+      msg.includes("data_prevista_pagamento") ||
+      msg.includes("Unknown column") ||
+      msg.includes("column") ||
+      msg.includes("does not exist")
+    ) {
+      await ensureColumnExists();
+      await prisma.emprestimo.update({
+        where: { id: emprestimoId },
+        data: {
+          data_prevista_pagamento: data ? new Date(data) : null,
+        },
+      });
+    } else {
+      throw err;
+    }
+  }
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
