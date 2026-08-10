@@ -1,11 +1,11 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
 
 /**
  * Sincroniza um valor de estado com um query param da URL.
- * Usa router.replace (não push) — não cria entradas no histórico ao trocar filtros.
+ * Usa history.replaceState (não cria entradas no histórico ao trocar filtros).
+ * Não usa useRouter/usePathname para evitar mismatch de hidratação.
  *
  * @param key          Nome do query param na URL (ex: "status", "q")
  * @param initial      Valor inicial lido pelo servidor a partir dos searchParams
@@ -16,15 +16,13 @@ export function useUrlState<T extends string>(
   initial: T,
   defaultValue: T
 ): [T, (next: T) => void] {
-  const router   = useRouter();
-  const pathname = usePathname();
   const [value, setInternal] = useState<T>(initial);
 
   const setValue = useCallback(
     (next: T) => {
       setInternal(next);
-      // Usa window.location.search para pegar todos os params atuais
-      // (sem precisar de useSearchParams + Suspense)
+      if (typeof window === "undefined") return;
+
       const params = new URLSearchParams(window.location.search);
       if (next === defaultValue) {
         params.delete(key);
@@ -32,10 +30,15 @@ export function useUrlState<T extends string>(
         params.set(key, next);
       }
       const qs  = params.toString();
-      const url = qs ? `${pathname}?${qs}` : pathname;
-      router.replace(url, { scroll: false });
+      const url = qs
+        ? `${window.location.pathname}?${qs}`
+        : window.location.pathname;
+
+      // history.replaceState não dispara eventos de navegação Next.js
+      // e não causa re-renderização — apenas atualiza a barra de URL.
+      window.history.replaceState(window.history.state ?? {}, "", url);
     },
-    [router, pathname, key, defaultValue],
+    [key, defaultValue],
   );
 
   return [value, setValue];
