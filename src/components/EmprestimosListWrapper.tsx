@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect, useTransition } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
 import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw } from "lucide-react";
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
@@ -38,7 +40,11 @@ interface Emprestimo {
 
 interface EmprestimosListWrapperProps {
   initialEmprestimos: any[];
-  initialFiltro?: string;
+  initialFiltro?:   string;
+  initialSearch?:   string;
+  initialParceiro?: string;
+  initialSort?:     string;
+  initialPagina?:   number;
 }
 
 type StatusFilter = "todos" | "ativos" | "atrasados" | "ontem" | "quitados" | "hoje";
@@ -52,24 +58,49 @@ const sortLabels: Record<SortOption, string> = {
   mais_distante: "Vence Depois",
 };
 
-export default function EmprestimosListWrapper({ initialEmprestimos, initialFiltro }: EmprestimosListWrapperProps) {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
-    initialFiltro === "hoje" ? "hoje" :
-    initialFiltro === "ontem" ? "ontem" :
-    initialFiltro === "atrasados" ? "atrasados" :
-    "ativos"
-  );
-  const [parceiroFilter, setParceiroFilter] = useState<string>("todos");
-  const [sortOption, setSortOption] = useState<SortOption>("padrao");
-  const [sortOpen, setSortOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+function resolveStatus(filtro: string): StatusFilter {
+  if (filtro === "hoje")      return "hoje";
+  if (filtro === "ontem")     return "ontem";
+  if (filtro === "atrasados") return "atrasados";
+  if (filtro === "quitados")  return "quitados";
+  if (filtro === "todos")     return "todos";
+  return "ativos";
+}
+
+export default function EmprestimosListWrapper({
+  initialEmprestimos,
+  initialFiltro   = "ativos",
+  initialSearch   = "",
+  initialParceiro = "todos",
+  initialSort     = "padrao",
+  initialPagina   = 1,
+}: EmprestimosListWrapperProps) {
+  // ── Scroll restoration ──
+  useScrollRestoration("emprestimos-list");
+
+  // ── Estado persistido na URL ──
+  const [search, setSearch]               = useUrlState("q",       initialSearch,   "");
+  const [statusFilter, setStatusFilter]   = useUrlState<StatusFilter>("status", resolveStatus(initialFiltro), "ativos");
+  const [parceiroFilter, setParceiroFilter] = useUrlState("parceiro", initialParceiro, "todos");
+  const [sortOption, setSortOption]       = useUrlState<SortOption>("sort", initialSort as SortOption, "padrao");
+  const [currentPage, setCurrentPage]     = useUrlState("pagina",  String(initialPagina), "1");
+
+  // Helper para mudar filtros e resetar página
+  const setStatusAndReset   = (v: StatusFilter) => { setStatusFilter(v);   setCurrentPage("1"); };
+  const setParceiroAndReset = (v: string)       => { setParceiroFilter(v); setCurrentPage("1"); };
+  const setSortAndReset     = (v: SortOption)   => { setSortOption(v);     setCurrentPage("1"); };
+  const setSearchAndReset   = (v: string)       => { setSearch(v);         setCurrentPage("1"); };
+
+  const currentPageNum = parseInt(currentPage, 10) || 1;
   const ITEMS_PER_PAGE = 10;
+
+  // sortOpen é estado local (não persiste na URL)
+  const [sortOpen, setSortOpen] = useState(false);
 
   // Renovação rápida
   const [renewModalEmp, setRenewModalEmp] = useState<any>(null);
-  const [isRenewing, setIsRenewing] = useState(false);
-  const [renewError, setRenewError] = useState<string | null>(null);
+  const [isRenewing, setIsRenewing]       = useState(false);
+  const [renewError, setRenewError]       = useState<string | null>(null);
   const [isPendingRenew, startRenewTransition] = useTransition();
 
   const openRenewModal = (e: React.MouseEvent, emp: any) => {
@@ -169,8 +200,9 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
   };
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search, statusFilter, sortOption, parceiroFilter]);
+    // O currentPage já é resetado pelos helpers setXxxAndReset
+    // Este effect é mantido como safeguard para mudanças externas
+  }, []);
 
   const parceirosList = useMemo(() => {
     const map = new Map<string, string>();
@@ -353,8 +385,8 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
 
   const totalPages = Math.max(1, Math.ceil(emprestimosFiltrados.length / ITEMS_PER_PAGE));
   const paginatedEmprestimos = emprestimosFiltrados.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPageNum - 1) * ITEMS_PER_PAGE,
+    currentPageNum * ITEMS_PER_PAGE
   );
 
   // Contadores por categoria (usados nos badges das tabs)
@@ -377,7 +409,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setSearchAndReset(e.target.value)}
             placeholder="Buscar por cliente, telefone ou cidade..."
             className="w-full bg-white border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 shadow-sm"
           />
@@ -415,7 +447,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
                 return (
                   <button
                     key={key}
-                    onClick={() => { setSortOption(key as SortOption); setSortOpen(false); }}
+                    onClick={() => { setSortAndReset(key as SortOption); setSortOpen(false); }}
                     className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
                       isActive
                         ? "bg-emerald-50 text-emerald-700"
@@ -436,7 +468,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
                 Parceiros
               </div>
               <button
-                onClick={() => { setParceiroFilter("todos"); setSortOpen(false); }}
+                onClick={() => { setParceiroAndReset("todos"); setSortOpen(false); }}
                 className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
                   parceiroFilter === "todos"
                     ? "bg-emerald-50 text-emerald-700"
@@ -447,7 +479,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
                 {parceiroFilter === "todos" && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />}
               </button>
               <button
-                onClick={() => { setParceiroFilter("sem_parceiro"); setSortOpen(false); }}
+                onClick={() => { setParceiroAndReset("sem_parceiro"); setSortOpen(false); }}
                 className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
                   parceiroFilter === "sem_parceiro"
                     ? "bg-emerald-50 text-emerald-700"
@@ -462,7 +494,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
                 return (
                   <button
                     key={p.id}
-                    onClick={() => { setParceiroFilter(p.id); setSortOpen(false); }}
+                    onClick={() => { setParceiroAndReset(p.id); setSortOpen(false); }}
                     className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
                       isActive
                         ? "bg-emerald-50 text-emerald-700"
@@ -494,7 +526,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
           return (
             <button
               key={tab.id}
-              onClick={() => setStatusFilter(tab.id)}
+              onClick={() => setStatusAndReset(tab.id)}
               className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 isSelected
                   ? tab.color === "emerald" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
@@ -536,7 +568,7 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
         {/* Top Pagination info */}
         {totalPages > 1 && (
           <div className="text-xs text-slate-400 font-bold">
-            Pág <span className="text-slate-700">{currentPage}</span> de {totalPages}
+            Pág <span className="text-slate-700">{currentPageNum}</span> de {totalPages}
           </div>
         )}
       </div>
@@ -669,8 +701,8 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-6 pb-4">
           <button
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(String(Math.max(1, currentPageNum - 1)))}
+            disabled={currentPageNum === 1}
             className="p-2 rounded-xl border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 transition-all cursor-pointer"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -679,17 +711,17 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
           <div className="flex items-center gap-1">
             {Array.from({ length: totalPages }).map((_, i) => {
               const page = i + 1;
-              const isCurrent = currentPage === page;
+              const isCurrent = currentPageNum === page;
               
               if (
                 page === 1 || 
                 page === totalPages || 
-                (page >= currentPage - 1 && page <= currentPage + 1)
+                (page >= currentPageNum - 1 && page <= currentPageNum + 1)
               ) {
                 return (
                   <button
                     key={page}
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => setCurrentPage(String(page))}
                     className={`w-10 h-10 rounded-xl text-xs font-black transition-all flex items-center justify-center cursor-pointer ${
                       isCurrent 
                         ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/20 scale-110" 
@@ -702,8 +734,8 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
               }
               
               if (
-                (page === currentPage - 2 && page > 1) || 
-                (page === currentPage + 2 && page < totalPages)
+                (page === currentPageNum - 2 && page > 1) || 
+                (page === currentPageNum + 2 && page < totalPages)
               ) {
                 return <span key={page} className="px-1 text-slate-400">...</span>;
               }
@@ -713,8 +745,8 @@ export default function EmprestimosListWrapper({ initialEmprestimos, initialFilt
           </div>
 
           <button
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(String(Math.min(totalPages, currentPageNum + 1)))}
+            disabled={currentPageNum === totalPages}
             className="p-2 rounded-xl border border-slate-200 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 transition-all cursor-pointer"
           >
             <ChevronRight className="w-5 h-5" />

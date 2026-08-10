@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
+import { useUrlState } from "@/hooks/useUrlState";
 import { Plus, CheckCircle, AlertTriangle, Clock, Trash2, Search, MessageCircle } from "lucide-react";
 import ModalCadastrarCheque from "./ModalCadastrarCheque";
 import { updateChequeStatus, deleteCheque } from "@/app/cheques/actions";
@@ -34,8 +36,10 @@ interface ChequesClientViewProps {
 }
 
 export default function ChequesClientView({ cheques, clientes, parceiros }: ChequesClientViewProps) {
+  useScrollRestoration("cheques-list");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useUrlState<string>("q", "", "");
 
   const formatBRL = (val: number) => {
     return new Intl.NumberFormat("pt-BR", {

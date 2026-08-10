@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
 import { Plus, Edit3, Trash2, X, Loader2, Phone } from "lucide-react";
 import { createParceiro, updateParceiro, deleteParceiro } from "./actions";
@@ -17,6 +18,7 @@ interface ClientParceirosListProps {
 }
 
 export default function ClientParceirosList({ parceiros }: ClientParceirosListProps) {
+  useScrollRestoration("parceiros-list");
   const [isPending, startTransition] = useTransition();
   const [showModal, setShowModal] = useState(false);
   const [editingParceiro, setEditingParceiro] = useState<Parceiro | null>(null);

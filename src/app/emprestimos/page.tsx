@@ -6,9 +6,25 @@ import ExportarEmprestimosButton from "@/components/ExportarEmprestimosButton";
 
 export const revalidate = 0;
 
-export default async function EmprestimosPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
+export default async function EmprestimosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    filtro?:   string; // compat legado
+    status?:   string;
+    q?:        string;
+    parceiro?: string;
+    sort?:     string;
+    pagina?:   string;
+  }>;
+}) {
   const params = await searchParams;
-  const filtroInicial = params?.filtro === "hoje" ? "hoje" : undefined;
+  // ?status= tem prioridade sobre o legado ?filtro=
+  const statusInicial  = params?.status   ?? params?.filtro ?? "ativos";
+  const searchInicial  = params?.q        ?? "";
+  const parceiroInicial= params?.parceiro ?? "todos";
+  const sortInicial    = params?.sort     ?? "padrao";
+  const paginaInicial  = parseInt(params?.pagina ?? "1", 10) || 1;
   // Buscar todos os empréstimos de uma só vez para possibilitar busca instantânea no client-side
   const emprestimos = await prisma.emprestimo.findMany({
     include: {
@@ -74,7 +90,14 @@ export default async function EmprestimosPage({ searchParams }: { searchParams: 
       </div>
 
       {/* Busca, Filtros e Lista (Componente de Cliente Instantâneo) */}
-      <EmprestimosListWrapper initialEmprestimos={serializedEmprestimos} initialFiltro={filtroInicial} />
+      <EmprestimosListWrapper
+        initialEmprestimos={serializedEmprestimos}
+        initialFiltro={statusInicial}
+        initialSearch={searchInicial}
+        initialParceiro={parceiroInicial}
+        initialSort={sortInicial}
+        initialPagina={paginaInicial}
+      />
     </div>
   );
 }

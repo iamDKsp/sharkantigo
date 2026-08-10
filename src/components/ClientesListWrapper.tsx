@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
 import { Plus, Search, MessageCircle, Loader2, X, Send, Settings, Trash2 } from "lucide-react";
 
@@ -13,8 +15,11 @@ interface Cliente {
   foto_url: string | null;
 }
 
-export default function ClientesListWrapper() {
-  const [query, setQuery] = useState("");
+export default function ClientesListWrapper({ initialQuery = "" }: { initialQuery?: string }) {
+  useScrollRestoration("clientes-list");
+
+  const [query, setQuery] = useUrlState("q", initialQuery, "");
+
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

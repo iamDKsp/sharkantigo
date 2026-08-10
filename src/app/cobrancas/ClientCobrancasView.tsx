@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { useUrlState } from "@/hooks/useUrlState";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { MessageSquare, Calendar, DollarSign, X, Loader2, Settings } from "lucide-react";
 import { logRemindersSent } from "./actions";
 
@@ -50,7 +52,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     return "atrasados";
   };
 
-  const [activeTab, setActiveTab] = useState<TabId>(resolveTab(initialFiltro));
+  useScrollRestoration("cobrancas-list");
+
+  const [activeTab, setActiveTab] = useUrlState<TabId>("tab", resolveTab(initialFiltro), "atrasados");
   const [isPending, startTransition] = useTransition();
 
   // Estados de Seleção para cada Grupo

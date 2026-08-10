@@ -3,9 +3,10 @@ import ClientCobrancasView from "./ClientCobrancasView";
 
 export const revalidate = 0;
 
-export default async function CobrancasPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
+export default async function CobrancasPage({ searchParams }: { searchParams: Promise<{ filtro?: string; tab?: string }> }) {
   const params = await searchParams;
-  const initialFiltro = params?.filtro || "atrasados";
+  // ?tab= tem prioridade sobre o legado ?filtro=
+  const initialFiltro = params?.tab ?? params?.filtro ?? "atrasados";
   const hoje = new Date();
   const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
   const ontemUTC = new Date(hojeUTC);
