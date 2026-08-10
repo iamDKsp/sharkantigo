@@ -54,6 +54,9 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
           taxa_juros: taxaJurosNum,
           tipo_pagamento: emp.tipo_pagamento,
           totalParcelas: totalParcelas,
+          data_prevista_pagamento: emp.data_prevista_pagamento
+            ? emp.data_prevista_pagamento.toISOString().split("T")[0]
+            : null,
           cliente: {
             id: emp.cliente.id,
             nome: emp.cliente.nome,

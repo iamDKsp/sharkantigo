@@ -12,7 +12,7 @@ import {
 import {
   payNextInstallment, payFullLoan, renegociarEmprestimo,
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
-  receberSoJurosEmprestimo
+  receberSoJurosEmprestimo, salvarDataPrevistaPagamento
 } from "@/app/emprestimos/[id]/actions";
 
 interface Cliente { id: string; nome: string; telefone: string; blacklist: boolean; foto_url: string | null; }
@@ -22,6 +22,7 @@ interface Emprestimo {
   id: string; valor_emprestado: number; taxa_juros: number; taxa_multa: number;
   data_vencimento: any; status: string; tipo_pagamento: string; frequencia: string;
   categoria: string; observacoes: string | null; cliente: Cliente; parcelas: Parcela[]; parceiro?: Parceiro | null;
+  data_prevista_pagamento: string | null;
 }
 
 const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all placeholder:text-slate-400";
@@ -49,6 +50,38 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [modal, setModal] = useState<null | "renegociar" | "reprogramar" | "delete" | "wa">(null);
+
+  // ── Data Prevista de Pagamento ──
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dataPrevistaInput, setDataPrevistaInput] = useState(
+    emprestimo.data_prevista_pagamento ?? ""
+  );
+  const [isSavingData, setIsSavingData] = useState(false);
+
+  const handleSalvarDataPrevista = async () => {
+    if (!dataPrevistaInput) return;
+    setIsSavingData(true);
+    try {
+      await salvarDataPrevistaPagamento(emprestimo.id, dataPrevistaInput);
+      setShowDatePicker(false);
+    } catch (err: any) {
+      alert(err.message);
+    }
+    setIsSavingData(false);
+  };
+
+  const handleLimparDataPrevista = async () => {
+    if (!confirm("Remover data prevista de pagamento?")) return;
+    setIsSavingData(true);
+    try {
+      await salvarDataPrevistaPagamento(emprestimo.id, null);
+      setDataPrevistaInput("");
+      setShowDatePicker(false);
+    } catch (err: any) {
+      alert(err.message);
+    }
+    setIsSavingData(false);
+  };
   const [waConfigMode, setWaConfigMode] = useState(false);
   const [waTemplates, setWaTemplates] = useState<string[]>([]);
   const [waCustomMsg, setWaCustomMsg] = useState("");
@@ -468,6 +501,93 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
               <p className="text-xs text-slate-700 leading-relaxed">{emprestimo.observacoes}</p>
             </div>
           )}
+
+          {/* DATA PREVISTA DE PAGAMENTO */}
+          {statusReal !== "quitado" && (() => {
+            const dp = emprestimo.data_prevista_pagamento;
+            let diasDP: number | null = null;
+            let urgLabel = "";
+            let urgCor = "";
+            if (dp) {
+              const dpObj = new Date(dp);
+              const dpUTC = new Date(Date.UTC(dpObj.getUTCFullYear(), dpObj.getUTCMonth(), dpObj.getUTCDate()));
+              diasDP = Math.ceil((dpUTC.getTime() - hojeUTC.getTime()) / 86400000);
+              if (diasDP < 0) { urgLabel = `${Math.abs(diasDP)}d atrasada`; urgCor = "rose"; }
+              else if (diasDP === 0) { urgLabel = "Vence hoje"; urgCor = "amber"; }
+              else if (diasDP <= 2) { urgLabel = `${diasDP}d restantes`; urgCor = "orange"; }
+              else { urgLabel = `${diasDP}d restantes`; urgCor = "slate"; }
+            }
+            return (
+              <div className={`rounded-2xl border shadow-sm overflow-hidden ${
+                dp && urgCor === "rose" ? "bg-rose-50 border-rose-200" :
+                dp && urgCor === "amber" ? "bg-amber-50 border-amber-200" :
+                dp && urgCor === "orange" ? "bg-orange-50 border-orange-200" :
+                "bg-white border-slate-200"
+              }`}>
+                <div className="px-4 py-3 border-b border-inherit flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CalendarClock className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-sm font-black text-slate-900">Data Prevista</span>
+                    {dp && (
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                        urgCor === "rose"   ? "bg-rose-100 text-rose-700 border-rose-300" :
+                        urgCor === "amber"  ? "bg-amber-100 text-amber-700 border-amber-300" :
+                        urgCor === "orange" ? "bg-orange-100 text-orange-700 border-orange-300" :
+                        "bg-slate-100 text-slate-600 border-slate-200"
+                      }`}>{urgLabel}</span>
+                    )}
+                  </div>
+                  {dp && !showDatePicker && (
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => { setShowDatePicker(true); setDataPrevistaInput(dp); }}
+                        className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
+                      >Editar</button>
+                      <button
+                        onClick={handleLimparDataPrevista}
+                        disabled={isSavingData}
+                        className="text-[11px] font-bold text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
+                      >Remover</button>
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  {dp && !showDatePicker ? (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-black text-slate-900">{fmtDate(dp)}</span>
+                    </div>
+                  ) : showDatePicker ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={dataPrevistaInput}
+                        onChange={(e) => setDataPrevistaInput(e.target.value)}
+                        className={inputCls}
+                      />
+                      <button
+                        onClick={handleSalvarDataPrevista}
+                        disabled={isSavingData || !dataPrevistaInput}
+                        className="flex-shrink-0 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all disabled:opacity-60 cursor-pointer"
+                      >{isSavingData ? "..." : "Salvar"}</button>
+                      <button
+                        onClick={() => setShowDatePicker(false)}
+                        className="flex-shrink-0 px-2 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-all cursor-pointer"
+                      ><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowDatePicker(true)}
+                      className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                    >
+                      <Calendar className="w-4 h-4" />
+                      Definir data prevista de pagamento
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* AÇÕES */}
           <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">

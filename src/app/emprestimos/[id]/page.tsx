@@ -41,6 +41,9 @@ export default async function EmprestimoDetalhesPage({ params }: PageProps) {
       valor: Number(p.valor),
       valor_pago: p.valor_pago ? Number(p.valor_pago) : null,
     })),
+    data_prevista_pagamento: emprestimo.data_prevista_pagamento
+      ? emprestimo.data_prevista_pagamento.toISOString().split("T")[0]
+      : null,
   };
 
   return <EmprestimoDetalhesView emprestimo={serializedEmprestimo as any} />;

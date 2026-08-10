@@ -478,3 +478,20 @@ export async function updateEmprestimo(emprestimoId: string, formData: FormData)
   return { success: true, redirectUrl: `/emprestimos/${emprestimoId}` };
 }
 
+// ── Data Prevista de Pagamento ──
+export async function salvarDataPrevistaPagamento(
+  emprestimoId: string,
+  data: string | null
+) {
+  await prisma.emprestimo.update({
+    where: { id: emprestimoId },
+    data: {
+      data_prevista_pagamento: data ? new Date(data) : null,
+    },
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/cobrancas");
+  return { success: true };
+}

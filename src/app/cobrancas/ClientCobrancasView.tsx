@@ -16,6 +16,7 @@ interface Parcela {
     taxa_juros: number;
     tipo_pagamento: string;
     totalParcelas: number;
+    data_prevista_pagamento: string | null;
     cliente: {
       id: string;
       nome: string;
@@ -398,6 +399,13 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                           <span className="text-slate-300">·</span>
                           <span>{p.emprestimo.cliente.telefone}</span>
                         </div>
+                        {p.emprestimo.data_prevista_pagamento && (
+                          <div className="mt-1 flex items-center gap-1">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[9px] font-black text-amber-700">
+                              📅 Previsto: {formatData(p.emprestimo.data_prevista_pagamento)}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Valor + WhatsApp */}
@@ -492,6 +500,13 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                         <span className="text-slate-300">·</span>
                         <span>{p.emprestimo.cliente.telefone}</span>
                       </div>
+                      {p.emprestimo.data_prevista_pagamento && (
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[9px] font-black text-amber-700">
+                            📅 Previsto: {formatData(p.emprestimo.data_prevista_pagamento)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                       <span className="text-sm font-black text-slate-900">{formatBRL(p.valor)}</span>
@@ -578,6 +593,13 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                         <span className="text-slate-300">·</span>
                         <span>{p.emprestimo.cliente.telefone}</span>
                       </div>
+                      {p.emprestimo.data_prevista_pagamento && (
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[9px] font-black text-amber-700">
+                            📅 Previsto: {formatData(p.emprestimo.data_prevista_pagamento)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                       <span className="text-sm font-black text-slate-900">{formatBRL(p.valor)}</span>

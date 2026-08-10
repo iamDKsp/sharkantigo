@@ -58,8 +58,9 @@ model Emprestimo {
   data_inicio      DateTime  @default(now())
   juros_atraso     Decimal   @db.Decimal(5, 2) @default(0.00)
   categoria        String    @default("Sem categoria")
-  observacoes      String?   @db.Text
-  parcelas         Parcela[]
+  observacoes              String?   @db.Text
+  data_prevista_pagamento  DateTime? @db.Date
+  parcelas                 Parcela[]
   parceiro_id      String?
   parceiro         Parceiro? @relation(fields: [parceiro_id], references: [id], onDelete: SetNull)
 

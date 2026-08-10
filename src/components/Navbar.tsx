@@ -15,6 +15,7 @@ import {
   DollarSign,
   Menu
 } from "lucide-react";
+import NotificacoesMenu from "@/components/NotificacoesMenu";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -105,7 +106,8 @@ export default function Navbar() {
             </nav>
 
             {/* User info / Sair - Desktop */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-3">
+              <NotificacoesMenu />
               <Link 
                 href="/perfil"
                 className="text-emerald-200 hover:text-white p-1.5 rounded-full hover:bg-emerald-800/50 transition-colors active:scale-95"
@@ -123,6 +125,7 @@ export default function Navbar() {
 
             {/* Action Icons - Mobile Only (Top Bar) */}
             <div className="md:hidden flex items-center space-x-0.5">
+              <NotificacoesMenu />
               <Link 
                 href="/cheques"
                 className="p-2 text-emerald-200 hover:text-white active:scale-95 transition-transform"
