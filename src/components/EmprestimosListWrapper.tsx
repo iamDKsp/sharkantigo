@@ -216,7 +216,9 @@ export default function EmprestimosListWrapper({
 
   const hojeUTC = useMemo(() => {
     const d = new Date();
-    return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // Usa getUTCDate/Month/FullYear para que servidor (UTC) e cliente (fuso local)
+    // produzam o mesmo Date.UTC e eliminar o hydration mismatch.
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
   }, []);
 
   const formatBRL = (value: number) =>
