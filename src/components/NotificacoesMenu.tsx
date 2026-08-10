@@ -63,6 +63,7 @@ export default function NotificacoesMenu() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const mobileSheetRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
   const fetchNotificacoes = useCallback(async () => {
@@ -94,10 +95,11 @@ export default function NotificacoesMenu() {
   useEffect(() => {
     if (!open) return;
     const handle = (e: MouseEvent) => {
-      if (
-        panelRef.current && !panelRef.current.contains(e.target as Node) &&
-        btnRef.current && !btnRef.current.contains(e.target as Node)
-      ) {
+      const target = e.target as Node;
+      const insideDesktop = panelRef.current?.contains(target);
+      const insideMobile  = mobileSheetRef.current?.contains(target);
+      const insideBtn     = btnRef.current?.contains(target);
+      if (!insideDesktop && !insideMobile && !insideBtn) {
         setOpen(false);
       }
     };
@@ -144,18 +146,17 @@ export default function NotificacoesMenu() {
       {/* ── PAINEL DESKTOP (dropdown) ── */}
       {open && (
         <>
-          {/* Overlay mobile (bottom sheet) */}
+          {/* Overlay — cobre tela toda incluindo nav mobile */}
           <div
-            className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[55]"
             onClick={() => setOpen(false)}
           />
 
-          {/* Painel */}
+          {/* Painel desktop */}
           <div
             ref={panelRef}
             className={`
               z-50 bg-white border border-slate-200 shadow-2xl
-              /* Desktop: dropdown alinhado à direita */
               hidden md:flex md:flex-col
               absolute right-0 top-full mt-2 w-96 rounded-2xl
               max-h-[80vh] overflow-hidden
@@ -172,17 +173,14 @@ export default function NotificacoesMenu() {
             />
           </div>
 
-          {/* Bottom sheet mobile */}
+          {/* Bottom sheet mobile — fica ACIMA da nav bar (bottom-16 = 64px) */}
           <div
-            className={`
-              md:hidden fixed bottom-0 left-0 right-0 z-50
-              bg-white border-t border-slate-200 rounded-t-3xl shadow-2xl
-              max-h-[85vh] flex flex-col
-              animate-slide-up
-            `}
+            ref={mobileSheetRef}
+            className="md:hidden fixed bottom-16 left-0 right-0 z-[60] bg-white border-t border-slate-200 rounded-t-3xl shadow-2xl flex flex-col animate-slide-up"
+            style={{ maxHeight: 'calc(85vh - 4rem)' }}
           >
             {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1">
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 bg-slate-200 rounded-full" />
             </div>
             <PainelConteudo
