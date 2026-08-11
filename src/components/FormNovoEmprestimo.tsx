@@ -64,7 +64,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
   const [dataInicio, setDataInicio] = useState("");
   const [vencimentoPrimeira, setVencimentoPrimeira] = useState("");
   const [categoria, setCategoria] = useState("Sem categoria");
-  const [cobrarAtraso, setCobrarAtraso] = useState(true);
+  const [cobrarAtraso, setCobrarAtraso] = useState(false);
   const [jurosAtraso, setJurosAtraso] = useState<number>(2); // default 2%
   const [observacoes, setObservacoes] = useState("");
 
@@ -586,7 +586,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                 </label>
               </div>
 
-              {cobrarAtraso && (
+              {cobrarAtraso ? (
                 <div className="space-y-2 max-w-xs animate-fade-in pl-1">
                   <label htmlFor="taxaMulta" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     Juros por atraso (%) <span className="text-rose-500">*</span>
@@ -607,6 +607,8 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
                   </div>
                 </div>
+              ) : (
+                <input type="hidden" name="taxaMulta" value="0" />
               )}
 
               <div className="space-y-2 pt-2">
