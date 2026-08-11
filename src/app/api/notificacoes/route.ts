@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 export const revalidate = 0;
 
@@ -26,10 +27,7 @@ async function ensureColumn() {
 }
 
 export async function GET() {
-  const hoje = new Date();
-  const hojeUTC = new Date(
-    Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())
-  );
+  const hojeUTC = hojeEmBrasilia();
 
   let emprestimos: any[] = [];
 

@@ -18,6 +18,7 @@ import {
 import { revalidatePath } from "next/cache";
 import DeleteClientButton from "@/components/DeleteClientButton";
 import DocumentosLightbox from "@/components/DocumentosLightbox";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -59,9 +60,8 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
     notFound();
   }
 
-  // Obter data de hoje em UTC
-  const hojeDate = new Date();
-  const hojeUTC = new Date(Date.UTC(hojeDate.getFullYear(), hojeDate.getMonth(), hojeDate.getDate()));
+  // Obter data de hoje em Brasília (corrige bug de fuso UTC em server components)
+  const hojeUTC = hojeEmBrasilia();
 
   // Cálculos financeiros
   let totalEmprestadoAtivo = 0;

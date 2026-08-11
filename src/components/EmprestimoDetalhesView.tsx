@@ -14,6 +14,7 @@ import {
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
   receberSoJurosEmprestimo, salvarDataPrevistaPagamento
 } from "@/app/emprestimos/[id]/actions";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 interface Cliente { id: string; nome: string; telefone: string; blacklist: boolean; foto_url: string | null; }
 interface Parcela { id: string; numero: number; valor: number; data_vencimento: any; status: string; data_pagamento: any; }
@@ -140,8 +141,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const saldoRestante = Math.max(0, totalEstimado - totalPago);
   const progresso = totalEstimado > 0 ? (totalPago / totalEstimado) * 100 : 0;
 
-  const hoje = new Date();
-  const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
+  const hojeUTC = hojeEmBrasilia();
   const vencObj = new Date(emprestimo.data_vencimento);
   const vencUTC = new Date(Date.UTC(vencObj.getUTCFullYear(), vencObj.getUTCMonth(), vencObj.getUTCDate()));
   const diasDiff = Math.ceil((vencUTC.getTime() - hojeUTC.getTime()) / 86400000);

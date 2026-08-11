@@ -6,6 +6,7 @@ import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
 import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw } from "lucide-react";
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 interface Cliente {
   id: string;
@@ -214,12 +215,7 @@ export default function EmprestimosListWrapper({
     return Array.from(map.entries()).map(([id, nome]) => ({ id, nome })).sort((a, b) => a.nome.localeCompare(b.nome));
   }, [initialEmprestimos]);
 
-  const hojeUTC = useMemo(() => {
-    const d = new Date();
-    // Usa getUTCDate/Month/FullYear para que servidor (UTC) e cliente (fuso local)
-    // produzam o mesmo Date.UTC e eliminar o hydration mismatch.
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  }, []);
+  const hojeUTC = useMemo(() => hojeEmBrasilia(), []);
 
   const formatBRL = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);

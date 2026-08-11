@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import ClientCobrancasView from "./ClientCobrancasView";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 export const revalidate = 0;
 
@@ -7,8 +8,7 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
   const params = await searchParams;
   // ?tab= tem prioridade sobre o legado ?filtro=
   const initialFiltro = params?.tab ?? params?.filtro ?? "atrasados";
-  const hoje = new Date();
-  const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
+  const hojeUTC = hojeEmBrasilia();
   const ontemUTC = new Date(hojeUTC);
   ontemUTC.setUTCDate(hojeUTC.getUTCDate() - 1);
 

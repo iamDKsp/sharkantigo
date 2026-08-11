@@ -17,12 +17,12 @@ import {
 import Link from "next/link";
 import { ProjecaoBarChart } from "@/components/ProjecaoBarChart";
 import { CarteiraPieChart } from "@/components/CarteiraPieChart";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 export const revalidate = 0;
 
 export default async function DashboardPage() {
-  const hoje = new Date();
-  const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate()));
+  const hojeUTC = hojeEmBrasilia();
   const ontemUTC = new Date(hojeUTC);
   ontemUTC.setUTCDate(hojeUTC.getUTCDate() - 1);
 

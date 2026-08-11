@@ -1,15 +1,22 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Sincroniza um valor de estado com um query param da URL.
- * Usa router.replace({ scroll: false }) — soft navigation que NÃO
- * desmonta componentes cliente, evitando interrupção de eventos de clique.
+ *
+ * A URL é atualizada via history.replaceState dentro de useEffect (pós-render),
+ * o que garante duas propriedades críticas:
+ *
+ *  1. CORRETO: Quando vários params mudam na mesma renderização (ex: status + pagina),
+ *     cada useEffect lê window.location.search já atualizado pelo anterior —
+ *     porque history.replaceState é síncrono. Não há race condition.
+ *
+ *  2. SEGURO: A URL só é atualizada após o ciclo de eventos (render completo),
+ *     então nunca interfere com cliques em andamento (mousedown→mouseup→click).
  *
  * @param key          Nome do query param na URL (ex: "status", "q")
- * @param initial      Valor inicial lido pelo servidor a partir dos searchParams
+ * @param initial      Valor inicial lido pelo servidor via searchParams
  * @param defaultValue Valor padrão — quando igual, o param é removido da URL
  */
 export function useUrlState<T extends string>(
@@ -17,30 +24,24 @@ export function useUrlState<T extends string>(
   initial: T,
   defaultValue: T
 ): [T, (next: T) => void] {
-  const router   = useRouter();
-  const pathname = usePathname();
-  const [value, setInternal] = useState<T>(initial);
+  const [value, setValue] = useState<T>(initial);
 
-  const setValue = useCallback(
-    (next: T) => {
-      setInternal(next);
-      if (typeof window === "undefined") return;
-
-      const params = new URLSearchParams(window.location.search);
-      if (next === defaultValue) {
-        params.delete(key);
-      } else {
-        params.set(key, next);
-      }
-      const qs  = params.toString();
-      const url = qs ? `${pathname}?${qs}` : pathname;
-
-      // router.replace com scroll:false faz soft navigation:
-      // reconcilia a árvore sem desmontar/remontar o componente cliente.
-      router.replace(url, { scroll: false });
-    },
-    [router, pathname, key, defaultValue],
-  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (value === defaultValue) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    const qs  = params.toString();
+    const url = qs
+      ? `${window.location.pathname}?${qs}`
+      : window.location.pathname;
+    // history.replaceState é síncrono: o próximo useEffect já enxerga a URL atualizada.
+    // É chamado pós-render, então não interfere com eventos de clique.
+    window.history.replaceState(window.history.state, "", url);
+  }, [value, key, defaultValue]);
 
   return [value, setValue];
 }
