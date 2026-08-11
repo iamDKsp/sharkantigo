@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-// Remove acentos e normaliza para comparação
+// Remove acentos e normaliza para comparação (usado no fallback JS)
 const norm = (s: string) =>
   (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
@@ -30,28 +31,47 @@ export async function GET(request: Request) {
       });
     }
 
-    // Com busca: primeiro tenta unaccent no Postgres
-    // Se não disponível, faz fallback com filtragem JS no servidor
+    // Com busca: divide em palavras e faz AND de ILIKE para cada uma.
+    // Ex: "Viviane Costa" → nome ILIKE '%Viviane%' AND nome ILIKE '%Costa%'
+    // Garante que buscas com nome + sobrenome funcionem corretamente.
     try {
-      const term = `%${query.trim()}%`;
+      // Normaliza espaços múltiplos e divide em palavras não-vazias
+      const words = query.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
+
+      if (words.length === 0) throw new Error("empty");
+
+      // Monta cláusula AND: cada palavra deve aparecer no nome
+      // unaccent(nome) ILIKE '%palavra1%' AND unaccent(nome) ILIKE '%palavra2%' ...
+      const nomeConditions = words.map(
+        (w) => Prisma.sql`unaccent(nome) ILIKE unaccent(${`%${w}%`})`
+      );
+      const nomeWhere = nomeConditions.reduce(
+        (acc, cond) => Prisma.sql`${acc} AND ${cond}`
+      );
+
+      // Para telefone/cidade/documento, busca pela frase completa normalizada
+      const fullTerm = `%${query.trim().replace(/\s+/g, " ")}%`;
+
+      const whereClause = Prisma.sql`
+        (${nomeWhere})
+        OR unaccent(telefone)  ILIKE unaccent(${fullTerm})
+        OR unaccent(cidade)    ILIKE unaccent(${fullTerm})
+        OR unaccent(documento) ILIKE unaccent(${fullTerm})
+      `;
+
       const [clientesRaw, countRaw] = await Promise.all([
-        prisma.$queryRaw<any[]>`
+        prisma.$queryRaw<any[]>(Prisma.sql`
           SELECT * FROM clientes
-          WHERE unaccent(nome)      ILIKE unaccent(${term})
-             OR unaccent(telefone)  ILIKE unaccent(${term})
-             OR unaccent(cidade)    ILIKE unaccent(${term})
-             OR unaccent(documento) ILIKE unaccent(${term})
+          WHERE ${whereClause}
           ORDER BY nome ASC
           LIMIT ${limit} OFFSET ${offset}
-        `,
-        prisma.$queryRaw<[{ total: bigint }]>`
+        `),
+        prisma.$queryRaw<[{ total: bigint }]>(Prisma.sql`
           SELECT COUNT(*) as total FROM clientes
-          WHERE unaccent(nome)      ILIKE unaccent(${term})
-             OR unaccent(telefone)  ILIKE unaccent(${term})
-             OR unaccent(cidade)    ILIKE unaccent(${term})
-             OR unaccent(documento) ILIKE unaccent(${term})
-        `,
+          WHERE ${whereClause}
+        `),
       ]);
+
       const totalCount = Number(countRaw[0].total);
       return NextResponse.json({
         clientes: clientesRaw,
@@ -59,22 +79,26 @@ export async function GET(request: Request) {
         hasMore: offset + clientesRaw.length < totalCount,
       });
     } catch {
-      // Fallback: busca todos e filtra com norm() no servidor
-      // Busca por telefone (exato, sem acento) OU pelo nome/cidade/doc normalizados
+      // Fallback JS: quando unaccent não está disponível no Postgres
+      // Divide a query em palavras e exige que todas apareçam no nome normalizado
       const q = norm(query);
+      const words = q.replace(/\s+/g, " ").split(" ").filter(Boolean);
 
-      // Busca ampla: pega candidatos por telefone (ILIKE) + fallback completo
       const todos = await prisma.cliente.findMany({
         orderBy: { nome: "asc" },
       });
 
-      const filtrados = todos.filter(
-        (c) =>
-          norm(c.nome).includes(q) ||
+      const filtrados = todos.filter((c) => {
+        const nomeNorm = norm(c.nome);
+        // Verifica se TODAS as palavras aparecem no nome
+        const nomeMatch = words.every((w) => nomeNorm.includes(w));
+        return (
+          nomeMatch ||
           (c.telefone || "").includes(query.trim()) ||
           norm(c.cidade).includes(q) ||
           norm(c.documento).includes(q)
-      );
+        );
+      });
 
       const totalCount = filtrados.length;
       const paginados = filtrados.slice(offset, offset + limit);
