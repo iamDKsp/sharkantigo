@@ -239,7 +239,7 @@ export default async function DashboardPage() {
             Painel Geral
           </h1>
           <p className="text-lg text-slate-500 mt-1">
-            {hoje.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+            {new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" }).format(new Date())}
           </p>
         </div>
         <div className="flex items-center gap-3">
