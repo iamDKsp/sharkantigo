@@ -26,8 +26,8 @@ export default async function DashboardPage() {
   const ontemUTC = new Date(hojeUTC);
   ontemUTC.setUTCDate(hojeUTC.getUTCDate() - 1);
 
-  const anoAtualInicio = new Date(Date.UTC(hoje.getFullYear(), 0, 1));
-  const mesAtualInicio = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), 1));
+  const anoAtualInicio = new Date(Date.UTC(hojeUTC.getUTCFullYear(), 0, 1));
+  const mesAtualInicio = new Date(Date.UTC(hojeUTC.getUTCFullYear(), hojeUTC.getUTCMonth(), 1));
 
   const limiteSemana = new Date(hojeUTC);
   limiteSemana.setUTCDate(hojeUTC.getUTCDate() + 7);
@@ -492,7 +492,7 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="text-xl sm:text-2xl font-black leading-none text-violet-600 break-words">{formatBRL(ganhoAnoAtual)}</div>
-            <div className="mt-2 text-sm text-zinc-400">Parcelas quitadas em {hoje.getFullYear()}</div>
+            <div className="mt-2 text-sm text-zinc-400">Parcelas quitadas em {hojeUTC.getUTCFullYear()}</div>
           </div>
 
           {/* Taxa de Sucesso */}
