@@ -207,7 +207,14 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     if (!confirm("Confirmar recebimento de APENAS os juros e renovar o principal para +30 dias?")) return;
     startTransition(async () => {
       try {
-        await receberSoJurosEmprestimo(emprestimo.id);
+        const res = await receberSoJurosEmprestimo(emprestimo.id);
+        if (res?.whatsappEnviado) {
+          alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Sua renovação foi feita com sucesso! Obrigado."`);
+        } else if (res?.whatsappErro) {
+          alert(`Empréstimo renovado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
+        } else {
+          alert("Empréstimo renovado com sucesso!");
+        }
       } catch (err: any) {
         alert(err.message);
       }

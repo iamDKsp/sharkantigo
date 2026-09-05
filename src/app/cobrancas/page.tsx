@@ -36,8 +36,18 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
   for (const emp of emprestimos) {
     const valorEmprestadoNum = Number(emp.valor_emprestado);
     const taxaJurosNum = Number(emp.taxa_juros);
-    const totalParcelas = emp.parcelas.length;
-    const parcelasAbertas = emp.parcelas.filter((p: any) => p.status === "aberto");
+    const totalParcelas = emp.parcelas.length || 1;
+    const parcelasAbertas = emp.parcelas.length > 0
+      ? emp.parcelas.filter((p: any) => p.status === "aberto")
+      : [
+          {
+            id: `legacy-${emp.id}`,
+            numero: 1,
+            valor: valorEmprestadoNum * (1 + taxaJurosNum / 100),
+            data_vencimento: emp.data_vencimento,
+            status: "aberto",
+          }
+        ];
 
     for (const p of parcelasAbertas) {
       const vencObj = new Date(p.data_vencimento);

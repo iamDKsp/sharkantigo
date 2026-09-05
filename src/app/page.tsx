@@ -60,6 +60,7 @@ export default async function DashboardPage() {
   let atrasadosOntemCount = 0;
   let atrasadosAnterioresCount = 0;
   let vencendoHojeCount = 0;
+  let ativosEmDiaCount = 0;
   let receberHoje = 0;
   let receberSemana = 0;
   let receberMes = 0;
@@ -90,16 +91,54 @@ export default async function DashboardPage() {
     const vencObj = new Date(emp.data_vencimento);
     const vencimentoUTC = new Date(Date.UTC(vencObj.getUTCFullYear(), vencObj.getUTCMonth(), vencObj.getUTCDate()));
 
-    const venceHoje = vencimentoUTC.getTime() === hojeUTC.getTime();
-    const estaAtrasado = vencimentoUTC < hojeUTC;
-    const atrasouOntem = vencimentoUTC.getTime() === ontemUTC.getTime();
+    let estaAtrasado = false;
+    let atrasouOntem = false;
+    let venceHoje = false;
+
+    if (emp.parcelas && emp.parcelas.length > 0) {
+      const temParcelasAbertas = emp.parcelas.some((p) => p.status === "aberto");
+      if (temParcelasAbertas) {
+        estaAtrasado = emp.parcelas.some((p) => {
+          if (p.status !== "aberto") return false;
+          const pvObj = new Date(p.data_vencimento);
+          const pvUTC = new Date(Date.UTC(pvObj.getUTCFullYear(), pvObj.getUTCMonth(), pvObj.getUTCDate()));
+          return pvUTC < hojeUTC;
+        });
+
+        atrasouOntem = emp.parcelas.some((p) => {
+          if (p.status !== "aberto") return false;
+          const pvObj = new Date(p.data_vencimento);
+          const pvUTC = new Date(Date.UTC(pvObj.getUTCFullYear(), pvObj.getUTCMonth(), pvObj.getUTCDate()));
+          return pvUTC.getTime() === ontemUTC.getTime();
+        });
+
+        venceHoje = emp.parcelas.some((p) => {
+          if (p.status !== "aberto") return false;
+          const pvObj = new Date(p.data_vencimento);
+          const pvUTC = new Date(Date.UTC(pvObj.getUTCFullYear(), pvObj.getUTCMonth(), pvObj.getUTCDate()));
+          return pvUTC.getTime() === hojeUTC.getTime();
+        });
+      }
+    } else {
+      if (vencimentoUTC < hojeUTC) {
+        estaAtrasado = true;
+        if (vencimentoUTC.getTime() === ontemUTC.getTime()) {
+          atrasouOntem = true;
+        }
+      } else if (vencimentoUTC.getTime() === hojeUTC.getTime()) {
+        venceHoje = true;
+      }
+    }
 
     if (estaAtrasado) {
       totalAtrasadosCount++;
       if (atrasouOntem) atrasadosOntemCount++;
       else atrasadosAnterioresCount++;
+    } else {
+      ativosEmDiaCount++;
     }
-    if (venceHoje) vencendoHojeCount++;;
+
+    if (venceHoje) vencendoHojeCount++;
 
     const isParceiro = emp.parceiro_id !== null;
     const parceiroNome = emp.parceiro?.nome || "Próprio";
@@ -275,7 +314,12 @@ export default async function DashboardPage() {
             {formatBRL(totalEmprestado)}
           </div>
           <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
-            <span>{emprestimosAtivos.length} empréstimos ativos</span>
+            <span className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-bold text-emerald-600">{ativosEmDiaCount} em dia</span>
+              <span className="text-zinc-300">•</span>
+              <span className="font-bold text-rose-500">{totalAtrasadosCount} atrasados</span>
+              <span className="text-xs text-zinc-400">({emprestimosAtivos.length} total)</span>
+            </span>
             <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-zinc-100/50 group-hover:scale-110 transition-transform duration-500" />
@@ -315,7 +359,7 @@ export default async function DashboardPage() {
             {vencendoHojeCount}
           </div>
           <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
-            <span>parcelas vencem hoje</span>
+            <span>{vencendoHojeCount === 1 ? "empréstimo vence hoje" : "empréstimos vencem hoje"}</span>
             <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-amber-500" />
           </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-50/50 group-hover:scale-110 transition-transform duration-500" />
@@ -333,7 +377,7 @@ export default async function DashboardPage() {
             {atrasadosOntemCount}
           </div>
           <div className="mt-2 text-sm text-zinc-400 flex items-center justify-between">
-            <span>venceram ontem</span>
+            <span>{atrasadosOntemCount === 1 ? "venceu ontem" : "venceram ontem"}</span>
             <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-orange-500" />
           </div>
           <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-orange-50/50 group-hover:scale-110 transition-transform duration-500" />
@@ -357,8 +401,8 @@ export default async function DashboardPage() {
                 <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-rose-500" />
               </div>
             </div>
-            <div className="sm:hidden text-right">
-              <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-full">
+            <div className="text-right">
+              <span className="text-xs font-bold text-rose-500 bg-rose-50 border border-rose-100 px-2 py-1 rounded-full">
                 Total: {totalAtrasadosCount}
               </span>
             </div>

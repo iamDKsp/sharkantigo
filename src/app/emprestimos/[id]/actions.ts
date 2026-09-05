@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { sendWhatsappMessage } from "@/lib/whatsapp";
 
 // 1. Pagar Próxima Parcela (com ou sem atraso)
 export async function payNextInstallment(emprestimoId: string, withDelay: boolean) {
@@ -324,17 +325,25 @@ export async function deleteLoan(id: string) {
 // 7. Receber só os juros (Renovar +30d)
 export async function receberSoJurosEmprestimo(emprestimoId: string) {
   const hoje = new Date();
+  let clienteTelefone = "";
+  let clienteNome = "";
 
   await prisma.$transaction(async (tx) => {
-    // 1. Encontra o empréstimo com as parcelas abertas
+    // 1. Encontra o empréstimo com o cliente e as parcelas abertas
     const emprestimo = await tx.emprestimo.findUnique({
       where: { id: emprestimoId },
-      include: { parcelas: { where: { status: "aberto" }, orderBy: { numero: "asc" } } },
+      include: {
+        cliente: true,
+        parcelas: { where: { status: "aberto" }, orderBy: { numero: "asc" } },
+      },
     });
 
     if (!emprestimo || emprestimo.parcelas.length === 0) {
       throw new Error("Empréstimo não encontrado ou sem parcelas em aberto.");
     }
+
+    clienteTelefone = emprestimo.cliente?.telefone || "";
+    clienteNome = emprestimo.cliente?.nome || "";
 
     // 2. Pega a primeira parcela em aberto
     const parcelaAtual = emprestimo.parcelas[0];
@@ -390,10 +399,34 @@ export async function receberSoJurosEmprestimo(emprestimoId: string) {
     });
   });
 
+  // Disparar mensagem automática no WhatsApp do cliente após a renovação
+  let whatsappEnviado = false;
+  let whatsappErro: string | undefined = undefined;
+
+  if (clienteTelefone) {
+    try {
+      const waRes = await sendWhatsappMessage(
+        clienteTelefone,
+        "Sua renovação foi feita com sucesso! Obrigado."
+      );
+      whatsappEnviado = waRes.success;
+      if (!waRes.success) {
+        whatsappErro = waRes.error;
+      }
+    } catch (err: any) {
+      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
+    }
+  }
+
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
-  return { success: true };
+  return {
+    success: true,
+    whatsappEnviado,
+    whatsappErro,
+    clienteNome,
+  };
 }
 
 // 8. Editar Empréstimo Completo

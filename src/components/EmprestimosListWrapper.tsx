@@ -117,8 +117,16 @@ export default function EmprestimosListWrapper({
     setRenewError(null);
     startRenewTransition(async () => {
       try {
-        await receberSoJurosEmprestimo(renewModalEmp.id);
+        const res = await receberSoJurosEmprestimo(renewModalEmp.id);
+        const clienteNome = renewModalEmp.cliente?.nome || "cliente";
         setRenewModalEmp(null);
+        if (res?.whatsappEnviado) {
+          alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${clienteNome} no WhatsApp:\n\n"Sua renovação foi feita com sucesso! Obrigado."`);
+        } else if (res?.whatsappErro) {
+          alert(`Empréstimo renovado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
+        } else {
+          alert("Empréstimo renovado com sucesso!");
+        }
       } catch (err: any) {
         setRenewError(err.message || "Erro ao renovar o empréstimo.");
       } finally {
@@ -280,8 +288,14 @@ export default function EmprestimosListWrapper({
         }
       } else {
         if (emp.status === "ativo") {
-          if (dataVencimentoObjUTC < hojeUTC) temAtrasada = true;
-          else if (dataVencimentoObjUTC.getTime() === hojeUTC.getTime()) venceHoje = true;
+          if (dataVencimentoObjUTC < hojeUTC) {
+            temAtrasada = true;
+            if (dataVencimentoObjUTC.getTime() === ontemUTC.getTime()) {
+              temAtrasadaOntem = true;
+            }
+          } else if (dataVencimentoObjUTC.getTime() === hojeUTC.getTime()) {
+            venceHoje = true;
+          }
         }
       }
 
@@ -800,6 +814,15 @@ export default function EmprestimosListWrapper({
                 <div className="flex justify-between">
                   <span className="text-slate-600 font-semibold">Novo vencimento</span>
                   <span className="font-black text-slate-800">+30 dias</span>
+                </div>
+                <div className="flex justify-between pt-1 border-t border-amber-200/60">
+                  <span className="text-emerald-700 font-semibold flex items-center gap-1.5">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    Notificação automática
+                  </span>
+                  <span className="font-bold text-emerald-800 text-[11px]">
+                    WhatsApp após renovar
+                  </span>
                 </div>
               </div>
 
