@@ -14,7 +14,14 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/api/auth/login") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/_next") ||
-    pathname.includes("favicon")
+    pathname.startsWith("/icons") ||
+    pathname.includes("favicon") ||
+    pathname.includes("icon") ||
+    pathname.includes("apple-icon") ||
+    pathname.includes("opengraph-image") ||
+    pathname.includes("twitter-image") ||
+    pathname.includes("manifest") ||
+    /\.(png|jpg|jpeg|gif|svg|ico|webp|webmanifest|json)$/i.test(pathname)
   ) {
     // Se tentar acessar o login estando autenticado, vai pro painel
     if (pathname === "/login") {
@@ -56,8 +63,8 @@ export const config = {
      * - api/auth (auth api routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico, images, icons, manifests
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|webmanifest)$).*)",
   ],
 };
