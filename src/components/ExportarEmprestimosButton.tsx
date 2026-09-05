@@ -6,16 +6,21 @@ import * as XLSX from "xlsx";
 
 interface ExportarEmprestimosButtonProps {
   emprestimos: any[];
-  cheques?: any[];
 }
 
-export default function ExportarEmprestimosButton({ emprestimos, cheques = [] }: ExportarEmprestimosButtonProps) {
+export default function ExportarEmprestimosButton({ emprestimos }: ExportarEmprestimosButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     setIsExporting(true);
     
     try {
+      // Busca os cheques somente no momento da exportação, evitando que sejam
+      // transferidos para todos os usuários que apenas visitam a listagem.
+      const chequeRes = await fetch("/api/exportar-cheques");
+      if (!chequeRes.ok) throw new Error("Falha ao buscar cheques para exportação.");
+      const cheques: any[] = await chequeRes.json();
+
       const formatStatus = (status: string) => {
         if (!status) return "";
         return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');

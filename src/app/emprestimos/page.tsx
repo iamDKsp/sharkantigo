@@ -25,27 +25,58 @@ export default async function EmprestimosPage({
   const parceiroInicial= params?.parceiro ?? "todos";
   const sortInicial    = params?.sort     ?? "padrao";
   const paginaInicial  = parseInt(params?.pagina ?? "1", 10) || 1;
-  // Buscar todos os empréstimos de uma só vez para possibilitar busca instantânea no client-side
+  // Buscar todos os empréstimos de uma só vez para possibilitar busca instantânea no client-side.
+  // select explícito exclui foto_url e documentos_urls do cliente, que não são usados pela listagem.
   const emprestimos = await prisma.emprestimo.findMany({
-    include: {
-      cliente: true,
-      parcelas: true,
-      parceiro: true,
+    select: {
+      id: true,
+      valor_emprestado: true,
+      taxa_juros: true,
+      taxa_multa: true,
+      juros_atraso: true,
+      data_vencimento: true,
+      status: true,
+      tipo_pagamento: true,
+      frequencia: true,
+      categoria: true,
+      observacoes: true,
+      data_inicio: true,
+      data_prevista_pagamento: true,
+      parceiro_id: true,
+      criado_em: true,
+      cliente: {
+        select: {
+          id: true,
+          nome: true,
+          telefone: true,
+          cidade: true,
+        },
+      },
+      parcelas: {
+        select: {
+          id: true,
+          numero: true,
+          valor: true,
+          valor_pago: true,
+          data_vencimento: true,
+          status: true,
+          data_pagamento: true,
+        },
+      },
+      parceiro: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
     },
     orderBy: {
       data_vencimento: "asc",
     },
   });
 
-  const cheques = await prisma.cheque.findMany({
-    include: {
-      cliente: true,
-      parceiro: true,
-    },
-    orderBy: {
-      data_compensacao: "asc"
-    }
-  });
+  // Cheques são omitidos do carregamento inicial.
+  // O botão de exportação os buscará via /api/exportar-cheques somente quando acionado.
 
   const serializedEmprestimos = emprestimos.map((emp) => ({
     ...emp,
@@ -60,13 +91,6 @@ export default async function EmprestimosPage({
     })),
   }));
 
-  const serializedCheques = cheques.map((c) => ({
-    ...c,
-    valor: Number(c.valor),
-    taxa_desconto: c.taxa_desconto ? Number(c.taxa_desconto) : null,
-    valor_liquido: c.valor_liquido ? Number(c.valor_liquido) : null,
-  }));
-
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
@@ -78,7 +102,7 @@ export default async function EmprestimosPage({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <ExportarEmprestimosButton emprestimos={serializedEmprestimos} cheques={serializedCheques} />
+          <ExportarEmprestimosButton emprestimos={serializedEmprestimos} />
           <Link
             href="/emprestimos/novo"
             className="flex items-center space-x-1.5 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
