@@ -357,13 +357,13 @@ export async function receberSoJurosEmprestimo(emprestimoId: string) {
       throw new Error("O empréstimo não possui taxa de juros configurada para calcular o recebimento.");
     }
 
-    // 4. Modifica a parcela atual para ser APENAS o valor dos juros, e marca como paga
+    // 4. Modifica a parcela atual para ser APENAS o valor dos juros, e marca como paga (renovação)
     await tx.parcela.update({
       where: { id: parcelaAtual.id },
       data: {
         valor: valorJuros,
         valor_pago: valorJuros,
-        status: "pago",
+        status: "pago_renovacao",
         data_pagamento: hoje,
       },
     });

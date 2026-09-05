@@ -150,6 +150,44 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const pagas = emprestimo.parcelas.filter(p => p.status.startsWith("pago"));
   const multiplas = abertas.length > 1;
 
+  const isAVista = emprestimo.tipo_pagamento === "a_vista" || emprestimo.tipo_pagamento === "a_vista_juros";
+  const valorJurosCalculado = Number(emprestimo.valor_emprestado) * (Number(emprestimo.taxa_juros) / 100);
+
+  // Classificação de itens: Renovação, À Vista ou Parcela normal
+  let countRenovacao = 0;
+  let countParcela = 0;
+  const itensComLabels = emprestimo.parcelas.map((p, idx) => {
+    const isExplicitRenovacao = p.status === "pago_renovacao" || p.status.includes("renovacao") || p.status === "renovado";
+    const isAVistaRenovacao = isAVista && emprestimo.parcelas.length > 1 && (idx < emprestimo.parcelas.length - 1 || isExplicitRenovacao);
+    const isParceladoRenovacao = !isAVista && (isExplicitRenovacao || (Math.abs(p.valor - valorJurosCalculado) < 0.05 && p.status.startsWith("pago") && emprestimo.parcelas.length > 1));
+    const isRenov = isExplicitRenovacao || isAVistaRenovacao || isParceladoRenovacao;
+
+    if (isRenov) {
+      countRenovacao++;
+      return {
+        ...p,
+        label: `Renovação ${countRenovacao}`,
+        tipoItem: "renovacao" as const,
+      };
+    } else if (isAVista) {
+      return {
+        ...p,
+        label: "À Vista",
+        tipoItem: "a_vista" as const,
+      };
+    } else {
+      countParcela++;
+      return {
+        ...p,
+        label: `Parcela ${countParcela}`,
+        tipoItem: "parcela" as const,
+      };
+    }
+  });
+
+  const totalRenovacoes = countRenovacao;
+  const totalParcelasNormais = countParcela;
+
   const todasPagas = emprestimo.parcelas.length > 0 && emprestimo.parcelas.every(p => p.status.startsWith("pago"));
   let statusReal = todasPagas ? "quitado" : emprestimo.status;
   let atrasado = false, venceHoje = false;
@@ -185,7 +223,8 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
 
   // ── Handlers ──
   const pay = (withDelay: boolean) => {
-    if (!confirm(`Confirmar recebimento como ${withDelay ? "atrasado" : "pago"}?`)) return;
+    const acaoLabel = isAVista || !multiplas ? "QUITAÇÃO" : "recebimento da parcela";
+    if (!confirm(`Confirmar ${acaoLabel} como ${withDelay ? "atrasado" : "pago"}?`)) return;
     startTransition(async () => { await payNextInstallment(emprestimo.id, withDelay); });
   };
   const payAll = (withDelay: boolean) => {
@@ -363,7 +402,19 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
               <div>
                 <div className="flex justify-between text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">
                   <span>Progresso — {progresso.toFixed(0)}% pago</span>
-                  <span>{pagas.length}/{emprestimo.parcelas.length} parcelas</span>
+                  <span>
+                    {isAVista ? (
+                      totalRenovacoes > 0 ? (
+                        `${totalRenovacoes} ${totalRenovacoes === 1 ? "renovação" : "renovações"} · ${abertas.length > 0 ? "1 à vista" : "quitado"}`
+                      ) : (
+                        todasPagas ? "Quitado" : "À Vista"
+                      )
+                    ) : totalRenovacoes > 0 ? (
+                      `${pagas.length - totalRenovacoes}/${totalParcelasNormais} parcelas · ${totalRenovacoes} ren.`
+                    ) : (
+                      `${pagas.length}/${emprestimo.parcelas.length} parcelas`
+                    )}
+                  </span>
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full ${s.bar} transition-all duration-700`} style={{ width: `${Math.max(progresso, progresso > 0 ? 3 : 0)}%` }} />
@@ -372,45 +423,93 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
             </div>
           </div>
 
-          {/* PARCELAS */}
-          {emprestimo.parcelas.length > 0 && (
+          {/* LISTA DE PAGAMENTOS / PARCELAS / RENOVAÇÕES */}
+          {itensComLabels.length > 0 && (
             <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
               <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm font-black text-slate-900">Parcelas</span>
+                  <span className="text-sm font-black text-slate-900">
+                    {isAVista ? (totalRenovacoes > 0 ? "Renovações e Quitação" : "Pagamento") : "Parcelas"}
+                  </span>
                 </div>
                 <div className="flex gap-2 text-xs font-black uppercase tracking-widest">
-                  {pagas.length > 0 && <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">{pagas.length} pagas</span>}
-                  {abertas.length > 0 && <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{abertas.length} abertas</span>}
+                  {totalRenovacoes > 0 && (
+                    <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
+                      {totalRenovacoes} {totalRenovacoes === 1 ? "renovação" : "renovações"}
+                    </span>
+                  )}
+                  {isAVista ? (
+                    abertas.length > 0 ? (
+                      <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
+                        1 à vista
+                      </span>
+                    ) : (
+                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+                        Quitado
+                      </span>
+                    )
+                  ) : (
+                    <>
+                      {pagas.length > 0 && (
+                        <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
+                          {pagas.length - totalRenovacoes} pagas
+                        </span>
+                      )}
+                      {abertas.length > 0 && (
+                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                          {abertas.length} abertas
+                        </span>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
-                {emprestimo.parcelas.map((p) => {
+                {itensComLabels.map((p) => {
                   const v = new Date(p.data_vencimento);
                   const pUTC = new Date(Date.UTC(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate()));
                   const pAtras = p.status === "aberto" && pUTC < hojeUTC;
                   const pHoje = p.status === "aberto" && pUTC.getTime() === hojeUTC.getTime();
                   const pPago = p.status.startsWith("pago");
                   const pAtrasoPago = p.status === "pago_com_atraso";
+                  const isRenov = p.tipoItem === "renovacao";
+                  const isAv = p.tipoItem === "a_vista";
 
                   return (
                     <div key={p.id} className={`flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors ${pAtras ? "bg-rose-50/40" : ""}`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${pPago ? "bg-emerald-50" : pAtras ? "bg-rose-50" : pHoje ? "bg-amber-50" : "bg-slate-100"}`}>
-                          {pPago ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : pAtras ? <AlertTriangle className="w-3.5 h-3.5 text-rose-500" /> : pHoje ? <Clock className="w-3.5 h-3.5 text-amber-500" /> : <Calendar className="w-3.5 h-3.5 text-slate-400" />}
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          isRenov ? "bg-purple-50 text-purple-600" :
+                          pPago ? "bg-emerald-50 text-emerald-600" :
+                          pAtras ? "bg-rose-50 text-rose-500" :
+                          pHoje ? "bg-amber-50 text-amber-500" :
+                          "bg-slate-100 text-slate-400"
+                        }`}>
+                          {isRenov ? (
+                            <RefreshCw className="w-3.5 h-3.5" />
+                          ) : pPago ? (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          ) : pAtras ? (
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                          ) : pHoje ? (
+                            <Clock className="w-3.5 h-3.5" />
+                          ) : (
+                            <Calendar className="w-3.5 h-3.5" />
+                          )}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-sm font-black text-slate-900">Parcela {p.numero}</span>
+                            <span className="text-sm font-black text-slate-900">{p.label}</span>
                             <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full border ${
-                              pPago ? `${pAtrasoPago ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}` :
+                              isRenov ? "bg-purple-50 text-purple-700 border-purple-200" :
+                              pPago ? (pAtrasoPago ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-emerald-50 text-emerald-700 border-emerald-200") :
                               pAtras ? "bg-rose-50 text-rose-700 border-rose-200" :
                               pHoje ? "bg-amber-50 text-amber-700 border-amber-200" :
                               "bg-slate-100 text-slate-500 border-slate-200"
                             }`}>
-                              {pPago ? (pAtrasoPago ? "c/ atraso" : "pago") : pAtras ? "atrasada" : pHoje ? "hoje" : "aberta"}
+                              {isRenov ? "renovado" : pPago ? (pAtrasoPago ? "c/ atraso" : (isAv ? "quitado" : "pago")) : pAtras ? "atrasada" : pHoje ? "hoje" : "aberta"}
                             </span>
                           </div>
                           <div className="text-xs text-slate-400 flex gap-2">
@@ -425,7 +524,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                         {p.status === "aberto" && (
                           <div className="flex gap-1">
                             <button onClick={() => pay(false)} disabled={isPending} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer">
-                              Pagar
+                              {isAv ? "Quitar" : "Pagar"}
                             </button>
                           </div>
                         )}
@@ -616,7 +715,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                     </>
                   ) : (
                     <>
-                      <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> Marcar como Pago</BtnPrimary>
+                      <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> Quitar Agora</BtnPrimary>
                     </>
                   )}
                   <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] shadow-sm cursor-pointer">
