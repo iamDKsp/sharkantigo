@@ -396,7 +396,7 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
                       )}
                     </div>
                     <div className="text-xs text-slate-400 mt-1">
-                      Taxa de juros: {juros}% | Multa: {Number(emp.taxa_multa)}%
+                      Taxa de juros: {juros}% ({formatBRL(principal * (juros / 100))}) | Multa: {Number(emp.taxa_multa)}%
                     </div>
                   </div>
 

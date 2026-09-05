@@ -232,11 +232,13 @@ export default function EmprestimosListWrapper({
   const emprestimosProcessados = useMemo(() => {
     return initialEmprestimos.map((emp) => {
       const principal = Number(emp.valor_emprestado);
+      const taxaJuros = Number(emp.taxa_juros) || 0;
+      const valorJuros = principal * (taxaJuros / 100);
 
       const totalEstimado =
         emp.parcelas && emp.parcelas.length > 0
           ? emp.parcelas.reduce((acc: number, p: any) => acc + Number(p.valor), 0)
-          : principal * (1 + Number(emp.taxa_juros) / 100);
+          : principal * (1 + taxaJuros / 100);
 
       const vencFinalObj = new Date(emp.data_vencimento);
       const dataVencimentoObjUTC = new Date(
@@ -310,6 +312,7 @@ export default function EmprestimosListWrapper({
       return {
         ...emp,
         principal,
+        valorJuros,
         totalEstimado,
         statusReal,
         estaAtrasado: temAtrasada,
@@ -643,7 +646,7 @@ export default function EmprestimosListWrapper({
                     </span>
                     <span className="flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                      Juros: <span className="text-slate-700">{Number(emp.taxa_juros)}%</span>
+                      Juros: <span className="text-slate-700">{Number(emp.taxa_juros)}% ({formatBRL(emp.valorJuros)})</span>
                     </span>
                     {Number(emp.taxa_multa) > 0 && (
                       <span className="flex items-center gap-1">
