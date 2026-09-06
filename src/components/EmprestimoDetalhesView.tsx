@@ -317,16 +317,25 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     </button>
   );
 
+  const handleVoltar = () => {
+    if (typeof window !== "undefined") {
+      const fromList = sessionStorage.getItem("emprestimos_from_list");
+      const lastUrl = sessionStorage.getItem("emprestimos_last_url");
+      if (fromList === "true" && lastUrl && lastUrl.startsWith("/emprestimos")) {
+        router.push(lastUrl);
+        return;
+      }
+    }
+    router.back();
+  };
+
   return (
     <div className="max-w-5xl mx-auto pb-12 space-y-4">
-
-      {/* Prefetch silencioso da lista — pré-carrega em background */}
-      <Link href="/emprestimos" prefetch className="hidden" aria-hidden tabIndex={-1} />
 
       {/* Top bar */}
       <div className="flex items-center justify-between py-1">
         <button
-          onClick={() => router.back()}
+          onClick={handleVoltar}
           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 text-sm font-semibold transition-colors group active:scale-95 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Voltar

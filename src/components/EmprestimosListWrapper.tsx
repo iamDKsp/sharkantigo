@@ -59,6 +59,13 @@ const sortLabels: Record<SortOption, string> = {
   mais_distante: "Vence Depois",
 };
 
+function resolveSort(sort?: string): SortOption {
+  if (sort === "maior_valor" || sort === "menor_valor" || sort === "mais_proximo" || sort === "mais_distante") {
+    return sort;
+  }
+  return "padrao";
+}
+
 function resolveStatus(filtro: string): StatusFilter {
   if (filtro === "hoje")      return "hoje";
   if (filtro === "ontem")     return "ontem";
@@ -81,10 +88,46 @@ export default function EmprestimosListWrapper({
 
   // ── Estado persistido na URL ──
   const [search, setSearch]               = useUrlState("q",       initialSearch,   "");
-  const [statusFilter, setStatusFilter]   = useUrlState<StatusFilter>("status", resolveStatus(initialFiltro), "ativos");
+  const [statusFilter, setStatusFilter]   = useUrlState<StatusFilter>("status", resolveStatus(initialFiltro), "ativos", resolveStatus);
   const [parceiroFilter, setParceiroFilter] = useUrlState("parceiro", initialParceiro, "todos");
-  const [sortOption, setSortOption]       = useUrlState<SortOption>("sort", initialSort as SortOption, "padrao");
+  const [sortOption, setSortOption]       = useUrlState<SortOption>("sort", resolveSort(initialSort), "padrao", resolveSort);
   const [currentPage, setCurrentPage]     = useUrlState("pagina",  String(initialPagina), "1");
+
+  // Sincroniza memória de filtros no sessionStorage sempre que alterados
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const currentUrl = window.location.pathname + (window.location.search || "");
+    sessionStorage.setItem("emprestimos_last_url", currentUrl);
+    sessionStorage.setItem("emprestimos_filters_memory", JSON.stringify({
+      status: statusFilter,
+      q: search,
+      parceiro: parceiroFilter,
+      sort: sortOption,
+      pagina: currentPage,
+    }));
+  }, [statusFilter, search, parceiroFilter, sortOption, currentPage]);
+
+  // Restaura filtros salvos se estiver voltando de um empréstimo e a URL vier limpa
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fromList = sessionStorage.getItem("emprestimos_from_list");
+    if (fromList === "true") {
+      sessionStorage.removeItem("emprestimos_from_list");
+      if (!window.location.search) {
+        const savedRaw = sessionStorage.getItem("emprestimos_filters_memory");
+        if (savedRaw) {
+          try {
+            const saved = JSON.parse(savedRaw);
+            if (saved.status && saved.status !== statusFilter) setStatusFilter(saved.status);
+            if (saved.q && saved.q !== search) setSearch(saved.q);
+            if (saved.parceiro && saved.parceiro !== parceiroFilter) setParceiroFilter(saved.parceiro);
+            if (saved.sort && saved.sort !== sortOption) setSortOption(saved.sort);
+            if (saved.pagina && saved.pagina !== currentPage) setCurrentPage(saved.pagina);
+          } catch (e) {}
+        }
+      }
+    }
+  }, []);
 
   // Helper para mudar filtros e resetar página
   const setStatusAndReset   = (v: StatusFilter) => { setStatusFilter(v);   setCurrentPage("1"); };
@@ -630,7 +673,18 @@ export default function EmprestimosListWrapper({
                 {/* Accent Line Left */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
 
-                <Link href={`/emprestimos/${emp.id}`} className="absolute inset-0 z-0" />
+                <Link
+                  href={`/emprestimos/${emp.id}`}
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      const currentUrl = window.location.pathname + (window.location.search || "");
+                      sessionStorage.setItem("emprestimos_last_url", currentUrl);
+                      sessionStorage.setItem("emprestimos_from_list", "true");
+                      sessionStorage.setItem("scroll_emprestimos-list", String(window.scrollY));
+                    }
+                  }}
+                  className="absolute inset-0 z-0"
+                />
 
                 <div className="space-y-2 z-10 pointer-events-none pl-2">
                   <div className="flex items-center space-x-3">
