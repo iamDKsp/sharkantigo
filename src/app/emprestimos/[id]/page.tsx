@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import EmprestimoDetalhesView from "@/components/EmprestimoDetalhesView";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -27,6 +28,22 @@ export default async function EmprestimoDetalhesPage({ params }: PageProps) {
 
   if (!emprestimo) {
     notFound();
+  }
+
+  // Auto-correção para parcelas que ficaram com data_pagamento no futuro (virada de dia UTC após as 21h)
+  const hojeBrasilia = hojeEmBrasilia();
+  for (const p of emprestimo.parcelas) {
+    if (p.data_pagamento && new Date(p.data_pagamento) > hojeBrasilia) {
+      try {
+        await prisma.parcela.update({
+          where: { id: p.id },
+          data: { data_pagamento: hojeBrasilia },
+        });
+        p.data_pagamento = hojeBrasilia;
+      } catch (err) {
+        console.error("Erro ao auto-corrigir data_pagamento:", err);
+      }
+    }
   }
 
   // Converter tipos compatíveis antes de passar para o Client Component

@@ -576,3 +576,30 @@ export async function salvarDataPrevistaPagamento(
   revalidatePath("/cobrancas");
   return { success: true };
 }
+
+// ── Editar Data do Pagamento de Parcela ──
+export async function atualizarDataPagamentoParcela(
+  parcelaId: string,
+  emprestimoId: string,
+  novaDataStr: string
+) {
+  if (!novaDataStr) {
+    throw new Error("Data de pagamento inválida.");
+  }
+
+  const [year, month, day] = novaDataStr.split("-").map(Number);
+  const dataPagamentoUTC = new Date(Date.UTC(year, month - 1, day));
+
+  await prisma.parcela.update({
+    where: { id: parcelaId },
+    data: {
+      data_pagamento: dataPagamentoUTC,
+    },
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return { success: true };
+}
+
