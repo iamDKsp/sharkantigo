@@ -187,6 +187,7 @@ export default function EmprestimosListWrapper({
   const [waTemplates, setWaTemplates] = useState<string[]>([
     "Olá, tudo bem? Lembrando que seu empréstimo vence em breve.",
     "Olá, sua parcela vence hoje. Qualquer dúvida estou à disposição!",
+    "Muito obrigado, pagamento confirmado!",
     "Olá, notamos um pequeno atraso. Como podemos ajudar?",
     "Olá, seu empréstimo já consta como quitado. Muito obrigado!"
   ]);

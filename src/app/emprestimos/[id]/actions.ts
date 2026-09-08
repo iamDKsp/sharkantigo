@@ -9,6 +9,12 @@ import { hojeEmBrasilia } from "@/lib/dateUtils";
 export async function payNextInstallment(emprestimoId: string, withDelay: boolean) {
   const hoje = hojeEmBrasilia();
 
+  // Buscar empréstimo com dados do cliente
+  const emprestimo = await prisma.emprestimo.findUnique({
+    where: { id: emprestimoId },
+    include: { cliente: true },
+  });
+
   // Buscar a primeira parcela em aberto ordenada por número
   const proximaParcela = await prisma.parcela.findFirst({
     where: { emprestimo_id: emprestimoId, status: "aberto" },
@@ -48,17 +54,54 @@ export async function payNextInstallment(emprestimoId: string, withDelay: boolea
     });
   }
 
+  // Disparar mensagem de confirmação de pagamento no WhatsApp
+  let whatsappEnviado = false;
+  let whatsappErro: string | undefined = undefined;
+  const clienteTelefone = emprestimo?.cliente?.telefone || "";
+  const clienteNome = emprestimo?.cliente?.nome || "";
+
+  if (clienteTelefone) {
+    try {
+      const waRes = await sendWhatsappMessage(
+        clienteTelefone,
+        "Muito obrigado, pagamento confirmado!"
+      );
+      whatsappEnviado = waRes.success;
+      if (!waRes.success) {
+        whatsappErro = waRes.error;
+      }
+    } catch (err: any) {
+      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
+    }
+  }
+
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
-  return { success: true };
+  return {
+    success: true,
+    whatsappEnviado,
+    whatsappErro,
+    clienteNome,
+  };
 }
 
 // 2. Quitação Total (com ou sem atraso)
 export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
   const hoje = hojeEmBrasilia();
+  let clienteTelefone = "";
+  let clienteNome = "";
 
   await prisma.$transaction(async (tx) => {
+    const emp = await tx.emprestimo.findUnique({
+      where: { id: emprestimoId },
+      include: { cliente: true },
+    });
+    if (emp?.cliente) {
+      clienteTelefone = emp.cliente.telefone || "";
+      clienteNome = emp.cliente.nome || "";
+    }
+
     // Atualizar todas as parcelas abertas
     const parcelasAbertas = await tx.parcela.findMany({
       where: { emprestimo_id: emprestimoId, status: "aberto" },
@@ -84,10 +127,34 @@ export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
     });
   });
 
+  // Disparar mensagem de confirmação de quitação no WhatsApp
+  let whatsappEnviado = false;
+  let whatsappErro: string | undefined = undefined;
+
+  if (clienteTelefone) {
+    try {
+      const waRes = await sendWhatsappMessage(
+        clienteTelefone,
+        "Muito obrigado, pagamento confirmado!"
+      );
+      whatsappEnviado = waRes.success;
+      if (!waRes.success) {
+        whatsappErro = waRes.error;
+      }
+    } catch (err: any) {
+      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
+    }
+  }
+
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
-  return { success: true };
+  return {
+    success: true,
+    whatsappEnviado,
+    whatsappErro,
+    clienteNome,
+  };
 }
 
 // 3. Renegociar Dívida (Abater valores + aplicar juros opcional sobre o saldo devedor)

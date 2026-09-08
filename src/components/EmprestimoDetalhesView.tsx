@@ -113,6 +113,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       setWaTemplates([
         "Olá, tudo bem? Lembrando que seu empréstimo vence em breve.",
         "Olá, sua parcela vence hoje. Qualquer dúvida estou à disposição!",
+        "Muito obrigado, pagamento confirmado!",
         "Olá, notamos um pequeno atraso. Como podemos ajudar?",
         "Olá, seu empréstimo já consta como quitado. Muito obrigado!"
       ]);
@@ -236,11 +237,37 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const pay = (withDelay: boolean) => {
     const acaoLabel = isAVista || !multiplas ? "QUITAÇÃO" : "recebimento da parcela";
     if (!confirm(`Confirmar ${acaoLabel} como ${withDelay ? "atrasado" : "pago"}?`)) return;
-    startTransition(async () => { await payNextInstallment(emprestimo.id, withDelay); });
+    startTransition(async () => {
+      try {
+        const res = await payNextInstallment(emprestimo.id, withDelay);
+        if (res?.whatsappEnviado) {
+          alert(`Pagamento confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Muito obrigado, pagamento confirmado!"`);
+        } else if (res?.whatsappErro) {
+          alert(`Pagamento confirmado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
+        } else {
+          alert("Muito obrigado, pagamento confirmado!");
+        }
+      } catch (err: any) {
+        alert(err?.message || "Erro ao registrar pagamento.");
+      }
+    });
   };
   const payAll = (withDelay: boolean) => {
     if (!confirm(`Confirmar QUITAÇÃO TOTAL como ${withDelay ? "com atraso" : "pago"}?`)) return;
-    startTransition(async () => { await payFullLoan(emprestimo.id, withDelay); });
+    startTransition(async () => {
+      try {
+        const res = await payFullLoan(emprestimo.id, withDelay);
+        if (res?.whatsappEnviado) {
+          alert(`Quitação confirmada com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Muito obrigado, pagamento confirmado!"`);
+        } else if (res?.whatsappErro) {
+          alert(`Quitação confirmada com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
+        } else {
+          alert("Muito obrigado, pagamento confirmado!");
+        }
+      } catch (err: any) {
+        alert(err?.message || "Erro ao registrar quitação.");
+      }
+    });
   };
   const toggleBL = () => {
     if (!confirm(emprestimo.cliente.blacklist ? "Remover da lista negra?" : "Marcar como LISTA NEGRA?")) return;
@@ -553,9 +580,23 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                         <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
                         {p.status === "aberto" && (
                           <div className="flex gap-1">
-                            <button onClick={() => pay(false)} disabled={isPending} className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer">
-                              {isAv ? "Quitar" : "Pagar"}
-                            </button>
+                            {isAv ? (
+                              <button
+                                onClick={() => pay(false)}
+                                disabled={isPending}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
+                              >
+                                Quitar
+                              </button>
+                            ) : (
+                              <button
+                                onClick={receiveJuros}
+                                disabled={isPending}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
+                              >
+                                Renovação
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
