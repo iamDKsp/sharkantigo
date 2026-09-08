@@ -3,10 +3,11 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendWhatsappMessage } from "@/lib/whatsapp";
+import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 // 1. Pagar Próxima Parcela (com ou sem atraso)
 export async function payNextInstallment(emprestimoId: string, withDelay: boolean) {
-  const hoje = new Date();
+  const hoje = hojeEmBrasilia();
 
   // Buscar a primeira parcela em aberto ordenada por número
   const proximaParcela = await prisma.parcela.findFirst({
@@ -55,7 +56,7 @@ export async function payNextInstallment(emprestimoId: string, withDelay: boolea
 
 // 2. Quitação Total (com ou sem atraso)
 export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
-  const hoje = new Date();
+  const hoje = hojeEmBrasilia();
 
   await prisma.$transaction(async (tx) => {
     // Atualizar todas as parcelas abertas
@@ -96,7 +97,7 @@ export async function renegociarEmprestimo(
   aplicarJuros: boolean,
   taxaJuros: number
 ) {
-  const hoje = new Date();
+  const hoje = hojeEmBrasilia();
 
   if (valorAbatido <= 0) {
     throw new Error("O valor a ser abatido deve ser maior que zero.");
@@ -324,7 +325,7 @@ export async function deleteLoan(id: string) {
 
 // 7. Receber só os juros (Renovar +30d)
 export async function receberSoJurosEmprestimo(emprestimoId: string) {
-  const hoje = new Date();
+  const hoje = hojeEmBrasilia();
   let clienteTelefone = "";
   let clienteNome = "";
 
