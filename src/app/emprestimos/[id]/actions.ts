@@ -86,6 +86,90 @@ export async function payNextInstallment(emprestimoId: string, withDelay: boolea
   };
 }
 
+// 1b. Pagar Parcela Específica (por ID da parcela)
+export async function payInstallmentById(parcelaId: string, withDelay: boolean) {
+  const hoje = hojeEmBrasilia();
+
+  const parcela = await prisma.parcela.findUnique({
+    where: { id: parcelaId },
+    include: {
+      emprestimo: {
+        include: { cliente: true }
+      }
+    }
+  });
+
+  if (!parcela) {
+    throw new Error("Parcela não encontrada.");
+  }
+
+  if (parcela.status !== "aberto") {
+    throw new Error("Esta parcela já foi paga.");
+  }
+
+  const emprestimoId = parcela.emprestimo_id;
+
+  // Atualizar a parcela específica para paga
+  await prisma.parcela.update({
+    where: { id: parcelaId },
+    data: {
+      status: withDelay ? "pago_com_atraso" : "pago",
+      data_pagamento: hoje,
+      valor_pago: parcela.valor,
+    },
+  });
+
+  // Verificar se ainda existem parcelas em aberto
+  const parcelasRestantes = await prisma.parcela.count({
+    where: { emprestimo_id: emprestimoId, status: "aberto" },
+  });
+
+  if (parcelasRestantes === 0) {
+    const temAtrasadas = await prisma.parcela.count({
+      where: { emprestimo_id: emprestimoId, status: "pago_com_atraso" },
+    });
+
+    await prisma.emprestimo.update({
+      where: { id: emprestimoId },
+      data: {
+        status: temAtrasadas > 0 ? "quitado_com_atraso" : "quitado",
+      },
+    });
+  }
+
+  // Disparar mensagem de confirmação de pagamento no WhatsApp
+  let whatsappEnviado = false;
+  let whatsappErro: string | undefined = undefined;
+  const clienteTelefone = parcela.emprestimo?.cliente?.telefone || "";
+  const clienteNome = parcela.emprestimo?.cliente?.nome || "";
+
+  if (clienteTelefone) {
+    try {
+      const waRes = await sendWhatsappMessage(
+        clienteTelefone,
+        "Muito obrigado, pagamento confirmado!"
+      );
+      whatsappEnviado = waRes.success;
+      if (!waRes.success) {
+        whatsappErro = waRes.error;
+      }
+    } catch (err: any) {
+      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
+    }
+  }
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  return {
+    success: true,
+    whatsappEnviado,
+    whatsappErro,
+    clienteNome,
+    numeroParcela: parcela.numero,
+  };
+}
+
 // 2. Quitação Total (com ou sem atraso)
 export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
   const hoje = hojeEmBrasilia();

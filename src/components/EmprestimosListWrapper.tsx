@@ -367,6 +367,15 @@ export default function EmprestimosListWrapper({
         }
       }
 
+      const isExplicitRenov = (p: any) =>
+        p.status === "pago_renovacao" || p.status?.includes("renovacao") || p.status === "renovado";
+      const parcelasNaoRenov = (emp.parcelas || []).filter((p: any) => !isExplicitRenov(p));
+      const isAVista =
+        emp.tipo_pagamento === "a_vista" ||
+        emp.tipo_pagamento === "a_vista_juros" ||
+        emp.tipo_pagamento === "juros_compostos" ||
+        parcelasNaoRenov.length <= 1;
+
       return {
         ...emp,
         principal,
@@ -379,6 +388,7 @@ export default function EmprestimosListWrapper({
         venceEmBreve,
         proxVencimentoUTC,
         dataVencimentoObjUTC,
+        isAVista,
       };
     });
   }, [initialEmprestimos, hojeUTC]);
@@ -741,8 +751,8 @@ export default function EmprestimosListWrapper({
                   </div>
 
                   <div className="flex flex-col md:flex-row items-center gap-2">
-                    {/* Botão de Renovação Rápida */}
-                    {!isQuitado && (
+                    {/* Botão de Renovação Rápida (Apenas À Vista) */}
+                    {!isQuitado && emp.isAVista && (
                       <button
                         onClick={(e) => openRenewModal(e, emp)}
                         title="Renovar empréstimo (+30 dias)"

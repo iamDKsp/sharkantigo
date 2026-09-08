@@ -13,7 +13,7 @@ import {
   payNextInstallment, payFullLoan, renegociarEmprestimo,
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
   receberSoJurosEmprestimo, salvarDataPrevistaPagamento,
-  atualizarDataPagamentoParcela
+  atualizarDataPagamentoParcela, payInstallmentById
 } from "@/app/emprestimos/[id]/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 
@@ -284,6 +284,23 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
         }
       } catch (err: any) {
         alert(err?.message || "Erro ao registrar quitação.");
+      }
+    });
+  };
+  const paySpecific = (parcelaId: string, parcelaNumero: number, withDelay = false) => {
+    if (!confirm(`Confirmar recebimento da Parcela ${parcelaNumero} como ${withDelay ? "atrasada" : "paga"}?`)) return;
+    startTransition(async () => {
+      try {
+        const res = await payInstallmentById(parcelaId, withDelay);
+        if (res?.whatsappEnviado) {
+          alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Muito obrigado, pagamento confirmado!"`);
+        } else if (res?.whatsappErro) {
+          alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
+        } else {
+          alert("Muito obrigado, pagamento confirmado!");
+        }
+      } catch (err: any) {
+        alert(err?.message || "Erro ao registrar pagamento.");
       }
     });
   };
@@ -607,13 +624,23 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                         <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
                         {p.status === "aberto" && (
                           <div className="flex gap-1">
-                            <button
-                              onClick={receiveJuros}
-                              disabled={isPending}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
-                            >
-                              Renovação
-                            </button>
+                            {isAVista ? (
+                              <button
+                                onClick={receiveJuros}
+                                disabled={isPending}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
+                              >
+                                Renovação
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => paySpecific(p.id, p.numero)}
+                                disabled={isPending}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
+                              >
+                                Pagar
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -806,9 +833,11 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                       <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> {isAVista ? "Quitar À Vista" : "Quitar Agora"}</BtnPrimary>
                     </>
                   )}
-                  <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] shadow-sm cursor-pointer">
-                    <RefreshCw className="w-4 h-4" /> Receber só os juros (renovar +30d)
-                  </button>
+                  {isAVista && (
+                    <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] shadow-sm cursor-pointer">
+                      <RefreshCw className="w-4 h-4" /> Receber só os juros (renovar +30d)
+                    </button>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <BtnSecondary onClick={() => setModal("renegociar")}><RefreshCw className="w-3.5 h-3.5" /> Renegociar</BtnSecondary>
                     <BtnSecondary onClick={() => setModal("reprogramar")}><CalendarClock className="w-3.5 h-3.5" /> Reprogramar</BtnSecondary>
