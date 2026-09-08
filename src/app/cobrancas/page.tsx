@@ -36,7 +36,10 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
   for (const emp of emprestimos) {
     const valorEmprestadoNum = Number(emp.valor_emprestado);
     const taxaJurosNum = Number(emp.taxa_juros);
-    const totalParcelas = emp.parcelas.length || 1;
+    const parcelasNaoRenovacao = emp.parcelas.filter(
+      (p: any) => p.status !== "pago_renovacao" && !p.status.includes("renovacao") && p.status !== "renovado"
+    );
+    const totalParcelas = parcelasNaoRenovacao.length || 1;
     const parcelasAbertas = emp.parcelas.length > 0
       ? emp.parcelas.filter((p: any) => p.status === "aberto")
       : [

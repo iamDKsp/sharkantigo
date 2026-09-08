@@ -128,14 +128,24 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     return `\n\n💳 *Para pagar:*\nPix: 14991185521 (Itaú)\nNome: Ronivaldo Gabriel Oscar\n\nSe preferir, podemos combinar para buscar pessoalmente em dinheiro. 😊\n\n🔄 *Ou, se preferir, podemos fazer a renovação do empréstimo!*\nO valor da renovação é de apenas *${valorRenovacao}* (juros do período). Entre em contato e combinamos!`;
   };
 
+  // Helper para identificar se é à vista / parcela única
+  const isParcelaUnica = (p: Parcela) => {
+    return (
+      p.emprestimo.totalParcelas <= 1 ||
+      p.emprestimo.tipo_pagamento === "a_vista" ||
+      p.emprestimo.tipo_pagamento === "a_vista_juros" ||
+      p.emprestimo.tipo_pagamento === "juros_compostos"
+    );
+  };
+
   // Mensagens Customizadas por Tipo
   const getMessageText = (p: Parcela, type: "atrasados" | "hoje" | "aVencer") => {
     const nome = p.emprestimo.cliente.nome.split(" ")[0];
     const data = formatData(p.data_vencimento);
     const valor = formatBRL(p.valor);
     const num = p.numero;
-    // Empréstimo é "único" se tiver apenas 1 parcela no total
-    const isUnico = p.emprestimo.totalParcelas === 1;
+    // Empréstimo é "único" se tiver apenas 1 parcela no total ou for à vista
+    const isUnico = isParcelaUnica(p);
 
     let template = "";
     if (type === "atrasados") {
@@ -393,7 +403,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                             corAtrasados === "orange" ? "bg-orange-50 text-orange-600 border-orange-200" :
                             corAtrasados === "red"    ? "bg-red-50 text-red-600 border-red-200" :
                             "bg-rose-50 text-rose-600 border-rose-200"
-                          }`}>Parc. {p.numero}</span>
+                          }`}>{isParcelaUnica(p) ? "À Vista" : `Parc. ${p.numero}`}</span>
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                           <span className="flex items-center gap-0.5">
@@ -497,7 +507,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-sm text-slate-900 truncate">{p.emprestimo.cliente.nome}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-amber-50 text-amber-600 border-amber-200">Parc. {p.numero}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-amber-50 text-amber-600 border-amber-200">{isParcelaUnica(p) ? "À Vista" : `Parc. ${p.numero}`}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                         <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>
@@ -590,7 +600,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-sm text-slate-900 truncate">{p.emprestimo.cliente.nome}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-emerald-50 text-emerald-600 border-emerald-200">Parc. {p.numero}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-emerald-50 text-emerald-600 border-emerald-200">{isParcelaUnica(p) ? "À Vista" : `Parc. ${p.numero}`}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                         <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>

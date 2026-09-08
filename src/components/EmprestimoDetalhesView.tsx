@@ -162,17 +162,31 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const pagas = emprestimo.parcelas.filter(p => p.status.startsWith("pago"));
   const multiplas = abertas.length > 1;
 
-  const isAVista = emprestimo.tipo_pagamento === "a_vista" || emprestimo.tipo_pagamento === "a_vista_juros";
+  const isExplicitRenovacao = (p: any) =>
+    p.status === "pago_renovacao" || p.status.includes("renovacao") || p.status === "renovado";
+
   const valorJurosCalculado = Number(emprestimo.valor_emprestado) * (Number(emprestimo.taxa_juros) / 100);
+
+  // Conta quantas parcelas são de principal (não-renovação)
+  const parcelasNaoRenovacao = emprestimo.parcelas.filter(p => !isExplicitRenovacao(p));
+
+  // Empréstimo é considerado À VISTA se:
+  // 1. tipo_pagamento for 'a_vista', 'a_vista_juros' ou 'juros_compostos'
+  // 2. OU se tiver apenas 1 parcela principal (não-renovação) no total!
+  const isAVista =
+    emprestimo.tipo_pagamento === "a_vista" ||
+    emprestimo.tipo_pagamento === "a_vista_juros" ||
+    emprestimo.tipo_pagamento === "juros_compostos" ||
+    parcelasNaoRenovacao.length <= 1;
 
   // Classificação de itens: Renovação, À Vista ou Parcela normal
   let countRenovacao = 0;
   let countParcela = 0;
   const itensComLabels = emprestimo.parcelas.map((p, idx) => {
-    const isExplicitRenovacao = p.status === "pago_renovacao" || p.status.includes("renovacao") || p.status === "renovado";
-    const isAVistaRenovacao = isAVista && emprestimo.parcelas.length > 1 && (idx < emprestimo.parcelas.length - 1 || isExplicitRenovacao);
-    const isParceladoRenovacao = !isAVista && (isExplicitRenovacao || (Math.abs(p.valor - valorJurosCalculado) < 0.05 && p.status.startsWith("pago") && emprestimo.parcelas.length > 1));
-    const isRenov = isExplicitRenovacao || isAVistaRenovacao || isParceladoRenovacao;
+    const isRenovExp = isExplicitRenovacao(p);
+    const isAVistaRenovacao = isAVista && emprestimo.parcelas.length > 1 && (idx < emprestimo.parcelas.length - 1 || isRenovExp);
+    const isParceladoRenovacao = !isAVista && (isRenovExp || (Math.abs(p.valor - valorJurosCalculado) < 0.05 && p.status.startsWith("pago") && emprestimo.parcelas.length > 1));
+    const isRenov = isRenovExp || isAVistaRenovacao || isParceladoRenovacao;
 
     if (isRenov) {
       countRenovacao++;
@@ -191,11 +205,13 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       countParcela++;
       return {
         ...p,
-        label: `Parcela ${countParcela}`,
+        label: `Parcela ${p.numero || countParcela}`,
         tipoItem: "parcela" as const,
       };
     }
   });
+
+  const proximaParcelaAberta = itensComLabels.find(p => p.status === "aberto");
 
   const totalRenovacoes = countRenovacao;
   const totalParcelasNormais = countParcela;
@@ -235,7 +251,9 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
 
   // ── Handlers ──
   const pay = (withDelay: boolean) => {
-    const acaoLabel = isAVista || !multiplas ? "QUITAÇÃO" : "recebimento da parcela";
+    const acaoLabel = isAVista || !multiplas
+      ? "QUITAÇÃO"
+      : `recebimento da Parcela ${proximaParcelaAberta?.numero || ""}`;
     if (!confirm(`Confirmar ${acaoLabel} como ${withDelay ? "atrasado" : "pago"}?`)) return;
     startTransition(async () => {
       try {
@@ -523,15 +541,17 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                   const pAtrasoPago = p.status === "pago_com_atraso";
                   const isRenov = p.tipoItem === "renovacao";
                   const isAv = p.tipoItem === "a_vista";
+                  const isMaisAtual = proximaParcelaAberta?.id === p.id;
 
                   return (
-                    <div key={p.id} className={`flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors ${pAtras ? "bg-rose-50/40" : ""}`}>
+                    <div key={p.id} className={`flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors ${pAtras ? "bg-rose-50/40" : isMaisAtual && !isAv ? "bg-emerald-50/20" : ""}`}>
                       <div className="flex items-center gap-3">
                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
                           isRenov ? "bg-purple-50 text-purple-600" :
                           pPago ? "bg-emerald-50 text-emerald-600" :
                           pAtras ? "bg-rose-50 text-rose-500" :
                           pHoje ? "bg-amber-50 text-amber-500" :
+                          isMaisAtual && !isAv ? "bg-emerald-50 text-emerald-600" :
                           "bg-slate-100 text-slate-400"
                         }`}>
                           {isRenov ? (
@@ -551,12 +571,19 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                             <span className="text-sm font-black text-slate-900">{p.label}</span>
                             <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full border ${
                               isRenov ? "bg-purple-50 text-purple-700 border-purple-200" :
-                              pPago ? (pAtrasoPago ? "bg-orange-50 text-orange-700 border-orange-200" : "bg-emerald-50 text-emerald-700 border-emerald-200") :
+                              pPago ? (pAtrasoPago ? "bg-orange-50 text-orange-700 border-orange-200" : (isAv ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-emerald-50 text-emerald-700 border-emerald-200")) :
+                              isMaisAtual && !isAv ? "bg-emerald-50 text-emerald-700 border-emerald-300 font-extrabold" :
                               pAtras ? "bg-rose-50 text-rose-700 border-rose-200" :
                               pHoje ? "bg-amber-50 text-amber-700 border-amber-200" :
                               "bg-slate-100 text-slate-500 border-slate-200"
                             }`}>
-                              {isRenov ? "renovado" : pPago ? (pAtrasoPago ? "c/ atraso" : (isAv ? "quitado" : "pago")) : pAtras ? "atrasada" : pHoje ? "hoje" : "aberta"}
+                              {isRenov
+                                ? "renovado"
+                                : pPago
+                                ? (pAtrasoPago ? "c/ atraso" : (isAv ? "quitado" : "pago"))
+                                : isMaisAtual && !isAv
+                                ? (pAtras ? "atrasada (atual)" : pHoje ? "hoje (atual)" : "aberta (atual)")
+                                : pAtras ? "atrasada" : pHoje ? "hoje" : "aberta"}
                             </span>
                           </div>
                           <div className="text-xs text-slate-400 flex items-center gap-2">
@@ -580,23 +607,13 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                         <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
                         {p.status === "aberto" && (
                           <div className="flex gap-1">
-                            {isAv ? (
-                              <button
-                                onClick={() => pay(false)}
-                                disabled={isPending}
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
-                              >
-                                Quitar
-                              </button>
-                            ) : (
-                              <button
-                                onClick={receiveJuros}
-                                disabled={isPending}
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
-                              >
-                                Renovação
-                              </button>
-                            )}
+                            <button
+                              onClick={receiveJuros}
+                              disabled={isPending}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
+                            >
+                              Renovação
+                            </button>
                           </div>
                         )}
                       </div>
@@ -778,7 +795,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                   {multiplas ? (
                     <>
                       <div className="grid grid-cols-2 gap-2">
-                        <BtnPrimary onClick={() => pay(false)}><Wallet className="w-3.5 h-3.5" /> Pagar Parcela</BtnPrimary>
+                        <BtnPrimary onClick={() => pay(false)}><Wallet className="w-3.5 h-3.5" /> Pagar {proximaParcelaAberta ? `Parcela ${proximaParcelaAberta.numero}` : "Parcela"}</BtnPrimary>
                         <button onClick={() => payAll(false)} disabled={isPending} className="flex items-center justify-center gap-1.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] cursor-pointer">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Quitar Tudo
                         </button>
@@ -786,7 +803,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                     </>
                   ) : (
                     <>
-                      <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> Quitar Agora</BtnPrimary>
+                      <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> {isAVista ? "Quitar À Vista" : "Quitar Agora"}</BtnPrimary>
                     </>
                   )}
                   <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] shadow-sm cursor-pointer">
