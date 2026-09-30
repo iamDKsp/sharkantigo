@@ -709,6 +709,10 @@ export default function EmprestimosListWrapper({
                     </span>
                     <span className="flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      Investido: <span className="text-slate-700">{formatBRL(emp.principal)}</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                       Juros: <span className="text-slate-700">{Number(emp.taxa_juros)}% ({formatBRL(emp.valorJuros)})</span>
                     </span>
                     {Number(emp.taxa_multa) > 0 && (
@@ -717,10 +721,6 @@ export default function EmprestimosListWrapper({
                         Multa: <span className="text-slate-700">{Number(emp.taxa_multa)}%</span>
                       </span>
                     )}
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                      Investido: <span className="text-slate-700">{formatBRL(emp.principal)}</span>
-                    </span>
                   </div>
                 </div>
 

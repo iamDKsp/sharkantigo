@@ -68,6 +68,8 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
   const [jurosAtraso, setJurosAtraso] = useState<number>(2); // default 2%
   const [observacoes, setObservacoes] = useState("");
   const [enviarPdfWhatsapp, setEnviarPdfWhatsapp] = useState(true);
+  const [vencimentoManual, setVencimentoManual] = useState(false);
+  const [vencimentoManualData, setVencimentoManualData] = useState("");
 
   // Inicializar datas padrão
   useEffect(() => {
@@ -168,9 +170,20 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
   const parcelasSimuladas = gerarParcelas();
 
   // Obter data final de vencimento do empréstimo
-  const dataVencimentoFinal = parcelasSimuladas.length > 0 
-    ? parcelasSimuladas[parcelasSimuladas.length - 1].data_vencimento 
+  // Se modo manual está ativo e tem data informada, usa ela
+  const dataVencimentoCalculada = parcelasSimuladas.length > 0
+    ? parcelasSimuladas[parcelasSimuladas.length - 1].data_vencimento
     : vencimentoPrimeira;
+  const dataVencimentoFinal = vencimentoManual && vencimentoManualData
+    ? vencimentoManualData
+    : dataVencimentoCalculada;
+
+  // Para tipos à vista com data manual, substitui o vencimento das parcelas simuladas
+  const parcelasFinais = parcelasSimuladas.map((p, idx) =>
+    vencimentoManual && vencimentoManualData && parcelasSimuladas.length === 1
+      ? { ...p, data_vencimento: vencimentoManualData }
+      : p
+  );
 
   const formatBRL = (val: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -210,7 +223,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
     formData.set("frequencia", frequencia);
     formData.set("categoria", categoria);
     formData.set("dataVencimento", dataVencimentoFinal);
-    formData.set("parcelasJson", JSON.stringify(parcelasSimuladas));
+    formData.set("parcelasJson", JSON.stringify(parcelasFinais));
     formData.set("enviarPdfWhatsapp", String(enviarPdfWhatsapp));
 
     setShowOverlay(true);
@@ -431,13 +444,48 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               </div>
             </div>
 
-            {/* Dinâmico: Mostrar Vencimento Calculado Simples */}
-            {(tipoPagamento === "a_vista" || tipoPagamento === "a_vista_juros") && (
-              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200 text-sm mb-6 shadow-sm">
-                <span className="text-amber-800 font-bold">Vencimento calculado automaticamente:</span>
-                <span className="font-black text-amber-600 text-sm">{formatDataBr(dataVencimentoFinal)}</span>
+            {/* Vencimento — Automático ou Manual */}
+            {(tipoPagamento === "a_vista" || tipoPagamento === "a_vista_juros" || tipoPagamento === "juros_compostos") && (
+              <div className={`rounded-xl border text-sm mb-6 shadow-sm overflow-hidden ${vencimentoManual ? "border-slate-300 bg-white" : "border-amber-200 bg-amber-50"}`}>
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className={`font-bold ${vencimentoManual ? "text-slate-700" : "text-amber-800"}`}>
+                    {vencimentoManual ? "Data de vencimento (manual)" : "Vencimento calculado automaticamente:"}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    {!vencimentoManual && (
+                      <span className="font-black text-amber-600">{formatDataBr(dataVencimentoCalculada)}</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVencimentoManual(!vencimentoManual);
+                        if (!vencimentoManual) setVencimentoManualData(dataVencimentoCalculada);
+                      }}
+                      className={`text-xs font-black px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
+                        vencimentoManual
+                          ? "bg-amber-500 text-white border-amber-500"
+                          : "bg-white text-slate-600 border-slate-300 hover:border-amber-400"
+                      }`}
+                    >
+                      {vencimentoManual ? "Automático" : "Editar data"}
+                    </button>
+                  </div>
+                </div>
+                {vencimentoManual && (
+                  <div className="px-4 pb-4">
+                    <input
+                      type="date"
+                      required
+                      value={vencimentoManualData}
+                      onChange={(e) => setVencimentoManualData(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
             )}
+
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Taxa de Juros */}
@@ -637,7 +685,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         </div>
 
         {/* Tabela de Simulação de Parcelas */}
-        {parcelasSimuladas.length > 0 && (
+        {parcelasFinais.length > 0 && (
           <div className="premium-card p-0 bg-white border border-slate-200 shadow-lg rounded-2xl relative overflow-hidden transition-all transform scale-[1.01] mt-10">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500"></div>
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
@@ -659,7 +707,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {parcelasSimuladas.map((p) => (
+                  {parcelasFinais.map((p) => (
                     <tr key={p.numero} className="hover:bg-emerald-50/50 transition-colors group">
                       <td className="py-3.5 px-6 font-black text-slate-800 text-center">
                         {p.numero}
@@ -683,7 +731,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                 Total Estimado
               </span>
               <span className="text-base font-black text-emerald-700">
-                {formatBRL(parcelasSimuladas.reduce((acc, p) => acc + p.valor, 0))}
+                {formatBRL(parcelasFinais.reduce((acc, p) => acc + p.valor, 0))}
               </span>
             </div>
           </div>
