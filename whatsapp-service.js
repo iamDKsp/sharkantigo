@@ -193,7 +193,19 @@ const server = http.createServer(async (req, res) => {
 
           const jid = formattedPhone + "@s.whatsapp.net";
           console.log(`Sending message to: ${jid}`);
-          await sock.sendMessage(jid, { text: item.text });
+          if (item.document) {
+            const docBuffer = Buffer.isBuffer(item.document)
+              ? item.document
+              : Buffer.from(item.document, "base64");
+            await sock.sendMessage(jid, {
+              document: docBuffer,
+              mimetype: item.mimetype || "application/pdf",
+              fileName: item.fileName || "cronograma.pdf",
+              caption: item.caption || item.text || undefined,
+            });
+          } else {
+            await sock.sendMessage(jid, { text: item.text });
+          }
           logs.push({ phone: item.phone, status: "sent" });
           
           // delay to mitigate anti-spam restrictions

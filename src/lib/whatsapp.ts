@@ -40,3 +40,48 @@ export async function sendWhatsappMessage(
     };
   }
 }
+
+export async function sendWhatsappDocument(
+  phone: string,
+  base64Data: string,
+  fileName: string = "cronograma.pdf",
+  caption?: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!phone || !base64Data) {
+    return { success: false, error: "Telefone ou documento inválido." };
+  }
+
+  const WHATSAPP_API = getWhatsappApiUrl();
+
+  try {
+    const res = await fetch(`${WHATSAPP_API}/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          {
+            phone,
+            document: base64Data,
+            mimetype: "application/pdf",
+            fileName,
+            caption: caption || "",
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { success: false, error: data?.error || `Status HTTP ${res.status}` };
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.error("Erro ao enviar documento WhatsApp:", err?.message || err);
+    return {
+      success: false,
+      error: err?.message || "Falha de conexão com o servidor do WhatsApp.",
+    };
+  }
+}
+

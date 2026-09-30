@@ -67,6 +67,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
   const [cobrarAtraso, setCobrarAtraso] = useState(false);
   const [jurosAtraso, setJurosAtraso] = useState<number>(2); // default 2%
   const [observacoes, setObservacoes] = useState("");
+  const [enviarPdfWhatsapp, setEnviarPdfWhatsapp] = useState(true);
 
   // Inicializar datas padrão
   useEffect(() => {
@@ -210,6 +211,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
     formData.set("categoria", categoria);
     formData.set("dataVencimento", dataVencimentoFinal);
     formData.set("parcelasJson", JSON.stringify(parcelasSimuladas));
+    formData.set("enviarPdfWhatsapp", String(enviarPdfWhatsapp));
 
     setShowOverlay(true);
     setOverlayStep(0); // Passo 1: Validando
@@ -686,6 +688,49 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             </div>
           </div>
         )}
+
+        {/* Opção de Envio do Cronograma por WhatsApp */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start space-x-3.5">
+              <div className={`p-2.5 rounded-xl transition-colors mt-0.5 ${enviarPdfWhatsapp ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-100 text-slate-400 border border-slate-200"}`}>
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h4 className="text-sm font-black text-slate-800">
+                    Enviar Cronograma (PDF) via WhatsApp
+                  </h4>
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${enviarPdfWhatsapp ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                    {enviarPdfWhatsapp ? "Ativado" : "Desativado"}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1 max-w-xl">
+                  {enviarPdfWhatsapp
+                    ? "O PDF oficial com a tabela de parcelas será gerado e enviado automaticamente para o WhatsApp do cliente logo após a criação."
+                    : "Nenhum PDF será enviado agora. Você ainda poderá baixar ou gerar a qualquer momento dentro do empréstimo."}
+                </p>
+              </div>
+            </div>
+
+            {/* Toggle Switch */}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={enviarPdfWhatsapp}
+              onClick={() => setEnviarPdfWhatsapp(!enviarPdfWhatsapp)}
+              className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
+                enviarPdfWhatsapp ? "bg-emerald-600" : "bg-slate-300"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  enviarPdfWhatsapp ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
 
         {/* Ações */}
         <div className="flex items-center justify-end space-x-4 pt-6 mt-8 border-t border-slate-200">
