@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useTransition } from "react";
 import { useUrlState } from "@/hooks/useUrlState";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
-import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw } from "lucide-react";
+import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle } from "lucide-react";
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 
@@ -48,7 +48,7 @@ interface EmprestimosListWrapperProps {
   initialPagina?:   number;
 }
 
-type StatusFilter = "todos" | "ativos" | "atrasados" | "ontem" | "quitados" | "hoje";
+type StatusFilter = "todos" | "ativos" | "atrasados" | "ontem" | "quitados" | "hoje" | "pausados";
 type SortOption = "padrao" | "maior_valor" | "menor_valor" | "mais_proximo" | "mais_distante";
 
 const sortLabels: Record<SortOption, string> = {
@@ -72,8 +72,10 @@ function resolveStatus(filtro: string): StatusFilter {
   if (filtro === "atrasados") return "atrasados";
   if (filtro === "quitados")  return "quitados";
   if (filtro === "todos")     return "todos";
+  if (filtro === "pausados")  return "pausados";
   return "ativos";
 }
+
 
 export default function EmprestimosListWrapper({
   initialEmprestimos,
@@ -93,41 +95,8 @@ export default function EmprestimosListWrapper({
   const [sortOption, setSortOption]       = useUrlState<SortOption>("sort", resolveSort(initialSort), "padrao", resolveSort);
   const [currentPage, setCurrentPage]     = useUrlState("pagina",  String(initialPagina), "1");
 
-  // Sincroniza memória de filtros no sessionStorage sempre que alterados
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const currentUrl = window.location.pathname + (window.location.search || "");
-    sessionStorage.setItem("emprestimos_last_url", currentUrl);
-    sessionStorage.setItem("emprestimos_filters_memory", JSON.stringify({
-      status: statusFilter,
-      q: search,
-      parceiro: parceiroFilter,
-      sort: sortOption,
-      pagina: currentPage,
-    }));
-  }, [statusFilter, search, parceiroFilter, sortOption, currentPage]);
 
-  // Restaura filtros salvos se estiver voltando de um empréstimo e a URL vier limpa
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const fromList = sessionStorage.getItem("emprestimos_from_list");
-    if (fromList === "true") {
-      sessionStorage.removeItem("emprestimos_from_list");
-      if (!window.location.search) {
-        const savedRaw = sessionStorage.getItem("emprestimos_filters_memory");
-        if (savedRaw) {
-          try {
-            const saved = JSON.parse(savedRaw);
-            if (saved.status && saved.status !== statusFilter) setStatusFilter(saved.status);
-            if (saved.q && saved.q !== search) setSearch(saved.q);
-            if (saved.parceiro && saved.parceiro !== parceiroFilter) setParceiroFilter(saved.parceiro);
-            if (saved.sort && saved.sort !== sortOption) setSortOption(saved.sort);
-            if (saved.pagina && saved.pagina !== currentPage) setCurrentPage(saved.pagina);
-          } catch (e) {}
-        }
-      }
-    }
-  }, []);
+
 
   // Helper para mudar filtros e resetar página
   const setStatusAndReset   = (v: StatusFilter) => { setStatusFilter(v);   setCurrentPage("1"); };
@@ -406,11 +375,13 @@ export default function EmprestimosListWrapper({
 
       if (!bateTexto) return false;
 
-      if (statusFilter === "ativos" && (emp.statusReal !== "ativo" || emp.estaAtrasado)) return false;
+      if (statusFilter === "ativos" && (emp.statusReal !== "ativo" || emp.estaAtrasado || emp.status === "pausado")) return false;
       if (statusFilter === "atrasados" && !emp.estaAtrasado) return false;
       if (statusFilter === "ontem" && !emp.estaAtrasadoOntem) return false;
       if (statusFilter === "quitados" && emp.statusReal !== "quitado") return false;
       if (statusFilter === "hoje" && !emp.venceHoje) return false;
+      if (statusFilter === "pausados" && emp.status !== "pausado") return false;
+
 
       if (parceiroFilter !== "todos") {
         if (parceiroFilter === "sem_parceiro") {
@@ -461,11 +432,12 @@ export default function EmprestimosListWrapper({
   // Contadores por categoria (usados nos badges das tabs)
   const contadores = useMemo(() => ({
     todos:     emprestimosProcessados.length,
-    ativos:    emprestimosProcessados.filter(e => e.statusReal === "ativo" && !e.estaAtrasado).length,
+    ativos:    emprestimosProcessados.filter(e => e.statusReal === "ativo" && !e.estaAtrasado && e.status !== "pausado").length,
     atrasados: emprestimosProcessados.filter(e => e.estaAtrasado).length,
     ontem:     emprestimosProcessados.filter(e => e.estaAtrasadoOntem).length,
     hoje:      emprestimosProcessados.filter(e => e.venceHoje).length,
     quitados:  emprestimosProcessados.filter(e => e.statusReal === "quitado").length,
+    pausados:  emprestimosProcessados.filter(e => e.status === "pausado").length,
   }), [emprestimosProcessados]);
 
   return (
@@ -580,8 +552,8 @@ export default function EmprestimosListWrapper({
         </div>
       </div>
 
-      {/* Filtros de Status — grade 3 colunas mobile, 6 em sm+ */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      {/* Filtros de Status — grade 3 colunas mobile, 7 em sm+ */}
+      <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
         {([
           { id: "todos"     as StatusFilter, label: "Todos",      sublabel: "Empréstimos",  color: "slate"   },
           { id: "ativos"    as StatusFilter, label: "Ativos",     sublabel: "Em dia",        color: "emerald" },
@@ -589,6 +561,7 @@ export default function EmprestimosListWrapper({
           { id: "ontem"     as StatusFilter, label: "Ontem",      sublabel: "Atrasados",     color: "orange"  },
           { id: "hoje"      as StatusFilter, label: "Hoje",       sublabel: "Vencem",         color: "amber"   },
           { id: "quitados"  as StatusFilter, label: "Quitados",   sublabel: "Pagos",          color: "blue"    },
+          { id: "pausados"  as StatusFilter, label: "Pausados",   sublabel: "Acordos",        color: "yellow"  },
         ] as const).map((tab) => {
           const isSelected = statusFilter === tab.id;
           const count = contadores[tab.id];
@@ -603,6 +576,7 @@ export default function EmprestimosListWrapper({
                   : tab.color === "orange"  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
                   : tab.color === "amber"   ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
                   : tab.color === "blue"    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                  : tab.color === "yellow"  ? "bg-yellow-500 text-white shadow-lg shadow-yellow-500/20"
                   : "bg-slate-700 text-white shadow-lg"
                   : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
               }`}
@@ -614,14 +588,16 @@ export default function EmprestimosListWrapper({
                 tab.color === "orange"  ? "text-orange-500" :
                 tab.color === "amber"   ? "text-amber-500" :
                 tab.color === "blue"    ? "text-blue-500" :
+                tab.color === "yellow"  ? "text-yellow-600" :
                 "text-slate-600"
-              }`}>{count}</span>
+              }` }>{count}</span>
               <span className="font-extrabold text-[11px] leading-tight uppercase tracking-wide">{tab.label}</span>
               <span className="text-[9px] leading-tight opacity-60">{tab.sublabel}</span>
             </button>
           );
         })}
       </div>
+
 
       {/* Contador de resultados */}
       <div className="flex items-center justify-between px-1">
@@ -653,6 +629,7 @@ export default function EmprestimosListWrapper({
             const isQuitado = emp.statusReal === "quitado";
             const isAtrasado = emp.estaAtrasado;
             const isVencendo = emp.venceHoje || emp.venceEmBreve;
+            const isPausado = emp.status === "pausado";
             
             // Accent colors for the card
             let accentColor = "bg-emerald-500";
@@ -660,7 +637,12 @@ export default function EmprestimosListWrapper({
             let bgClass = "bg-white";
             let textColor = "text-emerald-600";
             
-            if (isQuitado) {
+            if (isPausado) {
+              accentColor = "bg-yellow-400";
+              borderColor = "border-yellow-200";
+              bgClass = "bg-yellow-50/30";
+              textColor = "text-yellow-700";
+            } else if (isQuitado) {
               accentColor = "bg-slate-300";
               bgClass = "bg-slate-50/50";
               textColor = "text-slate-500";
@@ -688,9 +670,6 @@ export default function EmprestimosListWrapper({
                   href={`/emprestimos/${emp.id}`}
                   onClick={() => {
                     if (typeof window !== "undefined") {
-                      const currentUrl = window.location.pathname + (window.location.search || "");
-                      sessionStorage.setItem("emprestimos_last_url", currentUrl);
-                      sessionStorage.setItem("emprestimos_from_list", "true");
                       sessionStorage.setItem("scroll_emprestimos-list", String(window.scrollY));
                     }
                   }}
@@ -700,7 +679,11 @@ export default function EmprestimosListWrapper({
                 <div className="space-y-2 z-10 pointer-events-none pl-2">
                   <div className="flex items-center space-x-3">
                     <span className="text-sm font-black text-slate-900 tracking-tight">{emp.cliente.nome}</span>
-                    {isQuitado ? (
+                    {isPausado ? (
+                      <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                        <PauseCircle className="w-3 h-3" /> Pausado
+                      </span>
+                    ) : isQuitado ? (
                       <span className="flex items-center gap-1 bg-slate-100 text-slate-500 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
                         <CheckCircle2 className="w-3 h-3" /> Quitado
                       </span>
@@ -718,6 +701,7 @@ export default function EmprestimosListWrapper({
                       </span>
                     )}
                   </div>
+
                   <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
                     <span className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700">
                       <Calendar className="w-3.5 h-3.5 opacity-70" />

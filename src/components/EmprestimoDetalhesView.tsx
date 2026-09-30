@@ -8,14 +8,17 @@ import {
   Clock, CheckCircle2, X, Loader2, Phone, TrendingUp,
   RefreshCw, CalendarClock, ShieldOff, Shield, Layers,
   BadgeCheck, AlertTriangle, ChevronRight, Wallet, DollarSign, Pencil,
+  FileDown, Send, PauseCircle, PlayCircle
 } from "lucide-react";
 import {
   payNextInstallment, payFullLoan, renegociarEmprestimo,
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
   receberSoJurosEmprestimo, salvarDataPrevistaPagamento,
-  atualizarDataPagamentoParcela, payInstallmentById
+  atualizarDataPagamentoParcela, payInstallmentById,
+  togglePausarEmprestimo
 } from "@/app/emprestimos/[id]/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
+import { baixarCronogramaPdfCliente, obterCronogramaPdfBase64 } from "@/lib/cronogramaPdf";
 
 interface Cliente { id: string; nome: string; telefone: string; blacklist: boolean; foto_url: string | null; }
 interface Parcela { id: string; numero: number; valor: number; data_vencimento: any; status: string; data_pagamento: any; }
@@ -238,13 +241,17 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     if (atrasado) statusReal = "atrasado";
   }
 
+  const isPausado = emprestimo.status === "pausado";
+
   const STATUS = {
     quitado:  { label: "Quitado",        icon: <CheckCircle2 className="w-3 h-3" />, bg: "bg-emerald-50 text-emerald-700 border-emerald-200", bar: "bg-emerald-500", stripe: "from-emerald-500/5 to-transparent" },
     atrasado: { label: "Atrasado",        icon: <AlertCircle className="w-3 h-3" />, bg: "bg-rose-50 text-rose-700 border-rose-200", bar: "bg-rose-500", stripe: "from-rose-500/5 to-transparent" },
     hoje:     { label: "Vence Hoje",      icon: <Clock className="w-3 h-3" />, bg: "bg-amber-50 text-amber-700 border-amber-200", bar: "bg-amber-500", stripe: "from-amber-500/5 to-transparent" },
     emDia:    { label: "Em Dia",          icon: <BadgeCheck className="w-3 h-3" />, bg: "bg-blue-50 text-blue-700 border-blue-200", bar: "bg-emerald-500", stripe: "from-blue-500/5 to-transparent" },
+    pausado:  { label: "Pausado",         icon: <PauseCircle className="w-3 h-3" />, bg: "bg-yellow-50 text-yellow-700 border-yellow-200", bar: "bg-yellow-400", stripe: "from-yellow-500/5 to-transparent" },
   };
-  const s = STATUS[statusReal === "quitado" ? "quitado" : atrasado ? "atrasado" : venceHoje ? "hoje" : "emDia"];
+  const s = STATUS[isPausado ? "pausado" : statusReal === "quitado" ? "quitado" : atrasado ? "atrasado" : venceHoje ? "hoje" : "emDia"];
+
 
   const freqLabel: Record<string, string> = { diario: "Diário", semanal: "Semanal", quinzenal: "Quinzenal", mensal: "Mensal" };
   const tipoLabel: Record<string, string> = { a_vista: "À Vista", a_vista_juros: "À Vista + Juros", juros_compostos: "Juros Compostos", parcelado: "Parcelado", juros_mensais: "Juros Mensais" };
@@ -315,6 +322,22 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     });
   };
 
+  const handlePausar = () => {
+    const isPausado = emprestimo.status === "pausado";
+    const msg = isPausado
+      ? "Despausar este empréstimo? Ele voltará a aparecer em cobranças e no dashboard."
+      : "Pausar este empréstimo? Foi feito um acordo com o cobrador. O empréstimo sairá das cobranças até ser despausado.";
+    if (!confirm(msg)) return;
+    startTransition(async () => {
+      try {
+        await togglePausarEmprestimo(emprestimo.id, emprestimo.status);
+      } catch (err: any) {
+        alert(err?.message || "Erro ao pausar empréstimo.");
+      }
+    });
+  };
+
+
   const receiveJuros = () => {
     if (!confirm("Confirmar recebimento de APENAS os juros e renovar o principal para +30 dias?")) return;
     startTransition(async () => {
@@ -360,6 +383,83 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const whatsapp = () => {
     setModal("wa");
   };
+
+  const [isSendingPdfWa, setIsSendingPdfWa] = useState(false);
+
+  const handleBaixarPdf = () => {
+    try {
+      baixarCronogramaPdfCliente({
+        clienteNome: emprestimo.cliente.nome,
+        clienteDocumento: (emprestimo.cliente as any).documento,
+        tipoPagamento: emprestimo.tipo_pagamento,
+        valorEmprestado: emprestimo.valor_emprestado,
+        taxaJuros: emprestimo.taxa_juros,
+        taxaMulta: emprestimo.taxa_multa,
+        dataGeracao: new Date(),
+        parcelas: emprestimo.parcelas.map((p) => ({
+          numero: p.numero,
+          data_vencimento: p.data_vencimento,
+          valor: p.valor,
+          status: p.status,
+          data_pagamento: p.data_pagamento,
+        })),
+      });
+    } catch (err: any) {
+      console.error("Erro ao gerar PDF:", err);
+      alert("Erro ao gerar PDF do cronograma.");
+    }
+  };
+
+  const handleEnviarPdfWa = async () => {
+    if (!confirm(`Enviar o cronograma em PDF diretamente para o WhatsApp de ${emprestimo.cliente.nome}?`)) return;
+    setIsSendingPdfWa(true);
+    try {
+      const pdfBase64 = obterCronogramaPdfBase64({
+        clienteNome: emprestimo.cliente.nome,
+        clienteDocumento: (emprestimo.cliente as any).documento,
+        tipoPagamento: emprestimo.tipo_pagamento,
+        valorEmprestado: emprestimo.valor_emprestado,
+        taxaJuros: emprestimo.taxa_juros,
+        taxaMulta: emprestimo.taxa_multa,
+        dataGeracao: new Date(),
+        parcelas: emprestimo.parcelas.map((p) => ({
+          numero: p.numero,
+          data_vencimento: p.data_vencimento,
+          valor: p.valor,
+          status: p.status,
+          data_pagamento: p.data_pagamento,
+        })),
+      });
+
+      const fileName = `cronograma-${emprestimo.cliente.nome.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pdf`;
+      const res = await fetch("/api/whatsapp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              phone: emprestimo.cliente.telefone,
+              document: pdfBase64,
+              mimetype: "application/pdf",
+              fileName,
+              caption: `Olá ${emprestimo.cliente.nome}, segue em anexo o cronograma de parcelas do seu empréstimo.`,
+            },
+          ],
+        }),
+      });
+
+      if (res.ok) {
+        alert("Cronograma em PDF enviado com sucesso para o WhatsApp do cliente!");
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Não foi possível enviar: ${d.error || "Verifique se o WhatsApp está conectado."}`);
+      }
+    } catch (err: any) {
+      alert("Falha de conexão com o servidor do WhatsApp.");
+    } finally {
+      setIsSendingPdfWa(false);
+    }
+  };
   const submitReneg = (e: React.FormEvent) => {
     e.preventDefault();
     const v = Number(valorAbater);
@@ -391,14 +491,6 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   );
 
   const handleVoltar = () => {
-    if (typeof window !== "undefined") {
-      const fromList = sessionStorage.getItem("emprestimos_from_list");
-      const lastUrl = sessionStorage.getItem("emprestimos_last_url");
-      if (fromList === "true" && lastUrl && lastUrl.startsWith("/emprestimos")) {
-        router.push(lastUrl);
-        return;
-      }
-    }
     router.back();
   };
 
@@ -415,6 +507,13 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
         </button>
         {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleBaixarPdf}
+            className="flex items-center gap-1.5 text-sm font-black text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer"
+            title="Baixar Cronograma de Parcelas em PDF"
+          >
+            <FileDown className="w-3.5 h-3.5 text-emerald-600" /> Baixar PDF
+          </button>
           <Link
             href={`/emprestimos/${emprestimo.id}/editar`}
             className="flex items-center gap-1.5 text-sm font-black text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition-all"
@@ -427,8 +526,20 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
         </div>
       </div>
 
+      {/* Banner de aviso — Empréstimo Pausado */}
+      {isPausado && (
+        <div className="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
+          <PauseCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-black text-yellow-800">Empréstimo Pausado — Acordo com Cobrador</p>
+            <p className="text-xs text-yellow-700 mt-0.5">Este empréstimo não aparece na tela de Cobranças nem no Dashboard. Use o botão &quot;Despausar&quot; para retomar.</p>
+          </div>
+        </div>
+      )}
+
       {/* ── LAYOUT PRINCIPAL 2-col ── */}
       <div className="grid lg:grid-cols-3 gap-4">
+
 
         {/* COL ESQUERDA — 2/3 */}
         <div className="lg:col-span-2 space-y-4">
@@ -514,6 +625,14 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                   <span className="text-sm font-black text-slate-900">
                     {isAVista ? (totalRenovacoes > 0 ? "Renovações e Quitação" : "Pagamento") : "Parcelas"}
                   </span>
+                  <button
+                    type="button"
+                    onClick={handleBaixarPdf}
+                    className="ml-2 inline-flex items-center gap-1 text-[11px] font-black text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                    title="Baixar Cronograma em PDF"
+                  >
+                    <FileDown className="w-3 h-3 text-emerald-600" /> PDF
+                  </button>
                 </div>
                 <div className="flex gap-2 text-xs font-black uppercase tracking-widest">
                   {totalRenovacoes > 0 && (
@@ -850,6 +969,45 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                   {emprestimo.cliente.blacklist ? <><Shield className="w-3.5 h-3.5" /> Remover BL</> : <><ShieldOff className="w-3.5 h-3.5" /> Lista Negra</>}
                 </BtnSecondary>
                 <BtnSecondary onClick={whatsapp}><MessageSquare className="w-3.5 h-3.5" /> Lembrete WA</BtnSecondary>
+              </div>
+
+              {/* Botão Pausar/Despausar — Acordo com cobrador */}
+              {statusReal !== "quitado" && (
+                <button
+                  onClick={handlePausar}
+                  disabled={isPending}
+                  className={`flex items-center justify-center gap-1.5 w-full py-2.5 text-sm font-black tracking-wide rounded-xl border transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 ${
+                    isPausado
+                      ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
+                      : "bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border-yellow-200"
+                  }`}
+                >
+                  {isPausado
+                    ? <><PlayCircle className="w-4 h-4" /> Despausar Empréstimo</>
+                    : <><PauseCircle className="w-4 h-4" /> Pausar (Acordo com Cobrador)</>
+                  }
+                </button>
+              )}
+
+
+              {/* Ações do Cronograma em PDF */}
+              <div className="pt-2 border-t border-slate-100 space-y-2">
+                <button
+                  type="button"
+                  onClick={handleBaixarPdf}
+                  className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-800 text-sm font-black tracking-wide rounded-xl border border-slate-200 transition-all active:scale-[0.98] cursor-pointer shadow-sm"
+                >
+                  <FileDown className="w-4 h-4 text-emerald-600" /> Baixar Cronograma (PDF)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEnviarPdfWa}
+                  disabled={isSendingPdfWa}
+                  className="flex items-center justify-center gap-1.5 w-full py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-black tracking-wide rounded-xl border border-emerald-200 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60"
+                >
+                  {isSendingPdfWa ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  <span>{isSendingPdfWa ? "Enviando PDF..." : "Enviar Cronograma via WhatsApp"}</span>
+                </button>
               </div>
             </div>
           </div>

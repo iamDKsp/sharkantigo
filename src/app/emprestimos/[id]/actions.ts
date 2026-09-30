@@ -754,3 +754,21 @@ export async function atualizarDataPagamentoParcela(
   return { success: true };
 }
 
+// ── Pausar / Despausar Empréstimo ──
+// Um empréstimo pausado sai das cobranças e do dashboard.
+// É usado quando foi feito um acordo com o cobrador.
+export async function togglePausarEmprestimo(emprestimoId: string, statusAtual: string) {
+  const novoStatus = statusAtual === "pausado" ? "ativo" : "pausado";
+
+  await prisma.emprestimo.update({
+    where: { id: emprestimoId },
+    data: { status: novoStatus },
+  });
+
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/cobrancas");
+  revalidatePath("/");
+  return { success: true, novoStatus };
+}
+
