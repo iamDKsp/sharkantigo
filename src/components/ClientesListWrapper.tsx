@@ -28,6 +28,8 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
   const [totalCount, setTotalCount] = useState(0);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // AbortController para cancelar requests de busca obsoletos (evita race condition)
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // WhatsApp Modal State
   const [waModalOpen, setWaModalOpen] = useState(false);
@@ -103,12 +105,27 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
   };
 
   // Função para buscar clientes da API
+  // Fix: usa AbortController para cancelar requests anteriores ainda pendentes,
+  // evitando race condition onde resultado de query antiga sobrescreve resultado recente.
   const fetchClientes = async (searchQuery: string, pageNum: number, append = false) => {
+    // Cancela qualquer request de busca anterior ainda em andamento
+    if (!append && abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    if (!append) {
+      abortControllerRef.current = controller;
+    }
+
     try {
       if (pageNum === 1 && !append) setLoading(true);
       else setLoadingMore(true);
 
-      const response = await fetch(`/api/clientes?query=${encodeURIComponent(searchQuery.normalize("NFD").replace(/[\u0300-\u036f]/g, ""))}&page=${pageNum}&limit=16`);
+      // Fix: envia a query sem remover acentos — a API já usa unaccent() no Postgres
+      const response = await fetch(
+        `/api/clientes?query=${encodeURIComponent(searchQuery.trim())}&page=${pageNum}&limit=16`,
+        { signal: controller.signal }
+      );
       const data = await response.json();
 
       if (data.clientes) {
@@ -121,8 +138,12 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
         setTotalCount(data.totalCount);
       }
     } catch (err) {
+      // AbortError é esperado quando o request é cancelado propositalmente — não logar como erro
+      if (err instanceof Error && err.name === "AbortError") return;
       console.error("Erro ao buscar clientes:", err);
     } finally {
+      // Só limpa loading se este controller ainda é o ativo (não foi substituído)
+      if (!append && abortControllerRef.current !== controller) return;
       setLoading(false);
       setLoadingMore(false);
     }
