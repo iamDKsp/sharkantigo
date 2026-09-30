@@ -240,6 +240,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               if (res && res.success && res.redirectUrl) {
                 // Envio do PDF via WhatsApp — feito no cliente (jspdf não funciona no servidor)
                 if (enviarPdfWhatsapp && res.clienteTelefone) {
+                  setOverlayStep(3);
                   try {
                     const { obterCronogramaPdfBase64 } = await import("@/lib/cronogramaPdf");
                     const pdfBase64 = obterCronogramaPdfBase64({
@@ -845,7 +846,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
           <div className="bg-white p-8 rounded-3xl max-w-sm w-full mx-4 shadow-2xl border border-slate-200 flex flex-col items-center justify-center space-y-6 text-center transform animate-in zoom-in-95 duration-300">
             {/* Ícone dinâmico dependendo do step */}
             <div className="relative flex items-center justify-center w-28 h-28 bg-emerald-50 rounded-full overflow-hidden">
-               {overlayStep === 2 ? (
+               {overlayStep === 2 || overlayStep === 3 ? (
                  <div className="w-full h-full flex items-center justify-center animate-in zoom-in duration-300">
                    <CheckCircle2 className="w-16 h-16 text-emerald-500 drop-shadow-md" />
                  </div>
@@ -858,12 +859,14 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               <h3 className="text-base font-black text-slate-800 tracking-tight">
                 {overlayStep === 0 && "Validando dados..."}
                 {overlayStep === 1 && "Calculando parcelas..."}
-                {overlayStep === 2 && "Contrato gerado!"}
+                {overlayStep === 2 && "Contratação realizada com sucesso!"}
+                {overlayStep === 3 && "Enviando cronograma via WhatsApp..."}
               </h3>
               <p className="text-sm font-medium text-slate-500">
                 {overlayStep === 0 && "Verificando informações do cliente e parceiro."}
                 {overlayStep === 1 && "Projetando recebimentos e juros."}
-                {overlayStep === 2 && "Tudo pronto! Redirecionando..."}
+                {overlayStep === 2 && "Salvando e preparando envio..."}
+                {overlayStep === 3 && "O PDF já está sendo enviado para o cliente."}
               </p>
             </div>
 
@@ -871,7 +874,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                <div 
                  className="h-full bg-emerald-500 transition-all duration-700 ease-in-out"
-                 style={{ width: overlayStep === 0 ? "33%" : overlayStep === 1 ? "66%" : "100%" }}
+                 style={{ width: overlayStep === 0 ? "25%" : overlayStep === 1 ? "50%" : overlayStep === 2 ? "75%" : "100%" }}
                />
             </div>
           </div>
