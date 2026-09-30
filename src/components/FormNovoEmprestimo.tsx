@@ -238,6 +238,42 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             try {
               const res = await createEmprestimo(formData);
               if (res && res.success && res.redirectUrl) {
+                // Envio do PDF via WhatsApp — feito no cliente (jspdf não funciona no servidor)
+                if (enviarPdfWhatsapp && res.clienteTelefone) {
+                  try {
+                    const { obterCronogramaPdfBase64 } = await import("@/lib/cronogramaPdf");
+                    const pdfBase64 = obterCronogramaPdfBase64({
+                      clienteNome: res.clienteNome,
+                      tipoPagamento: res.tipoPagamento,
+                      valorEmprestado: res.valorEmprestado,
+                      taxaJuros: res.taxaJuros,
+                      taxaMulta: res.taxaMulta,
+                      parcelas: res.parcelas.map((p: any) => ({
+                        numero: p.numero,
+                        valor: p.valor,
+                        data_vencimento: p.data_vencimento,
+                        status: "aberto",
+                      })),
+                    });
+                    const fileName = `cronograma-${res.clienteNome.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pdf`;
+                    await fetch("/api/whatsapp/send", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        messages: [{
+                          phone: res.clienteTelefone,
+                          document: pdfBase64,
+                          mimetype: "application/pdf",
+                          fileName,
+                          caption: `Olá ${res.clienteNome}, segue o cronograma de parcelas do seu empréstimo. Qualquer dúvida estamos à disposição!`,
+                        }],
+                      }),
+                    });
+                  } catch (pdfErr) {
+                    console.error("Erro ao enviar PDF via WhatsApp:", pdfErr);
+                    // Não bloqueia o redirect — PDF é opcional
+                  }
+                }
                 router.push(res.redirectUrl);
               } else {
                 alert("Erro ao criar empréstimo.");
@@ -249,9 +285,9 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               setShowOverlay(false);
             }
           });
-        }, 800); // tempo que o check fica na tela
-      }, 900); // tempo de calcular
-    }, 700); // tempo de validar
+        }, 800);
+      }, 900);
+    }, 700);
   };
 
   return (
