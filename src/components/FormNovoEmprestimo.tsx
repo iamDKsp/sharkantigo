@@ -266,7 +266,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                           document: pdfBase64,
                           mimetype: "application/pdf",
                           fileName,
-                          caption: `Olá ${res.clienteNome}, segue o cronograma de parcelas do seu empréstimo. Qualquer dúvida estamos à disposição!`,
+                          caption: `Contratação realizada com sucesso!`,
                         }],
                       }),
                     });
