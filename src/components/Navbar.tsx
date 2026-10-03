@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -12,13 +13,25 @@ import {
   Handshake,
   MessageSquare,
   Shield,
-  DollarSign,
-  Menu
+  DollarSign
 } from "lucide-react";
 import NotificacoesMenu from "@/components/NotificacoesMenu";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pathname === "/login") return;
+    fetch("/api/perfil")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user?.nome) {
+          setUserName(data.user.nome);
+        }
+      })
+      .catch(() => {});
+  }, [pathname]);
 
   const menuItems = [
     { name: "Início", path: "/", icon: LayoutDashboard },
@@ -110,9 +123,17 @@ export default function Navbar() {
               <NotificacoesMenu />
               <Link 
                 href="/perfil"
-                className="text-emerald-200 hover:text-white p-1.5 rounded-full hover:bg-emerald-800/50 transition-colors active:scale-95"
+                className="flex items-center space-x-2 text-emerald-200 hover:text-white px-2.5 py-1 rounded-full hover:bg-emerald-800/50 transition-colors active:scale-95 text-xs font-semibold"
+                title={userName ? `Logado como ${userName}` : "Meu Perfil"}
               >
-                <User className="w-5 h-5" />
+                <div className="w-6 h-6 rounded-full bg-emerald-800 border border-emerald-600/50 flex items-center justify-center text-[10px] font-bold text-white shadow-inner">
+                  <User className="w-3.5 h-3.5" />
+                </div>
+                {userName && (
+                  <span className="max-w-[120px] truncate hidden lg:inline">
+                    {userName}
+                  </span>
+                )}
               </Link>
               <button
                 onClick={handleLogout}

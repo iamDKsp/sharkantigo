@@ -70,6 +70,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
   // Modelos de Mensagens Configuráveis
   const [showConfigModal, setShowConfigModal] = useState(false);
+  // Pix configurável
+  const [pixChave, setPixChave] = useState("14991185521 (Itaú)");
+  const [pixTitular, setPixTitular] = useState("Ronivaldo Gabriel Oscar");
   // Templates parcelado (com nº de parcela)
   const [msgAtrasados, setMsgAtrasados] = useState(`Olá, {nome}! Notamos que a parcela nº {num} no valor de {valor} do seu empréstimo está pendente (venceu em {data}). Por favor, regularize o quanto antes.`);
   const [msgHoje, setMsgHoje] = useState(`Olá, {nome}! Passando para lembrar que hoje ({data}) vence a sua parcela nº {num} no valor de {valor}. Caso já tenha pago, por favor desconsidere.`);
@@ -80,6 +83,8 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   const [msgAVencerAvista, setMsgAVencerAvista] = useState(`Olá, {nome}! Lembrete: o pagamento de {valor} do seu empréstimo vencerá em breve, no dia {data}.`);
 
   useEffect(() => {
+    const savedPixChave = localStorage.getItem("template_pix_chave");
+    const savedPixTitular = localStorage.getItem("template_pix_titular");
     const savedAtrasados = localStorage.getItem("template_atrasados");
     const savedHoje = localStorage.getItem("template_hoje");
     const savedAVencer = localStorage.getItem("template_aVencer");
@@ -87,6 +92,8 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     const savedHojeAv = localStorage.getItem("template_hoje_avista");
     const savedAVencerAv = localStorage.getItem("template_avencer_avista");
 
+    if (savedPixChave) setPixChave(savedPixChave);
+    if (savedPixTitular) setPixTitular(savedPixTitular);
     if (savedAtrasados) setMsgAtrasados(savedAtrasados);
     if (savedHoje) setMsgHoje(savedHoje);
     if (savedAVencer) setMsgAVencer(savedAVencer);
@@ -97,6 +104,8 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
   const handleSaveTemplates = (e: React.FormEvent) => {
     e.preventDefault();
+    localStorage.setItem("template_pix_chave", pixChave);
+    localStorage.setItem("template_pix_titular", pixTitular);
     localStorage.setItem("template_atrasados", msgAtrasados);
     localStorage.setItem("template_hoje", msgHoje);
     localStorage.setItem("template_aVencer", msgAVencer);
@@ -125,7 +134,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   // Rodapé fixo de pagamento — Pix + instrução + renovação com valor
   const getPIXRodape = (p: Parcela) => {
     const valorRenovacao = formatBRL(p.emprestimo.valor_emprestado * (p.emprestimo.taxa_juros / 100));
-    return `\n\n💳 *Para pagar:*\nPix: 14991185521 (Itaú)\nNome: Ronivaldo Gabriel Oscar\n\nSe preferir, podemos combinar para buscar pessoalmente em dinheiro. 😊\n\n🔄 *Ou, se preferir, podemos fazer a renovação do empréstimo!*\nO valor da renovação é de apenas *${valorRenovacao}* (juros do período). Entre em contato e combinamos!`;
+    return `\n\n💳 *Para pagar:*\nPix: ${pixChave}\nNome: ${pixTitular}\n\nSe preferir, podemos combinar para buscar pessoalmente em dinheiro. 😊\n\n🔄 *Ou, se preferir, podemos fazer a renovação do empréstimo!*\nO valor da renovação é de apenas *${valorRenovacao}* (juros do período). Entre em contato e combinamos!`;
   };
 
   // Helper para identificar se é à vista / parcela única
@@ -708,13 +717,35 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
             <div className="space-y-5 text-sm overflow-y-auto max-h-[70vh] pr-1">
 
-              {/* Banner Pix Fixo */}
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 space-y-1">
-                <span className="font-extrabold text-emerald-700 block text-xs uppercase tracking-wider">💳 Rodapé fixo (enviado em todas as mensagens)</span>
-                <p className="text-xs text-emerald-800 font-medium leading-relaxed">
-                  Pix: 14991185521 (Itaú) · Ronivaldo Gabriel Oscar<br />
-                  Opção de pagamento em dinheiro pessoalmente<br />
-                  Opção de renovação do empréstimo
+              {/* Configuração Pix Rodapé */}
+              <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 space-y-3">
+                <span className="font-extrabold text-emerald-800 block text-xs uppercase tracking-wider">
+                  💳 Dados do Pix (Rodapé enviado nas mensagens)
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 text-xs block mb-1">Chave Pix & Banco</label>
+                    <input 
+                      type="text"
+                      value={pixChave} 
+                      onChange={(e) => setPixChave(e.target.value)} 
+                      placeholder="Ex: 14991185521 (Itaú)" 
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 text-xs block mb-1">Nome do Titular Pix</label>
+                    <input 
+                      type="text"
+                      value={pixTitular} 
+                      onChange={(e) => setPixTitular(e.target.value)} 
+                      placeholder="Ex: Ronivaldo Gabriel Oscar" 
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-emerald-800/80 font-medium">
+                  Personalize estes dados para esta base para que as cobranças saiam com a chave Pix e titular corretos.
                 </p>
               </div>
 

@@ -1,38 +1,98 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { User, QrCode, CheckCircle2, AlertCircle, Loader2, LogOut, RefreshCw } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { 
+  User, 
+  QrCode, 
+  CheckCircle2, 
+  AlertCircle, 
+  Loader2, 
+  LogOut, 
+  RefreshCw, 
+  KeyRound, 
+  Mail, 
+  ShieldCheck, 
+  Save 
+} from "lucide-react";
+
+interface UserProfile {
+  id: string;
+  nome: string;
+  email: string;
+  criado_em?: string;
+}
 
 export default function PerfilPage() {
+  // WhatsApp States
   const [status, setStatus] = useState<"disconnected" | "connecting" | "qr" | "connected">("disconnected");
   const [qrCode, setQrCode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingWhatsApp, setLoadingWhatsApp] = useState(true);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isPollingQr, setIsPollingQr] = useState(false);
 
-  // Poll status from the companion service
-  const fetchStatus = async () => {
-    try {
-      const res = await fetch("/api/whatsapp/status");
-      const data = await res.json();
-      setStatus(data.status || "disconnected");
-      setQrCode(data.qr || null);
-      if (data.error) setErrorMessage(`${data.error} (${data.url || ''})`);
-      else setErrorMessage("");
-    } catch (err: any) {
-      console.error("WhatsApp companion service offline", err);
-      setStatus("disconnected");
-      setQrCode(null);
-      setErrorMessage(err.message || "Erro desconhecido");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Profile States
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [isSavingAccount, setIsSavingAccount] = useState(false);
+  const [accountFeedback, setAccountFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // Password States
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordFeedback, setPasswordFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // Fetch logged user profile on mount
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/perfil")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (isMounted && data?.user) {
+          setProfile(data.user);
+          setNome(data.user.nome || "");
+          setEmail(data.user.email || "");
+        }
+      })
+      .catch((err) => {
+        console.error("Falha na requisição de perfil:", err);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingProfile(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Poll status from the WhatsApp companion service
+  const fetchStatus = useCallback(() => {
+    fetch("/api/whatsapp/status")
+      .then((res) => res.json())
+      .then((data) => {
+        setStatus(data.status || "disconnected");
+        setQrCode(data.qr || null);
+        if (data.error) setErrorMessage(`${data.error} (${data.url || ''})`);
+        else setErrorMessage("");
+      })
+      .catch((err: unknown) => {
+        console.error("WhatsApp companion service offline", err);
+        setStatus("disconnected");
+        setQrCode(null);
+        const msg = err instanceof Error ? err.message : "Erro desconhecido";
+        setErrorMessage(msg);
+      })
+      .finally(() => {
+        setLoadingWhatsApp(false);
+      });
+  }, []);
 
   useEffect(() => {
     fetchStatus();
-  }, []);
+  }, [fetchStatus]);
 
   // Continuous polling while not connected
   useEffect(() => {
@@ -43,7 +103,7 @@ export default function PerfilPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [status]);
+  }, [status, fetchStatus]);
 
   const handleDisconnect = async () => {
     if (!confirm("Tem certeza que deseja desconectar/resetar o WhatsApp?")) return;
@@ -62,25 +122,124 @@ export default function PerfilPage() {
     }
   };
 
+  const handleSaveAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingAccount(true);
+    setAccountFeedback(null);
+
+    try {
+      const res = await fetch("/api/perfil", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.user) {
+        setProfile(data.user);
+        setNome(data.user.nome);
+        setEmail(data.user.email);
+        setAccountFeedback({ type: "success", message: "Dados da conta atualizados com sucesso!" });
+      } else {
+        setAccountFeedback({ type: "error", message: data.error || "Erro ao atualizar dados da conta." });
+      }
+    } catch {
+      setAccountFeedback({ type: "error", message: "Erro de conexão ao salvar dados." });
+    } finally {
+      setIsSavingAccount(false);
+    }
+  };
+
+  const handleSavePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordFeedback(null);
+
+    if (password !== confirmPassword) {
+      setPasswordFeedback({ type: "error", message: "As senhas não coincidem!" });
+      return;
+    }
+
+    if (password.length < 6) {
+      setPasswordFeedback({ type: "error", message: "A senha deve ter pelo menos 6 caracteres." });
+      return;
+    }
+
+    setIsSavingPassword(true);
+
+    try {
+      const res = await fetch("/api/perfil", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setPasswordFeedback({ type: "success", message: "Senha atualizada com sucesso!" });
+        setPassword("");
+        setConfirmPassword("");
+      } else {
+        setPasswordFeedback({ type: "error", message: data.error || "Erro ao atualizar senha." });
+      }
+    } catch {
+      setPasswordFeedback({ type: "error", message: "Erro ao atualizar senha." });
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  const getInitials = (nameStr?: string) => {
+    if (!nameStr) return "U";
+    const parts = nameStr.trim().split(" ");
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-2xl mx-auto space-y-8 animate-fade-in pb-12">
       {/* Perfil Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Perfil</h1>
         <p className="text-slate-500">
-          Gerencie suas informações de conta e conecte o WhatsApp para disparos de mensagens.
+          Gerencie suas informações de conta, login desta base e conexão do WhatsApp.
         </p>
       </div>
 
-      {/* Card Info Perfil */}
+      {/* Card Info Perfil Dinâmico */}
       <div className="premium-card p-6 bg-white space-y-6">
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-            <User className="w-8 h-8" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 font-black text-xl shadow-inner">
+              {loadingProfile ? (
+                <Loader2 className="w-7 h-7 text-emerald-600 animate-spin" />
+              ) : (
+                <span>{getInitials(profile?.nome)}</span>
+              )}
+            </div>
+            <div>
+              {loadingProfile ? (
+                <div className="space-y-2">
+                  <div className="h-5 w-36 bg-slate-200 animate-pulse rounded" />
+                  <div className="h-4 w-48 bg-slate-100 animate-pulse rounded" />
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-lg font-bold text-slate-900 leading-tight">
+                    {profile?.nome || "Administrador"}
+                  </h2>
+                  <p className="text-sm font-medium text-slate-500">
+                    {profile?.email || "Sem e-mail cadastrado"}
+                  </p>
+                </>
+              )}
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Administrador</h2>
-            <p className="text-sm text-slate-500">admin@solucoesfinanceiras.com.br</p>
+
+          <div className="hidden sm:flex items-center space-x-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-3 py-1.5 rounded-full text-xs font-bold">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Base Conectada</span>
           </div>
         </div>
       </div>
@@ -122,7 +281,7 @@ export default function PerfilPage() {
 
         {/* Content depending on status */}
         <div className="flex flex-col items-center justify-center py-6 space-y-4">
-          {loading ? (
+          {loadingWhatsApp ? (
             <div className="flex flex-col items-center py-8 space-y-2">
               <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               <span className="text-sm text-slate-500">Verificando serviço do WhatsApp...</span>
@@ -224,68 +383,134 @@ export default function PerfilPage() {
         </div>
       </div>
 
-      {/* Seção Email (Bloqueado) */}
-      <div className="premium-card p-6 bg-white space-y-4 border border-slate-100 opacity-90">
-        <h3 className="text-md font-bold text-slate-900">Email da Conta</h3>
-        <div className="space-y-4">
+      {/* Seção Dados de Identificação e Login (Editável) */}
+      <div className="premium-card p-6 bg-white space-y-4 border border-slate-100">
+        <div className="border-b border-slate-100 pb-3">
+          <h3 className="text-md font-bold text-slate-900 flex items-center space-x-2">
+            <User className="w-5 h-5 text-emerald-600" />
+            <span>Dados da Conta & Login</span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Personalize o nome e o e-mail que identificam o acesso a este sistema/base.
+          </p>
+        </div>
+
+        {accountFeedback && (
+          <div
+            className={`p-3.5 rounded-xl text-sm font-semibold flex items-center gap-2 ${
+              accountFeedback.type === "success"
+                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                : "bg-red-50 text-red-600 border border-red-200"
+            }`}
+          >
+            {accountFeedback.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{accountFeedback.message}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSaveAccount} className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1 ml-1">Email de acesso</label>
-            <input 
-              type="email" 
-              name="email"
-              value="ronigabrieloscar@hotmail.com" 
-              className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed"
-              disabled 
-            />
-            <p className="text-xs text-slate-500 mt-2 ml-1">
-              O email de acesso não pode ser alterado por motivos de segurança.
+            <label className="block text-sm font-bold text-slate-700 mb-1 ml-1">
+              Nome do Responsável / Usuário
+            </label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Ex: Ronivaldo Gabriel"
+                required
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+              />
+            </div>
+            <p className="text-xs text-slate-400 mt-1 ml-1">
+              Nome exibido no painel e na identificação deste usuário.
             </p>
           </div>
-        </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1 ml-1">
+              E-mail de Acesso (Login)
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seuemail@exemplo.com"
+                required
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+              />
+            </div>
+            <p className="text-xs text-slate-400 mt-1 ml-1">
+              Este é o e-mail utilizado para fazer login nesta base do sistema.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSavingAccount || loadingProfile}
+            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-60"
+          >
+            {isSavingAccount ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Salvando...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Salvar Informações da Conta</span>
+              </>
+            )}
+          </button>
+        </form>
       </div>
 
       {/* Seção Alterar Senha */}
       <div className="premium-card p-6 bg-white space-y-4 border border-slate-100">
-        <h3 className="text-md font-bold text-slate-900">Alterar senha</h3>
-        <form 
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-            const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
-            
-            if (password !== confirmPassword) {
-              alert("As senhas não coincidem!");
-              return;
-            }
-            if (password.length < 6) {
-              alert("A senha deve ter pelo menos 6 caracteres.");
-              return;
-            }
+        <div className="border-b border-slate-100 pb-3">
+          <h3 className="text-md font-bold text-slate-900 flex items-center space-x-2">
+            <KeyRound className="w-5 h-5 text-emerald-600" />
+            <span>Alterar Senha</span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Defina uma nova senha para acessar esta base.
+          </p>
+        </div>
 
-            try {
-              const res = await fetch('/api/perfil', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
-              });
-              if (res.ok) {
-                alert("Senha atualizada com sucesso!");
-                form.reset();
-              } else {
-                alert("Erro ao atualizar senha.");
-              }
-            } catch (err) {
-              alert("Erro ao atualizar senha.");
-            }
-          }}
-          className="space-y-4"
-        >
+        {passwordFeedback && (
+          <div
+            className={`p-3.5 rounded-xl text-sm font-semibold flex items-center gap-2 ${
+              passwordFeedback.type === "success"
+                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                : "bg-red-50 text-red-600 border border-red-200"
+            }`}
+          >
+            {passwordFeedback.type === "success" ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{passwordFeedback.message}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSavePassword} className="space-y-4">
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1 ml-1">Nova senha</label>
             <input 
               type="password" 
               name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
               required 
             />
@@ -295,12 +520,26 @@ export default function PerfilPage() {
             <input 
               type="password" 
               name="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
               required 
             />
           </div>
-          <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors cursor-pointer">
-            Atualizar senha
+          <button 
+            type="submit" 
+            disabled={isSavingPassword}
+            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-60"
+          >
+            {isSavingPassword ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Atualizando...</span>
+              </>
+            ) : (
+              <span>Atualizar Senha</span>
+            )}
           </button>
         </form>
       </div>
