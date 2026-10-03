@@ -98,6 +98,29 @@ body {
   from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
 }
+/*
+ * IMPORTANTE: usar `backwards` (e não `forwards`). Com `forwards` o elemento
+ * mantém `transform: scale(1)` ao final, e qualquer transform != none cria um
+ * novo containing block para descendentes `position: fixed`. Isso fazia os
+ * modais (fixed inset-0) ficarem presos dentro do wrapper da página e
+ * aparecerem fora da tela.
+ */
 .animate-fade-in {
-  animation: fadeIn 0.18s ease-out forwards;
+  animation: fadeIn 0.18s ease-out backwards;
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scale-up {
+  animation: scaleUp 0.2s ease-out backwards;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spinSlow 6s linear infinite;
 }

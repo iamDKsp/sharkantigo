@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { useUrlState } from "@/hooks/useUrlState";
 import { Plus, CheckCircle, AlertTriangle, Clock, Trash2, Search, MessageCircle } from "lucide-react";
+import { linkWhatsapp } from "@/lib/mensagens/render";
 import ModalCadastrarCheque from "./ModalCadastrarCheque";
 import { updateChequeStatus, deleteCheque } from "@/app/cheques/actions";
 
@@ -153,7 +154,7 @@ export default function ChequesClientView({ cheques, clientes, parceiros }: Cheq
 
                   {c.cliente?.telefone && (
                     <a
-                      href={`https://wa.me/${c.cliente.telefone.replace(/\D/g, "")}`}
+                      href={linkWhatsapp(c.cliente.telefone)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"

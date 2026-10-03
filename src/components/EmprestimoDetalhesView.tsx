@@ -17,6 +17,7 @@ import {
   atualizarDataPagamentoParcela, payInstallmentById,
   togglePausarEmprestimo
 } from "@/app/emprestimos/[id]/actions";
+import { enviarMensagemManual, legendaCronograma, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 import { baixarCronogramaPdfCliente, obterCronogramaPdfBase64 } from "@/lib/cronogramaPdf";
 
@@ -92,7 +93,6 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const [editingParcela, setEditingParcela] = useState<{ id: string; numero: number; data: string } | null>(null);
   const [isSavingParcelaData, setIsSavingParcelaData] = useState(false);
 
-  const [waConfigMode, setWaConfigMode] = useState(false);
   const [waTemplates, setWaTemplates] = useState<string[]>([]);
   const [waCustomMsg, setWaCustomMsg] = useState("");
   const [isWaSending, setIsWaSending] = useState(false);
@@ -109,36 +109,8 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   useEffect(() => { if (modal === "reprogramar") setFreqReprog(emprestimo.frequencia); }, [modal]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("wa_templates");
-    if (saved) {
-      try { setWaTemplates(JSON.parse(saved)); } catch (e) {}
-    } else {
-      setWaTemplates([
-        "Olá, tudo bem? Lembrando que seu empréstimo vence em breve.",
-        "Olá, sua parcela vence hoje. Qualquer dúvida estou à disposição!",
-        "Muito obrigado, pagamento confirmado!",
-        "Olá, notamos um pequeno atraso. Como podemos ajudar?",
-        "Olá, seu empréstimo já consta como quitado. Muito obrigado!"
-      ]);
-    }
+    listarRespostasRapidas().then(setWaTemplates).catch(() => {});
   }, []);
-
-  const handleUpdateTemplate = (index: number, val: string) => {
-    const newT = [...waTemplates];
-    newT[index] = val;
-    setWaTemplates(newT);
-    localStorage.setItem("wa_templates", JSON.stringify(newT));
-  };
-  const handleRemoveTemplate = (index: number) => {
-    const newT = waTemplates.filter((_, i) => i !== index);
-    setWaTemplates(newT);
-    localStorage.setItem("wa_templates", JSON.stringify(newT));
-  };
-  const handleAddTemplate = () => {
-    const newT = [...waTemplates, "Nova mensagem"];
-    setWaTemplates(newT);
-    localStorage.setItem("wa_templates", JSON.stringify(newT));
-  };
 
   const fmt = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
   const fmtDate = (d: any) => new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }).format(new Date(d));
@@ -266,11 +238,11 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       try {
         const res = await payNextInstallment(emprestimo.id, withDelay);
         if (res?.whatsappEnviado) {
-          alert(`Pagamento confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Muito obrigado, pagamento confirmado!"`);
+          alert(`Pagamento confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
           alert(`Pagamento confirmado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
         } else {
-          alert("Muito obrigado, pagamento confirmado!");
+          alert("Pagamento confirmado com sucesso!");
         }
       } catch (err: any) {
         alert(err?.message || "Erro ao registrar pagamento.");
@@ -283,11 +255,11 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       try {
         const res = await payFullLoan(emprestimo.id, withDelay);
         if (res?.whatsappEnviado) {
-          alert(`Quitação confirmada com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Muito obrigado, pagamento confirmado!"`);
+          alert(`Quitação confirmada com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
           alert(`Quitação confirmada com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
         } else {
-          alert("Muito obrigado, pagamento confirmado!");
+          alert("Quitação confirmada com sucesso!");
         }
       } catch (err: any) {
         alert(err?.message || "Erro ao registrar quitação.");
@@ -300,11 +272,11 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       try {
         const res = await payInstallmentById(parcelaId, withDelay);
         if (res?.whatsappEnviado) {
-          alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Muito obrigado, pagamento confirmado!"`);
+          alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
           alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
         } else {
-          alert("Muito obrigado, pagamento confirmado!");
+          alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!`);
         }
       } catch (err: any) {
         alert(err?.message || "Erro ao registrar pagamento.");
@@ -344,7 +316,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       try {
         const res = await receberSoJurosEmprestimo(emprestimo.id);
         if (res?.whatsappEnviado) {
-          alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"Sua renovação foi feita com sucesso! Obrigado."`);
+          alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
           alert(`Empréstimo renovado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
         } else {
@@ -357,25 +329,23 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   };
 
   const sendWaMsg = async (text: string) => {
-    if (!text) return;
+    if (!text.trim()) return;
     setIsWaSending(true);
     try {
-      const res = await fetch("/api/whatsapp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ phone: emprestimo.cliente.telefone, text }]
-        })
+      const res = await enviarMensagemManual({
+        clienteId: emprestimo.cliente.id,
+        emprestimoId: emprestimo.id,
+        texto: text,
       });
       if (res.ok) {
         alert("Mensagem enviada com sucesso!");
         setModal(null);
         setWaCustomMsg("");
       } else {
-        alert("Erro ao enviar mensagem");
+        alert(`Erro ao enviar mensagem: ${res.erro || "tente novamente"}`);
       }
     } catch (err) {
-      alert("Falha de conexão. Verifique se a plataforma (Evolution API) está rodando.");
+      alert("Falha de conexão. Verifique se o serviço do WhatsApp está rodando.");
     }
     setIsWaSending(false);
   };
@@ -432,6 +402,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
       });
 
       const fileName = `cronograma-${emprestimo.cliente.nome.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pdf`;
+      const legenda = await legendaCronograma(emprestimo.id);
       const res = await fetch("/api/whatsapp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -442,7 +413,7 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
               document: pdfBase64,
               mimetype: "application/pdf",
               fileName,
-              caption: `Olá ${emprestimo.cliente.nome}, segue em anexo o cronograma de parcelas do seu empréstimo.`,
+              caption: legenda,
             },
           ],
         }),
@@ -1115,34 +1086,16 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Respostas Rápidas</label>
-                  <button onClick={() => setWaConfigMode(!waConfigMode)} className="text-xs flex items-center gap-1 font-bold text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer">
-                    {waConfigMode ? "Concluir" : "Configurar"}
-                  </button>
+                  <Link href="/configuracoes/mensagens#respostas" className="text-xs flex items-center gap-1 font-bold text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer">
+                    Editar modelos
+                  </Link>
                 </div>
                 <div className="flex flex-col gap-2">
                   {waTemplates.map((msg, i) => (
-                    waConfigMode ? (
-                      <div key={i} className="flex gap-2 items-start">
-                        <textarea 
-                          value={msg}
-                          onChange={(e) => handleUpdateTemplate(i, e.target.value)}
-                          className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 resize-none h-[60px]"
-                        />
-                        <button onClick={() => handleRemoveTemplate(i)} className="p-2 mt-2 text-rose-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-colors shrink-0 cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                        {msg}
-                      </button>
-                    )
-                  ))}
-                  {waConfigMode && (
-                    <button onClick={handleAddTemplate} className="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-slate-300 text-xs font-semibold text-slate-500 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 transition-colors mt-1 cursor-pointer">
-                      Adicionar Nova Mensagem
+                    <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                      {msg.replace(/\{nome_completo\}/g, emprestimo.cliente.nome).replace(/\{nome\}/g, emprestimo.cliente.nome.split(" ")[0])}
                     </button>
-                  )}
+                  ))}
                 </div>
               </div>
               
@@ -1154,6 +1107,9 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
                   placeholder="Digite sua mensagem livre aqui..."
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 min-h-[100px] resize-y"
                 />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Dica: {"{nome}"}, {"{valor}"}, {"{data}"} e outras variáveis são preenchidas automaticamente no envio.
+                </p>
               </div>
             </div>
             

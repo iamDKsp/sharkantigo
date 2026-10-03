@@ -116,3 +116,42 @@ model Cheque {
   @@map("cheques")
 }
 
+
+// ── Mensagens WhatsApp editáveis ─────────────────────────────────────────────
+// Só existe linha aqui quando o usuário EDITA uma mensagem. Os textos padrão
+// vivem no código (src/lib/mensagens/catalogo.ts); "restaurar padrão" = apagar a linha.
+model MensagemTemplate {
+  id            String   @id @default(uuid())
+  chave         String   @unique
+  texto         String   @db.Text
+  ativo         Boolean  @default(true)
+  atualizado_em DateTime @updatedAt
+
+  @@map("mensagem_templates")
+}
+
+// Chave/valor para dados da base: pix_chave, pix_titular, empresa_nome, respostas_rapidas (JSON)
+model Configuracao {
+  chave         String   @id
+  valor         String   @db.Text
+  atualizado_em DateTime @updatedAt
+
+  @@map("configuracoes")
+}
+
+// Histórico de tudo que o sistema tentou enviar por WhatsApp
+model MensagemLog {
+  id         String   @id @default(uuid())
+  chave      String
+  telefone   String
+  cliente_id String?
+  parcela_id String?
+  texto      String   @db.Text
+  status     String   // enviado | falha | ignorado
+  erro       String?  @db.Text
+  criado_em  DateTime @default(now())
+
+  @@index([parcela_id, criado_em])
+  @@index([criado_em])
+  @@map("mensagem_logs")
+}

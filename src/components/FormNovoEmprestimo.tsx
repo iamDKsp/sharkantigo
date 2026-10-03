@@ -266,7 +266,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                           document: pdfBase64,
                           mimetype: "application/pdf",
                           fileName,
-                          caption: `Contratação realizada com sucesso!`,
+                          caption: res.legendaPdf || "Contratação realizada com sucesso!",
                         }],
                       }),
                     });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { 
   User, 
   QrCode, 
@@ -12,7 +13,8 @@ import {
   KeyRound, 
   Mail, 
   ShieldCheck, 
-  Save 
+  Save,
+  MessageSquare
 } from "lucide-react";
 
 interface UserProfile {
@@ -206,6 +208,22 @@ export default function PerfilPage() {
           Gerencie suas informações de conta, login desta base e conexão do WhatsApp.
         </p>
       </div>
+
+      <Link
+        href="/configuracoes/mensagens"
+        className="premium-card p-5 bg-white flex items-center justify-between hover:border-emerald-300 transition-colors"
+      >
+        <div className="flex items-center space-x-4">
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700">
+            <MessageSquare className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="font-bold text-slate-900">Mensagens do WhatsApp</p>
+            <p className="text-sm text-slate-500">Edite cobranças, confirmações, respostas rápidas e Pix.</p>
+          </div>
+        </div>
+        <span className="text-emerald-600 font-semibold text-sm">Editar</span>
+      </Link>
 
       {/* Card Info Perfil Dinâmico */}
       <div className="premium-card p-6 bg-white space-y-6">

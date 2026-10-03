@@ -2,8 +2,47 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { sendWhatsappMessage } from "@/lib/whatsapp";
+import { enviarPorEvento, montarContexto, type OpcoesContexto } from "@/lib/mensagens/servidor";
+import { formatarBRL, formatarDataUTC } from "@/lib/mensagens/render";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
+
+/**
+ * Dispara uma mensagem de evento (template editável). Nunca lança: falha de
+ * WhatsApp/mensagens não pode desfazer a operação financeira já concluída.
+ */
+async function dispararEvento(
+  chave: string,
+  ctx: OpcoesContexto,
+  telefone: string,
+  clienteId?: string
+): Promise<{ whatsappEnviado: boolean; whatsappErro?: string; whatsappTexto?: string; whatsappIgnorado?: boolean }> {
+  if (!telefone) return { whatsappEnviado: false };
+  try {
+    const contexto = await montarContexto({ ...ctx, clienteId });
+    const r = await enviarPorEvento(chave, { telefone, contexto, clienteId, parcelaId: ctx.parcelaId });
+    return {
+      whatsappEnviado: r.enviado,
+      whatsappErro: r.erro,
+      whatsappTexto: r.texto,
+      whatsappIgnorado: r.ignorado,
+    };
+  } catch (err: any) {
+    return { whatsappEnviado: false, whatsappErro: err?.message || "Erro ao disparar WhatsApp" };
+  }
+}
+
+/** Variante que descobre o telefone do cliente a partir do empréstimo. */
+async function dispararEventoEmprestimo(chave: string, emprestimoId: string) {
+  try {
+    const emp = await prisma.emprestimo.findUnique({
+      where: { id: emprestimoId },
+      include: { cliente: true },
+    });
+    return await dispararEvento(chave, { emprestimoId }, emp?.cliente?.telefone || "", emp?.cliente?.id);
+  } catch (err: any) {
+    return { whatsappEnviado: false, whatsappErro: err?.message || "Erro ao disparar WhatsApp" };
+  }
+}
 
 // 1. Pagar Próxima Parcela (com ou sem atraso)
 export async function payNextInstallment(emprestimoId: string, withDelay: boolean) {
@@ -54,34 +93,23 @@ export async function payNextInstallment(emprestimoId: string, withDelay: boolea
     });
   }
 
-  // Disparar mensagem de confirmação de pagamento no WhatsApp
-  let whatsappEnviado = false;
-  let whatsappErro: string | undefined = undefined;
+  // Disparar mensagem de confirmação no WhatsApp (template editável).
+  // Se esta foi a última parcela em aberto, o empréstimo foi quitado.
   const clienteTelefone = emprestimo?.cliente?.telefone || "";
   const clienteNome = emprestimo?.cliente?.nome || "";
-
-  if (clienteTelefone) {
-    try {
-      const waRes = await sendWhatsappMessage(
-        clienteTelefone,
-        "Muito obrigado, pagamento confirmado!"
-      );
-      whatsappEnviado = waRes.success;
-      if (!waRes.success) {
-        whatsappErro = waRes.error;
-      }
-    } catch (err: any) {
-      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
-    }
-  }
+  const wa = await dispararEvento(
+    parcelasRestantes === 0 ? "pagamento.quitacao" : "pagamento.parcela",
+    { emprestimoId, parcelaId: proximaParcela.id },
+    clienteTelefone,
+    emprestimo?.cliente?.id
+  );
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
   return {
     success: true,
-    whatsappEnviado,
-    whatsappErro,
+    ...wa,
     clienteNome,
   };
 }
@@ -137,34 +165,23 @@ export async function payInstallmentById(parcelaId: string, withDelay: boolean) 
     });
   }
 
-  // Disparar mensagem de confirmação de pagamento no WhatsApp
-  let whatsappEnviado = false;
-  let whatsappErro: string | undefined = undefined;
+  // Disparar mensagem de confirmação no WhatsApp (template editável).
+  // Se esta foi a última parcela em aberto, o empréstimo foi quitado.
   const clienteTelefone = parcela.emprestimo?.cliente?.telefone || "";
   const clienteNome = parcela.emprestimo?.cliente?.nome || "";
-
-  if (clienteTelefone) {
-    try {
-      const waRes = await sendWhatsappMessage(
-        clienteTelefone,
-        "Muito obrigado, pagamento confirmado!"
-      );
-      whatsappEnviado = waRes.success;
-      if (!waRes.success) {
-        whatsappErro = waRes.error;
-      }
-    } catch (err: any) {
-      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
-    }
-  }
+  const wa = await dispararEvento(
+    parcelasRestantes === 0 ? "pagamento.quitacao" : "pagamento.parcela",
+    { emprestimoId, parcelaId },
+    clienteTelefone,
+    parcela.emprestimo?.cliente?.id
+  );
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
   return {
     success: true,
-    whatsappEnviado,
-    whatsappErro,
+    ...wa,
     clienteNome,
     numeroParcela: parcela.numero,
   };
@@ -175,6 +192,7 @@ export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
   const hoje = hojeEmBrasilia();
   let clienteTelefone = "";
   let clienteNome = "";
+  let totalQuitado = 0;
 
   await prisma.$transaction(async (tx) => {
     const emp = await tx.emprestimo.findUnique({
@@ -192,6 +210,7 @@ export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
     });
 
     for (const p of parcelasAbertas) {
+      totalQuitado += Number(p.valor);
       await tx.parcela.update({
         where: { id: p.id },
         data: {
@@ -211,32 +230,19 @@ export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
     });
   });
 
-  // Disparar mensagem de confirmação de quitação no WhatsApp
-  let whatsappEnviado = false;
-  let whatsappErro: string | undefined = undefined;
-
-  if (clienteTelefone) {
-    try {
-      const waRes = await sendWhatsappMessage(
-        clienteTelefone,
-        "Muito obrigado, pagamento confirmado!"
-      );
-      whatsappEnviado = waRes.success;
-      if (!waRes.success) {
-        whatsappErro = waRes.error;
-      }
-    } catch (err: any) {
-      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
-    }
-  }
+  // Disparar mensagem de confirmação de quitação no WhatsApp (template editável)
+  const wa = await dispararEvento(
+    "pagamento.quitacao",
+    { emprestimoId, extra: { valor: formatarBRL(totalQuitado) } },
+    clienteTelefone
+  );
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
   return {
     success: true,
-    whatsappEnviado,
-    whatsappErro,
+    ...wa,
     clienteNome,
   };
 }
@@ -342,10 +348,13 @@ export async function renegociarEmprestimo(
     }
   });
 
+  // Mensagem opcional (desligada por padrão; ativável em Configurações → Mensagens)
+  const wa = await dispararEventoEmprestimo("renegociacao.confirmada", emprestimoId);
+
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
-  return { success: true };
+  return { success: true, ...wa };
 }
 
 // 4. Reprogramar Empréstimo (Nova data de vencimento + dinheiro extra opcional + juros opcional + nova frequência)
@@ -444,10 +453,13 @@ export async function reprogramarEmprestimo(
     });
   });
 
+  // Mensagem opcional (desligada por padrão; ativável em Configurações → Mensagens)
+  const wa = await dispararEventoEmprestimo("reprogramacao.confirmada", emprestimoId);
+
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
-  return { success: true };
+  return { success: true, ...wa };
 }
 
 // 5. Alternar Blacklist do Cliente
@@ -479,6 +491,8 @@ export async function receberSoJurosEmprestimo(emprestimoId: string) {
   const hoje = hojeEmBrasilia();
   let clienteTelefone = "";
   let clienteNome = "";
+  let valorJurosPago = 0;
+  let novoVencimentoRenovacao: Date | null = null;
 
   await prisma.$transaction(async (tx) => {
     // 1. Encontra o empréstimo com o cliente e as parcelas abertas
@@ -549,34 +563,31 @@ export async function receberSoJurosEmprestimo(emprestimoId: string) {
         data_vencimento: novoVencimento,
       },
     });
+
+    // Dados para as variáveis da mensagem de renovação
+    valorJurosPago = valorJuros;
+    novoVencimentoRenovacao = novoVencimento;
   });
 
-  // Disparar mensagem automática no WhatsApp do cliente após a renovação
-  let whatsappEnviado = false;
-  let whatsappErro: string | undefined = undefined;
-
-  if (clienteTelefone) {
-    try {
-      const waRes = await sendWhatsappMessage(
-        clienteTelefone,
-        "Sua renovação foi feita com sucesso! Obrigado."
-      );
-      whatsappEnviado = waRes.success;
-      if (!waRes.success) {
-        whatsappErro = waRes.error;
-      }
-    } catch (err: any) {
-      whatsappErro = err?.message || "Erro ao disparar WhatsApp";
-    }
-  }
+  // Disparar mensagem automática no WhatsApp do cliente após a renovação (template editável)
+  const wa = await dispararEvento(
+    "renovacao.confirmada",
+    {
+      emprestimoId,
+      extra: {
+        valor: formatarBRL(valorJurosPago),
+        ...(novoVencimentoRenovacao ? { novo_vencimento: formatarDataUTC(novoVencimentoRenovacao) } : {}),
+      },
+    },
+    clienteTelefone
+  );
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
   return {
     success: true,
-    whatsappEnviado,
-    whatsappErro,
+    ...wa,
     clienteNome,
   };
 }

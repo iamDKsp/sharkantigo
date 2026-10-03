@@ -6,6 +6,7 @@ import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
 import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle } from "lucide-react";
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
+import { enviarMensagemManual, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 interface Cliente {
@@ -133,7 +134,7 @@ export default function EmprestimosListWrapper({
         const clienteNome = renewModalEmp.cliente?.nome || "cliente";
         setRenewModalEmp(null);
         if (res?.whatsappEnviado) {
-          alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${clienteNome} no WhatsApp:\n\n"Sua renovação foi feita com sucesso! Obrigado."`);
+          alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${clienteNome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
           alert(`Empréstimo renovado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
         } else {
@@ -151,23 +152,12 @@ export default function EmprestimosListWrapper({
   const [waModalOpen, setWaModalOpen] = useState(false);
   const [waSelectedEmp, setWaSelectedEmp] = useState<any>(null);
   const [waCustomMsg, setWaCustomMsg] = useState("");
-  const [waConfigMode, setWaConfigMode] = useState(false);
   const [isWaSending, setIsWaSending] = useState(false);
-  const [waTemplates, setWaTemplates] = useState<string[]>([
-    "Olá, tudo bem? Lembrando que seu empréstimo vence em breve.",
-    "Olá, sua parcela vence hoje. Qualquer dúvida estou à disposição!",
-    "Muito obrigado, pagamento confirmado!",
-    "Olá, notamos um pequeno atraso. Como podemos ajudar?",
-    "Olá, seu empréstimo já consta como quitado. Muito obrigado!"
-  ]);
+  // Lista única de respostas rápidas, salva no banco (edição em /configuracoes/mensagens)
+  const [waTemplates, setWaTemplates] = useState<string[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("sol_wa_templates");
-    if (saved) {
-      try {
-        setWaTemplates(JSON.parse(saved));
-      } catch (e) {}
-    }
+    listarRespostasRapidas().then(setWaTemplates).catch(() => {});
   }, []);
 
   const openWaModal = (emp: any) => {
@@ -180,45 +170,22 @@ export default function EmprestimosListWrapper({
     if (!waSelectedEmp || !text.trim()) return;
     setIsWaSending(true);
     try {
-      const res = await fetch("/api/whatsapp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ phone: waSelectedEmp.cliente.telefone, text }]
-        })
+      const res = await enviarMensagemManual({
+        clienteId: waSelectedEmp.cliente.id,
+        emprestimoId: waSelectedEmp.id,
+        texto: text,
       });
-
       if (res.ok) {
         setWaModalOpen(false);
         alert("Mensagem enviada com sucesso!");
       } else {
-        const errData = await res.json().catch(() => ({}));
-        alert(`Falha ao enviar: ${errData.error || "Erro desconhecido"}`);
+        alert(`Falha ao enviar: ${res.erro || "Erro desconhecido"}`);
       }
     } catch (err) {
       alert("Falha de conexão. O serviço do WhatsApp está rodando?");
     } finally {
       setIsWaSending(false);
     }
-  };
-
-  const handleUpdateTemplate = (index: number, newText: string) => {
-    const newT = [...waTemplates];
-    newT[index] = newText;
-    setWaTemplates(newT);
-    localStorage.setItem("sol_wa_templates", JSON.stringify(newT));
-  };
-
-  const handleAddTemplate = () => {
-    const newT = [...waTemplates, "Nova mensagem rápida..."];
-    setWaTemplates(newT);
-    localStorage.setItem("sol_wa_templates", JSON.stringify(newT));
-  };
-
-  const handleRemoveTemplate = (index: number) => {
-    const newT = waTemplates.filter((_, i) => i !== index);
-    setWaTemplates(newT);
-    localStorage.setItem("sol_wa_templates", JSON.stringify(newT));
   };
 
   useEffect(() => {
@@ -930,34 +897,18 @@ export default function EmprestimosListWrapper({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Respostas Rápidas</label>
-                  <button onClick={() => setWaConfigMode(!waConfigMode)} className="text-xs flex items-center gap-1 font-bold text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer">
-                    <Settings className="w-3.5 h-3.5" /> {waConfigMode ? "Concluir" : "Configurar"}
-                  </button>
+                  <Link href="/configuracoes/mensagens#respostas" className="text-xs flex items-center gap-1 font-bold text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer">
+                    <Settings className="w-3.5 h-3.5" /> Editar modelos
+                  </Link>
                 </div>
                 <div className="flex flex-col gap-2">
                   {waTemplates.map((msg, i) => (
-                    waConfigMode ? (
-                      <div key={i} className="flex gap-2 items-start">
-                        <textarea 
-                          value={msg}
-                          onChange={(e) => handleUpdateTemplate(i, e.target.value)}
-                          className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 resize-none h-[60px]"
-                        />
-                        <button onClick={() => handleRemoveTemplate(i)} className="p-2 mt-2 text-rose-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-colors shrink-0 cursor-pointer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                        {msg}
-                      </button>
-                    )
-                  ))}
-                  {waConfigMode && (
-                    <button onClick={handleAddTemplate} className="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-slate-300 text-xs font-semibold text-slate-500 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 transition-colors mt-1 cursor-pointer">
-                      <Plus className="w-4 h-4" /> Adicionar Nova Mensagem
+                    <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                      {msg
+                        .replace(/\{nome_completo\}/g, waSelectedEmp.cliente.nome)
+                        .replace(/\{nome\}/g, waSelectedEmp.cliente.nome.split(" ")[0])}
                     </button>
-                  )}
+                  ))}
                 </div>
               </div>
               

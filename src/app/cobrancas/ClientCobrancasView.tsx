@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { useUrlState } from "@/hooks/useUrlState";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { MessageSquare, Calendar, DollarSign, X, Loader2, Settings } from "lucide-react";
-import { logRemindersSent } from "./actions";
+import { enviarCobranca } from "./actions";
+import { linkWhatsapp } from "@/lib/mensagens/render";
 
 interface Parcela {
   id: string;
@@ -12,6 +14,8 @@ interface Parcela {
   valor: number;
   data_vencimento: string;
   status: string;
+  /** Texto final da cobrança (modelo editável + rodapé), renderizado no servidor. */
+  mensagem: string;
   emprestimo: {
     id: string;
     valor_emprestado: number;
@@ -33,11 +37,15 @@ interface ClientCobrancasViewProps {
   hojeLista: Parcela[];
   aVencer: Parcela[];
   initialFiltro?: string;
+  /** Ids de parcelas que já receberam cobrança hoje. */
+  cobradasHoje: string[];
+  /** false = chave Pix não cadastrada (rodapé de pagamento não é enviado). */
+  pixConfigurado: boolean;
 }
 
 type TabId = "atrasados" | "ontem" | "anteriores" | "hoje" | "aVencer";
 
-export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriores, hojeLista, aVencer, initialFiltro }: ClientCobrancasViewProps) {
+export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriores, hojeLista, aVencer, initialFiltro, cobradasHoje, pixConfigurado }: ClientCobrancasViewProps) {
   // Combina ontem + anteriores para manter compatibilidade com lógica existente
   const atrasados = [...atrasadosOntem, ...atrasadosAnteriores].sort(
     (a, b) => new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime()
@@ -55,7 +63,6 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   useScrollRestoration("cobrancas-list");
 
   const [activeTab, setActiveTab] = useUrlState<TabId>("tab", resolveTab(initialFiltro), "atrasados");
-  const [isPending, startTransition] = useTransition();
 
   // Estados de Seleção para cada Grupo
   const [selectedAtrasados, setSelectedAtrasados] = useState<string[]>([]);
@@ -68,52 +75,10 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   const [simulateLogs, setSimulateLogs] = useState<string[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
 
-  // Modelos de Mensagens Configuráveis
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  // Pix configurável
-  const [pixChave, setPixChave] = useState("14991185521 (Itaú)");
-  const [pixTitular, setPixTitular] = useState("Ronivaldo Gabriel Oscar");
-  // Templates parcelado (com nº de parcela)
-  const [msgAtrasados, setMsgAtrasados] = useState(`Olá, {nome}! Notamos que a parcela nº {num} no valor de {valor} do seu empréstimo está pendente (venceu em {data}). Por favor, regularize o quanto antes.`);
-  const [msgHoje, setMsgHoje] = useState(`Olá, {nome}! Passando para lembrar que hoje ({data}) vence a sua parcela nº {num} no valor de {valor}. Caso já tenha pago, por favor desconsidere.`);
-  const [msgAVencer, setMsgAVencer] = useState(`Olá, {nome}! Lembrete: a sua parcela nº {num} no valor de {valor} vencerá em breve, no dia {data}.`);
-  // Templates à vista (sem nº de parcela)
-  const [msgAtrasadosAvista, setMsgAtrasadosAvista] = useState(`Olá, {nome}! Notamos que o pagamento de {valor} do seu empréstimo está pendente (venceu em {data}). Por favor, regularize o quanto antes.`);
-  const [msgHojeAvista, setMsgHojeAvista] = useState(`Olá, {nome}! Passando para lembrar que hoje ({data}) vence o pagamento de {valor} do seu empréstimo. Caso já tenha pago, por favor desconsidere.`);
-  const [msgAVencerAvista, setMsgAVencerAvista] = useState(`Olá, {nome}! Lembrete: o pagamento de {valor} do seu empréstimo vencerá em breve, no dia {data}.`);
-
-  useEffect(() => {
-    const savedPixChave = localStorage.getItem("template_pix_chave");
-    const savedPixTitular = localStorage.getItem("template_pix_titular");
-    const savedAtrasados = localStorage.getItem("template_atrasados");
-    const savedHoje = localStorage.getItem("template_hoje");
-    const savedAVencer = localStorage.getItem("template_aVencer");
-    const savedAtrasadosAv = localStorage.getItem("template_atrasados_avista");
-    const savedHojeAv = localStorage.getItem("template_hoje_avista");
-    const savedAVencerAv = localStorage.getItem("template_avencer_avista");
-
-    if (savedPixChave) setPixChave(savedPixChave);
-    if (savedPixTitular) setPixTitular(savedPixTitular);
-    if (savedAtrasados) setMsgAtrasados(savedAtrasados);
-    if (savedHoje) setMsgHoje(savedHoje);
-    if (savedAVencer) setMsgAVencer(savedAVencer);
-    if (savedAtrasadosAv) setMsgAtrasadosAvista(savedAtrasadosAv);
-    if (savedHojeAv) setMsgHojeAvista(savedHojeAv);
-    if (savedAVencerAv) setMsgAVencerAvista(savedAVencerAv);
-  }, []);
-
-  const handleSaveTemplates = (e: React.FormEvent) => {
-    e.preventDefault();
-    localStorage.setItem("template_pix_chave", pixChave);
-    localStorage.setItem("template_pix_titular", pixTitular);
-    localStorage.setItem("template_atrasados", msgAtrasados);
-    localStorage.setItem("template_hoje", msgHoje);
-    localStorage.setItem("template_aVencer", msgAVencer);
-    localStorage.setItem("template_atrasados_avista", msgAtrasadosAvista);
-    localStorage.setItem("template_hoje_avista", msgHojeAvista);
-    localStorage.setItem("template_avencer_avista", msgAVencerAvista);
-    setShowConfigModal(false);
-  };
+  // Os modelos de mensagem são editados em /configuracoes/mensagens (salvos no banco).
+  // O texto final de cada cobrança já vem renderizado do servidor em `p.mensagem`,
+  // então o que aparece no link do Zap é exatamente o que o disparo em massa envia.
+  const [cobradas, setCobradas] = useState<string[]>(cobradasHoje);
 
   const formatBRL = (val: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -131,12 +96,6 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     }).format(new Date(dateStr));
   };
 
-  // Rodapé fixo de pagamento — Pix + instrução + renovação com valor
-  const getPIXRodape = (p: Parcela) => {
-    const valorRenovacao = formatBRL(p.emprestimo.valor_emprestado * (p.emprestimo.taxa_juros / 100));
-    return `\n\n💳 *Para pagar:*\nPix: ${pixChave}\nNome: ${pixTitular}\n\nSe preferir, podemos combinar para buscar pessoalmente em dinheiro. 😊\n\n🔄 *Ou, se preferir, podemos fazer a renovação do empréstimo!*\nO valor da renovação é de apenas *${valorRenovacao}* (juros do período). Entre em contato e combinamos!`;
-  };
-
   // Helper para identificar se é à vista / parcela única
   const isParcelaUnica = (p: Parcela) => {
     return (
@@ -147,34 +106,16 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     );
   };
 
-  // Mensagens Customizadas por Tipo
-  const getMessageText = (p: Parcela, type: "atrasados" | "hoje" | "aVencer") => {
-    const nome = p.emprestimo.cliente.nome.split(" ")[0];
-    const data = formatData(p.data_vencimento);
-    const valor = formatBRL(p.valor);
-    const num = p.numero;
-    // Empréstimo é "único" se tiver apenas 1 parcela no total ou for à vista
-    const isUnico = isParcelaUnica(p);
+  // Selo para parcelas que já receberam cobrança hoje (evita cobrar duas vezes sem querer)
+  const cobradoBadge = (p: Parcela) =>
+    cobradas.includes(p.id) ? (
+      <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-sky-50 text-sky-600 border-sky-200">
+        ✓ Cobrado hoje
+      </span>
+    ) : null;
 
-    let template = "";
-    if (type === "atrasados") {
-      template = isUnico ? msgAtrasadosAvista : msgAtrasados;
-    } else if (type === "hoje") {
-      template = isUnico ? msgHojeAvista : msgHoje;
-    } else {
-      template = isUnico ? msgAVencerAvista : msgAVencer;
-    }
-
-    const corpo = template
-      .replace(/{nome}/g, nome)
-      .replace(/{data}/g, data)
-      .replace(/{valor}/g, valor)
-      .replace(/{num}/g, String(num));
-
-    return corpo + getPIXRodape(p);
-  };
-
-  // Disparo em Massa para um grupo específico
+  // Disparo em Massa: o envio acontece no SERVIDOR, parcela por parcela. O texto é renderizado
+  // lá com os modelos salvos, e cada envio entra no histórico (mensagem_logs).
   const handleMassTrigger = (targetIds: string[], type: "atrasados" | "hoje" | "aVencer") => {
     if (targetIds.length === 0) return;
 
@@ -189,23 +130,27 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       : aVencer;
     const itemsToProcess = fullList.filter((p) => targetIds.includes(p.id));
     let currentIndex = 0;
+    let enviados = 0;
+    let falhas = 0;
+    const idsEnviados: string[] = [];
 
     const processNext = async () => {
       if (currentIndex >= itemsToProcess.length) {
         setIsSimulating(false);
         setSimulateProgress(100);
-        setSimulateLogs((prev) => [...prev, "✓ Todos os disparos concluídos com sucesso! Logs salvos."]);
-        
-        startTransition(async () => {
-          await logRemindersSent(targetIds);
-        });
+        setCobradas((prev) => [...new Set([...prev, ...idsEnviados])]);
+        setSimulateLogs((prev) => [
+          ...prev,
+          falhas === 0
+            ? `✓ Concluído: ${enviados} mensagem(ns) enviada(s). Histórico salvo.`
+            : `⚠ Concluído: ${enviados} enviada(s) e ${falhas} com falha. Veja os detalhes acima.`,
+        ]);
         return;
       }
 
       const p = itemsToProcess[currentIndex];
       const clienteNome = p.emprestimo.cliente.nome;
       const telefone = p.emprestimo.cliente.telefone;
-      const msgText = getMessageText(p, type);
 
       setSimulateLogs((prev) => [
         ...prev,
@@ -213,27 +158,19 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       ]);
 
       try {
-        const res = await fetch("/api/whatsapp/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [{ phone: telefone, text: msgText }]
-          })
-        });
-
-        if (res.ok) {
-          setSimulateLogs((prev) => [
-            ...prev,
-            `→ Lembrete enviado via WhatsApp para ${clienteNome}.`,
-          ]);
+        const res = await enviarCobranca(p.id, type);
+        if (res.enviado) {
+          enviados++;
+          idsEnviados.push(p.id);
+          setSimulateLogs((prev) => [...prev, `→ Lembrete enviado via WhatsApp para ${clienteNome}.`]);
+        } else if (res.ignorado) {
+          setSimulateLogs((prev) => [...prev, `→ Mensagem desativada nas configurações. Nada enviado para ${clienteNome}.`]);
         } else {
-          const errData = await res.json().catch(() => ({}));
-          setSimulateLogs((prev) => [
-            ...prev,
-            `❌ Falha ao enviar para ${clienteNome}: ${errData.error || "Erro desconhecido"}.`,
-          ]);
+          falhas++;
+          setSimulateLogs((prev) => [...prev, `❌ Falha ao enviar para ${clienteNome}: ${res.erro || "Erro desconhecido"}.`]);
         }
       } catch (err) {
+        falhas++;
         const errMsg = err instanceof Error ? err.message : String(err);
         setSimulateLogs((prev) => [
           ...prev,
@@ -283,14 +220,23 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
             Gerenciamento de lembretes e cobranças.
           </p>
         </div>
-        <button
-          onClick={() => setShowConfigModal(true)}
+        <Link
+          href="/configuracoes/mensagens"
           className="flex items-center gap-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
         >
           <Settings className="w-3.5 h-3.5 text-emerald-500" />
           <span>Mensagens</span>
-        </button>
+        </Link>
       </div>
+
+      {!pixConfigurado && (
+        <Link
+          href="/configuracoes/mensagens#pix"
+          className="block bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-xs font-semibold hover:bg-amber-100 transition-colors"
+        >
+          ⚠️ Sua chave Pix ainda não está cadastrada, então o rodapé de pagamento não será enviado nas cobranças. Toque aqui para configurar.
+        </Link>
+      )}
 
       {/* Tabs de Filtro — grade 2 colunas mobile, 3 sm, 5 md */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
@@ -388,7 +334,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
               ) : (
                 listaAtrasados.map((p) => {
                   const isChecked = selectedAtrasados.includes(p.id);
-                  const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(getMessageText(p, "atrasados"))}`;
+                  const whatsappUrl = linkWhatsapp(p.emprestimo.cliente.telefone, p.mensagem);
                   return (
                     <div
                       key={p.id}
@@ -413,6 +359,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                             corAtrasados === "red"    ? "bg-red-50 text-red-600 border-red-200" :
                             "bg-rose-50 text-rose-600 border-rose-200"
                           }`}>{isParcelaUnica(p) ? "À Vista" : `Parc. ${p.numero}`}</span>
+                          {cobradoBadge(p)}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                           <span className="flex items-center gap-0.5">
@@ -499,7 +446,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
             ) : (
               hojeLista.map((p) => {
                 const isChecked = selectedHoje.includes(p.id);
-                const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(getMessageText(p, "hoje"))}`;
+                const whatsappUrl = linkWhatsapp(p.emprestimo.cliente.telefone, p.mensagem);
                 return (
                   <div
                     key={p.id}
@@ -517,6 +464,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-sm text-slate-900 truncate">{p.emprestimo.cliente.nome}</span>
                         <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-amber-50 text-amber-600 border-amber-200">{isParcelaUnica(p) ? "À Vista" : `Parc. ${p.numero}`}</span>
+                        {cobradoBadge(p)}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                         <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>
@@ -592,7 +540,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
             ) : (
               aVencer.map((p) => {
                 const isChecked = selectedAVencer.includes(p.id);
-                const whatsappUrl = `https://wa.me/${p.emprestimo.cliente.telefone}?text=${encodeURIComponent(getMessageText(p, "aVencer"))}`;
+                const whatsappUrl = linkWhatsapp(p.emprestimo.cliente.telefone, p.mensagem);
                 return (
                   <div
                     key={p.id}
@@ -610,6 +558,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-sm text-slate-900 truncate">{p.emprestimo.cliente.nome}</span>
                         <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase border bg-emerald-50 text-emerald-600 border-emerald-200">{isParcelaUnica(p) ? "À Vista" : `Parc. ${p.numero}`}</span>
+                        {cobradoBadge(p)}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                         <span className="flex items-center gap-0.5"><Calendar className="w-3 h-3" />{formatData(p.data_vencimento)}</span>
@@ -694,145 +643,6 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
         </div>
       )}
 
-      {/* Modal de Configuração de Mensagens */}
-      {showConfigModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <form 
-            onSubmit={handleSaveTemplates}
-            className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl p-6 space-y-4 text-slate-900 animate-scale-up"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold text-sm flex items-center space-x-1.5 text-emerald-600">
-                <Settings className="w-5 h-5 animate-spin-slow" />
-                <span>Configurar Modelos de Cobrança</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowConfigModal(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-5 text-sm overflow-y-auto max-h-[70vh] pr-1">
-
-              {/* Configuração Pix Rodapé */}
-              <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 space-y-3">
-                <span className="font-extrabold text-emerald-800 block text-xs uppercase tracking-wider">
-                  💳 Dados do Pix (Rodapé enviado nas mensagens)
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-bold text-slate-700 text-xs block mb-1">Chave Pix & Banco</label>
-                    <input 
-                      type="text"
-                      value={pixChave} 
-                      onChange={(e) => setPixChave(e.target.value)} 
-                      placeholder="Ex: 14991185521 (Itaú)" 
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 text-xs block mb-1">Nome do Titular Pix</label>
-                    <input 
-                      type="text"
-                      value={pixTitular} 
-                      onChange={(e) => setPixTitular(e.target.value)} 
-                      placeholder="Ex: Ronivaldo Gabriel Oscar" 
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    />
-                  </div>
-                </div>
-                <p className="text-[11px] text-emerald-800/80 font-medium">
-                  Personalize estes dados para esta base para que as cobranças saiam com a chave Pix e titular corretos.
-                </p>
-              </div>
-
-              {/* Grupo Parcelado */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-px flex-1 bg-slate-200" />
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-blue-600 px-2">Empréstimos Parcelados</span>
-                  <div className="h-px flex-1 bg-slate-200" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 text-xs uppercase">Atrasado / Vencido</label>
-                  <textarea value={msgAtrasados} onChange={(e) => setMsgAtrasados(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 text-xs"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 text-xs uppercase">Vencendo Hoje</label>
-                  <textarea value={msgHoje} onChange={(e) => setMsgHoje(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 text-xs"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 text-xs uppercase">A Vencer (Lembrete)</label>
-                  <textarea value={msgAVencer} onChange={(e) => setMsgAVencer(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium transition-all text-slate-800 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Grupo À Vista */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-px flex-1 bg-slate-200" />
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-amber-600 px-2">Empréstimos À Vista</span>
-                  <div className="h-px flex-1 bg-slate-200" />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 text-xs uppercase">Atrasado / Vencido</label>
-                  <textarea value={msgAtrasadosAvista} onChange={(e) => setMsgAtrasadosAvista(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 text-xs"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 text-xs uppercase">Vencendo Hoje</label>
-                  <textarea value={msgHojeAvista} onChange={(e) => setMsgHojeAvista(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 text-xs"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-600 text-xs uppercase">A Vencer (Lembrete)</label>
-                  <textarea value={msgAVencerAvista} onChange={(e) => setMsgAVencerAvista(e.target.value)} rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium transition-all text-slate-800 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* Variáveis */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-                <span className="font-extrabold block uppercase tracking-wider text-xs text-slate-500">Variáveis disponíveis</span>
-                <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
-                  <span className="text-slate-700"><strong>{`{nome}`}</strong> — Primeiro nome</span>
-                  <span className="text-slate-700"><strong>{`{valor}`}</strong> — Valor da parcela</span>
-                  <span className="text-slate-700"><strong>{`{data}`}</strong> — Data de vencimento</span>
-                  <span className="text-slate-700"><strong>{`{num}`}</strong> — Nº da parcela (parcelados)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowConfigModal(false)}
-                className="px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
-              >
-                Salvar Configurações
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </div>
   );
 }

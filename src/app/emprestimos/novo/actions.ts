@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { montarContexto, renderizarEvento } from "@/lib/mensagens/servidor";
 
 interface ParcelaInput {
   numero: number;
@@ -97,12 +98,25 @@ export async function createEmprestimo(formData: FormData) {
     revalidatePath(`/emprestimos/${novoEmprestimoId}`);
   }
 
+  // Legenda do PDF (template editável). Falha aqui nunca bloqueia a criação do empréstimo.
+  let legendaPdf = "Contratação realizada com sucesso!";
+  if (novoEmprestimoId && formData.get("enviarPdfWhatsapp") === "true") {
+    try {
+      const contexto = await montarContexto({ emprestimoId: novoEmprestimoId });
+      const r = await renderizarEvento("emprestimo.contratado", contexto);
+      if (r.ativo && r.texto) legendaPdf = r.texto;
+    } catch (err) {
+      console.error("[mensagens] Falha ao renderizar legenda do novo empréstimo:", (err as Error)?.message);
+    }
+  }
+
   return {
     success: true,
     redirectUrl: novoEmprestimoId ? `/emprestimos/${novoEmprestimoId}` : "/emprestimos",
     // Dados retornados ao cliente para envio opcional do PDF via WhatsApp
     clienteNome,
     clienteTelefone,
+    legendaPdf,
     parcelas,
     tipoPagamento,
     valorEmprestado,
