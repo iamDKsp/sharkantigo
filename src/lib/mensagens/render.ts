@@ -36,6 +36,8 @@ export interface ValidacaoTexto {
   desconhecidas: string[];
   /** Existem, mas não fazem sentido nesta mensagem (ficariam vazias). */
   foraDoContexto: string[];
+  /** Chaves mal fechadas (ex.: `{data)`): não são trocadas e sairiam cruas na mensagem. */
+  malformadas: string[];
   ok: boolean;
 }
 
@@ -43,8 +45,17 @@ export function validarTexto(texto: string, permitidas: readonly VariavelId[]): 
   const usadas = extrairVariaveis(texto);
   const desconhecidas = usadas.filter((v) => !(v in VARIAVEIS));
   const foraDoContexto = usadas.filter((v) => v in VARIAVEIS && !permitidas.includes(v as VariavelId));
-  return { desconhecidas, foraDoContexto, ok: desconhecidas.length === 0 && foraDoContexto.length === 0 };
+  // Tudo que sobra de `{` ou `}` depois de remover as variáveis válidas está mal formado.
+  const semVariaveis = texto.replace(REGEX_VARIAVEL, "");
+  const malformadas = [...new Set(semVariaveis.match(/\{[^\s{}]*|[^\s{}]*\}/g) ?? [])];
+  return {
+    desconhecidas,
+    foraDoContexto,
+    malformadas,
+    ok: desconhecidas.length === 0 && foraDoContexto.length === 0 && malformadas.length === 0,
+  };
 }
+
 
 export interface ResultadoRender {
   texto: string;

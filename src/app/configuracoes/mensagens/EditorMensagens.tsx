@@ -269,6 +269,8 @@ function CardMensagem({ m, telefoneTeste }: { m: MensagemEditavel; telefoneTeste
         <p className="text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 flex gap-1.5">
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
           <span>
+            {validacao.malformadas.length > 0 &&
+              `Chave mal fechada: ${validacao.malformadas.map((v) => `“${v}”`).join(", ")}. Use o formato {data}. `}
             {validacao.desconhecidas.length > 0 &&
               `Variável inexistente: ${validacao.desconhecidas.map((v) => `{${v}}`).join(", ")}. `}
             {validacao.foraDoContexto.length > 0 &&

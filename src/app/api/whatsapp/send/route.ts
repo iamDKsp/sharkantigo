@@ -15,23 +15,30 @@ export async function POST(req: Request) {
   
   try {
     const body = await req.json();
+    // O telefone vai DENTRO de cada item de `messages` (formato esperado pelo
+    // serviço de WhatsApp): { messages: [{ phone, text | document, ... }] }.
     if (
       !body ||
-      typeof body.phone !== "string" ||
       !Array.isArray(body.messages) ||
       body.messages.length === 0 ||
       body.messages.length > 5
     ) {
       return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
     }
-    const phone = normalizarTelefone(body.phone);
-    if (!phone) {
-      return NextResponse.json({ error: "Telefone inválido." }, { status: 400 });
+
+    const messages = [];
+    for (const item of body.messages) {
+      const phone = normalizarTelefone(typeof item?.phone === "string" ? item.phone : "");
+      if (!phone) {
+        return NextResponse.json({ error: "Telefone inválido." }, { status: 400 });
+      }
+      messages.push({ ...item, phone });
     }
+
     const res = await fetch(`${WHATSAPP_API}/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...body, phone })
+      body: JSON.stringify({ ...body, messages })
     });
     
     const data = await res.json();

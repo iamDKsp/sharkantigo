@@ -27,6 +27,9 @@ function mensagemDeValidacao(chave: string, texto: string): string | null {
   if (!t) return "O texto não pode ficar vazio. Use “Restaurar padrão” se quiser voltar ao original.";
   if (t.length > LIMITE_TEXTO) return `O texto passou de ${LIMITE_TEXTO} caracteres.`;
   const v = validarTexto(t, def.variaveis);
+  if (v.malformadas.length > 0) {
+    return `Chave mal fechada: ${v.malformadas.map((x) => `“${x}”`).join(", ")}. Cada variável deve ficar assim: {data}.`;
+  }
   if (v.desconhecidas.length > 0) {
     return `Variável inexistente: ${v.desconhecidas.map((x) => `{${x}}`).join(", ")}. Confira a grafia.`;
   }

@@ -257,7 +257,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                       })),
                     });
                     const fileName = `cronograma-${res.clienteNome.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pdf`;
-                    await fetch("/api/whatsapp/send", {
+                    const envio = await fetch("/api/whatsapp/send", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -270,6 +270,10 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                         }],
                       }),
                     });
+                    if (!envio.ok) {
+                      const d = await envio.json().catch(() => ({}));
+                      alert(`Empréstimo criado, mas o PDF não foi enviado: ${d.error || "verifique se o WhatsApp está conectado."}`);
+                    }
                   } catch (pdfErr) {
                     console.error("Erro ao enviar PDF via WhatsApp:", pdfErr);
                     // Não bloqueia o redirect — PDF é opcional
