@@ -415,3 +415,25 @@ export async function parcelasCobradasHoje(): Promise<string[]> {
     return [];
   }
 }
+
+/**
+ * Data/hora (ISO) da última cobrança enviada de cada parcela. Uma única consulta
+ * agrupada — usada para mostrar "Cobrado ontem às 14:32" na tela de cobranças.
+ */
+export async function ultimasCobrancas(parcelaIds: string[]): Promise<Map<string, string>> {
+  const mapa = new Map<string, string>();
+  if (parcelaIds.length === 0) return mapa;
+  try {
+    const grupos = await prisma.mensagemLog.groupBy({
+      by: ["parcela_id"],
+      where: { chave: { startsWith: "cobranca." }, status: "enviado", parcela_id: { in: parcelaIds } },
+      _max: { criado_em: true },
+    });
+    for (const g of grupos) {
+      if (g.parcela_id && g._max.criado_em) mapa.set(g.parcela_id, g._max.criado_em.toISOString());
+    }
+  } catch {
+    // Informação complementar: se falhar, a tela só não mostra a "última cobrança".
+  }
+  return mapa;
+}

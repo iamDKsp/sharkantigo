@@ -8,6 +8,7 @@ import {
   contextoCobranca,
   parcelasCobradasHoje,
   renderizarComTemplates,
+  ultimasCobrancas,
 } from "@/lib/mensagens/servidor";
 
 export const revalidate = 0;
@@ -109,6 +110,9 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
         data_vencimento: new Date(p.data_vencimento).toISOString(),
         status: p.status,
         mensagem,
+        // Dias corridos de atraso (horário de Brasília): >0 atrasada, 0 vence hoje, <0 faltam N dias
+        diasAtraso: Math.round((hojeUTC.getTime() - vencimentoUTC.getTime()) / 86_400_000),
+        ultimaCobranca: null as string | null,
         emprestimo: {
           id: emp.id,
           valor_emprestado: valorEmprestadoNum,
@@ -139,6 +143,11 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
       }
     }
   }
+
+  // Última cobrança de cada parcela listada (1 consulta agrupada para todas)
+  const todas = [...atrasadosOntem, ...atrasadosAnteriores, ...hojeLista, ...aVencer];
+  const ultimas = await ultimasCobrancas(todas.map((p) => p.id).filter((id) => !id.startsWith("legacy-")));
+  for (const p of todas) p.ultimaCobranca = ultimas.get(p.id) ?? null;
 
   const sortByDate = (a: any, b: any) => new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime();
   atrasadosOntem.sort(sortByDate);
