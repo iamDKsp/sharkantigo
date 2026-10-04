@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useTransition } from "react";
 import { useUrlState } from "@/hooks/useUrlState";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
-import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle } from "lucide-react";
+import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle, Layers } from "lucide-react";
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
 import { enviarMensagemManual, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
@@ -390,11 +390,284 @@ export default function EmprestimosListWrapper({
     return lista;
   }, [emprestimosProcessados, search, statusFilter, sortOption, parceiroFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(emprestimosFiltrados.length / ITEMS_PER_PAGE));
-  const paginatedEmprestimos = emprestimosFiltrados.slice(
+  // Agrupar empréstimos filtrados por cliente (a ordem do primeiro empréstimo de cada cliente é mantida)
+  const grupos = useMemo(() => {
+    const map = new Map<string, { clienteId: string; emprestimos: any[] }>();
+    emprestimosFiltrados.forEach((emp) => {
+      const g = map.get(emp.cliente.id);
+      if (g) g.emprestimos.push(emp);
+      else map.set(emp.cliente.id, { clienteId: emp.cliente.id, emprestimos: [emp] });
+    });
+    return Array.from(map.values());
+  }, [emprestimosFiltrados]);
+
+  const totalPages = Math.max(1, Math.ceil(grupos.length / ITEMS_PER_PAGE));
+  const paginatedGrupos = grupos.slice(
     (currentPageNum - 1) * ITEMS_PER_PAGE,
     currentPageNum * ITEMS_PER_PAGE
   );
+
+  // Grupos (clientes com 2+ empréstimos) expandidos
+  const [gruposAbertos, setGruposAbertos] = useState<Set<string>>(new Set());
+  const toggleGrupo = (clienteId: string) =>
+    setGruposAbertos((prev) => {
+      const next = new Set(prev);
+      if (next.has(clienteId)) next.delete(clienteId);
+      else next.add(clienteId);
+      return next;
+    });
+
+  // Card individual de um empréstimo (usado solto na lista ou como subcard dentro de um grupo)
+  const renderCard = (emp: any, sub = false) => {
+    const isQuitado = emp.statusReal === "quitado";
+    const isAtrasado = emp.estaAtrasado;
+    const isVencendo = emp.venceHoje || emp.venceEmBreve;
+    const isPausado = emp.status === "pausado";
+
+    // Accent colors for the card
+    let accentColor = "bg-emerald-500";
+    let borderColor = "border-slate-200";
+    let bgClass = "bg-white";
+    let textColor = "text-emerald-600";
+
+    if (isPausado) {
+      accentColor = "bg-yellow-400";
+      borderColor = "border-yellow-200";
+      bgClass = "bg-yellow-50/30";
+      textColor = "text-yellow-700";
+    } else if (isQuitado) {
+      accentColor = "bg-slate-300";
+      bgClass = "bg-slate-50/50";
+      textColor = "text-slate-500";
+    } else if (isAtrasado) {
+      accentColor = "bg-rose-500";
+      borderColor = "border-rose-200";
+      bgClass = "bg-white";
+      textColor = "text-rose-600";
+    } else if (isVencendo) {
+      accentColor = "bg-amber-500";
+      borderColor = "border-amber-200";
+      bgClass = "bg-amber-50/30";
+      textColor = "text-amber-600";
+    }
+
+    return (
+      <div
+        key={emp.id}
+        className={`group relative overflow-hidden rounded-2xl border ${borderColor} ${bgClass} ${sub ? "p-4" : "p-5"} shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 active:scale-[0.98] cursor-pointer`}
+      >
+        {/* Accent Line Left */}
+        <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
+
+        <Link
+          href={`/emprestimos/${emp.id}`}
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("scroll_emprestimos-list", String(window.scrollY));
+            }
+          }}
+          className="absolute inset-0 z-0"
+        />
+
+        <div className="space-y-2 z-10 pointer-events-none pl-2">
+          <div className="flex items-center space-x-3">
+            <span className="text-sm font-black text-slate-900 tracking-tight">{emp.cliente.nome}</span>
+            {isPausado ? (
+              <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <PauseCircle className="w-3 h-3" /> Pausado
+              </span>
+            ) : isQuitado ? (
+              <span className="flex items-center gap-1 bg-slate-100 text-slate-500 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <CheckCircle2 className="w-3 h-3" /> Quitado
+              </span>
+            ) : isAtrasado ? (
+              <span className="flex items-center gap-1 bg-rose-100 text-rose-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <AlertCircle className="w-3 h-3" /> Atrasado
+              </span>
+            ) : isVencendo ? (
+              <span className="flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <Clock className="w-3 h-3" /> {emp.venceHoje ? "Vence Hoje" : "A Vencer"}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                Em dia
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
+            <span className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700">
+              <Calendar className="w-3.5 h-3.5 opacity-70" />
+              Vence em {formatData(emp.data_vencimento)}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              Investido: <span className="text-slate-700">{formatBRL(emp.principal)}</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+              Juros: <span className="text-slate-700">{Number(emp.taxa_juros)}% ({formatBRL(emp.valorJuros)})</span>
+            </span>
+            {Number(emp.taxa_multa) > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                Multa: <span className="text-slate-700">{Number(emp.taxa_multa)}%</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-5 mt-2 md:mt-0 z-10 pl-2 md:pl-0 border-t md:border-t-0 border-slate-100 pt-4 md:pt-0">
+          <div className="text-left md:text-right pointer-events-none flex-1">
+            <div className="text-sm font-black text-slate-900 flex items-center md:justify-end gap-2">
+              <span className={textColor}>{formatBRL(emp.totalEstimado)}</span>
+            </div>
+            <div className="text-xs font-black uppercase tracking-widest text-slate-400 mt-0.5">
+              Total Estimado
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-2">
+            {/* Botão de Renovação Rápida (Apenas À Vista) */}
+            {!isQuitado && emp.isAVista && (
+              <button
+                onClick={(e) => openRenewModal(e, emp)}
+                title="Renovar empréstimo (+30 dias)"
+                className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer"
+              >
+                <RefreshCw className="w-5 h-5 pointer-events-none" />
+              </button>
+            )}
+
+            {/* Botão de WhatsApp */}
+            <button
+              onClick={(e) => { e.preventDefault(); openWaModal(emp); }}
+              className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer"
+            >
+              <MessageCircle className="w-5 h-5 pointer-events-none" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Card agrupado de um cliente com 2+ empréstimos. Só tem o botão de abrir os subcards;
+  // renovar e mensagem ficam disponíveis em cada subcard.
+  const renderGrupo = (grupo: { clienteId: string; emprestimos: any[] }) => {
+    const emps = grupo.emprestimos;
+    const aberto = gruposAbertos.has(grupo.clienteId);
+    const cliente = emps[0].cliente;
+
+    const qtdAtrasados = emps.filter((e) => e.estaAtrasado).length;
+    const temAtrasado = qtdAtrasados > 0;
+    const temVencendo = emps.some((e) => e.venceHoje || e.venceEmBreve);
+    const todosPausados = emps.every((e) => e.status === "pausado");
+    const todosQuitados = emps.every((e) => e.statusReal === "quitado");
+
+    let accentColor = "bg-emerald-500";
+    let borderColor = "border-slate-200";
+    let bgClass = "bg-white";
+    let textColor = "text-emerald-600";
+
+    if (temAtrasado) {
+      accentColor = "bg-rose-500"; borderColor = "border-rose-200"; textColor = "text-rose-600";
+    } else if (todosPausados) {
+      accentColor = "bg-yellow-400"; borderColor = "border-yellow-200"; bgClass = "bg-yellow-50/30"; textColor = "text-yellow-700";
+    } else if (todosQuitados) {
+      accentColor = "bg-slate-300"; bgClass = "bg-slate-50/50"; textColor = "text-slate-500";
+    } else if (temVencendo) {
+      accentColor = "bg-amber-500"; borderColor = "border-amber-200"; bgClass = "bg-amber-50/30"; textColor = "text-amber-600";
+    }
+
+    const totalGrupo = emps.reduce((acc, e) => acc + e.totalEstimado, 0);
+    const investidoGrupo = emps.reduce((acc, e) => acc + e.principal, 0);
+    const vencMaisAntigo = emps.reduce(
+      (min, e) => (new Date(e.data_vencimento).getTime() < new Date(min).getTime() ? e.data_vencimento : min),
+      emps[0].data_vencimento
+    );
+
+    return (
+      <div key={`grupo-${grupo.clienteId}`} className="space-y-2">
+        <div
+          onClick={() => toggleGrupo(grupo.clienteId)}
+          className={`group relative overflow-hidden rounded-2xl border ${borderColor} ${bgClass} p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer`}
+        >
+          <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
+
+          <div className="space-y-2 pl-2">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="text-sm font-black text-slate-900 tracking-tight">{cliente.nome}</span>
+              {temAtrasado ? (
+                <span className="flex items-center gap-1 bg-rose-100 text-rose-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  <AlertCircle className="w-3 h-3" /> {qtdAtrasados === emps.length ? "Atrasado" : `${qtdAtrasados} atrasado${qtdAtrasados !== 1 ? "s" : ""}`}
+                </span>
+              ) : todosPausados ? (
+                <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  <PauseCircle className="w-3 h-3" /> Pausado
+                </span>
+              ) : todosQuitados ? (
+                <span className="flex items-center gap-1 bg-slate-100 text-slate-500 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  <CheckCircle2 className="w-3 h-3" /> Quitado
+                </span>
+              ) : temVencendo ? (
+                <span className="flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  <Clock className="w-3 h-3" /> A Vencer
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  Em dia
+                </span>
+              )}
+              <span className="flex items-center gap-1 bg-slate-800 text-white text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <Layers className="w-3 h-3" /> {emps.length} empréstimos
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
+              <span className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700">
+                <Calendar className="w-3.5 h-3.5 opacity-70" />
+                Mais antigo vence em {formatData(vencMaisAntigo)}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                Investido: <span className="text-slate-700">{formatBRL(investidoGrupo)}</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-5 mt-2 md:mt-0 pl-2 md:pl-0 border-t md:border-t-0 border-slate-100 pt-4 md:pt-0">
+            <div className="text-left md:text-right flex-1">
+              <div className="text-sm font-black text-slate-900 flex items-center md:justify-end gap-2">
+                <span className={textColor}>{formatBRL(totalGrupo)}</span>
+              </div>
+              <div className="text-xs font-black uppercase tracking-widest text-slate-400 mt-0.5">
+                Total Estimado
+              </div>
+            </div>
+
+            {/* Único botão do card agrupado: abre/fecha os subcards */}
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleGrupo(grupo.clienteId); }}
+              title={aberto ? "Fechar empréstimos do cliente" : "Ver empréstimos do cliente"}
+              aria-expanded={aberto}
+              className={`p-3 rounded-xl transition-all shadow-sm shrink-0 active:scale-90 cursor-pointer ${
+                aberto ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-400 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${aberto ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+        </div>
+
+        {aberto && (
+          <div className="ml-4 md:ml-8 pl-3 md:pl-5 border-l-2 border-slate-200 space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+            {emps.map((emp) => renderCard(emp, true))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Contadores por categoria (usados nos badges das tabs)
   const contadores = useMemo(() => ({
@@ -569,7 +842,9 @@ export default function EmprestimosListWrapper({
       {/* Contador de resultados */}
       <div className="flex items-center justify-between px-1">
         <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-          {emprestimosFiltrados.length} empréstimo{emprestimosFiltrados.length !== 1 ? "s" : ""}
+          {emprestimosFiltrados.length === grupos.length
+            ? `${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`
+            : `${grupos.length} cliente${grupos.length !== 1 ? "s" : ""} · ${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`}
           {sortOption !== "padrao" && (
             <span className="ml-3 bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md">
               Ordenado: {sortLabels[sortOption]}
@@ -587,144 +862,16 @@ export default function EmprestimosListWrapper({
 
       {/* Lista de Cards Modernos */}
       <div className="space-y-3">
-        {paginatedEmprestimos.length === 0 ? (
+        {paginatedGrupos.length === 0 ? (
           <div className="p-16 text-center text-slate-500 bg-white rounded-3xl border border-slate-200 border-dashed">
             Nenhum empréstimo encontrado nesta visualização.
           </div>
         ) : (
-          paginatedEmprestimos.map((emp) => {
-            const isQuitado = emp.statusReal === "quitado";
-            const isAtrasado = emp.estaAtrasado;
-            const isVencendo = emp.venceHoje || emp.venceEmBreve;
-            const isPausado = emp.status === "pausado";
-            
-            // Accent colors for the card
-            let accentColor = "bg-emerald-500";
-            let borderColor = "border-slate-200";
-            let bgClass = "bg-white";
-            let textColor = "text-emerald-600";
-            
-            if (isPausado) {
-              accentColor = "bg-yellow-400";
-              borderColor = "border-yellow-200";
-              bgClass = "bg-yellow-50/30";
-              textColor = "text-yellow-700";
-            } else if (isQuitado) {
-              accentColor = "bg-slate-300";
-              bgClass = "bg-slate-50/50";
-              textColor = "text-slate-500";
-            } else if (isAtrasado) {
-              accentColor = "bg-rose-500";
-              borderColor = "border-rose-200";
-              bgClass = "bg-white";
-              textColor = "text-rose-600";
-            } else if (isVencendo) {
-              accentColor = "bg-amber-500";
-              borderColor = "border-amber-200";
-              bgClass = "bg-amber-50/30";
-              textColor = "text-amber-600";
-            }
-
-            return (
-              <div
-                key={emp.id}
-                className={`group relative overflow-hidden rounded-2xl border ${borderColor} ${bgClass} p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4 active:scale-[0.98] cursor-pointer`}
-              >
-                {/* Accent Line Left */}
-                <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
-
-                <Link
-                  href={`/emprestimos/${emp.id}`}
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      sessionStorage.setItem("scroll_emprestimos-list", String(window.scrollY));
-                    }
-                  }}
-                  className="absolute inset-0 z-0"
-                />
-
-                <div className="space-y-2 z-10 pointer-events-none pl-2">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-black text-slate-900 tracking-tight">{emp.cliente.nome}</span>
-                    {isPausado ? (
-                      <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                        <PauseCircle className="w-3 h-3" /> Pausado
-                      </span>
-                    ) : isQuitado ? (
-                      <span className="flex items-center gap-1 bg-slate-100 text-slate-500 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                        <CheckCircle2 className="w-3 h-3" /> Quitado
-                      </span>
-                    ) : isAtrasado ? (
-                      <span className="flex items-center gap-1 bg-rose-100 text-rose-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                        <AlertCircle className="w-3 h-3" /> Atrasado
-                      </span>
-                    ) : isVencendo ? (
-                      <span className="flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                        <Clock className="w-3 h-3" /> {emp.venceHoje ? "Vence Hoje" : "A Vencer"}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                        Em dia
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
-                    <span className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700">
-                      <Calendar className="w-3.5 h-3.5 opacity-70" />
-                      Vence em {formatData(emp.data_vencimento)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                      Investido: <span className="text-slate-700">{formatBRL(emp.principal)}</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                      Juros: <span className="text-slate-700">{Number(emp.taxa_juros)}% ({formatBRL(emp.valorJuros)})</span>
-                    </span>
-                    {Number(emp.taxa_multa) > 0 && (
-                      <span className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                        Multa: <span className="text-slate-700">{Number(emp.taxa_multa)}%</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-5 mt-2 md:mt-0 z-10 pl-2 md:pl-0 border-t md:border-t-0 border-slate-100 pt-4 md:pt-0">
-                  <div className="text-left md:text-right pointer-events-none flex-1">
-                    <div className="text-sm font-black text-slate-900 flex items-center md:justify-end gap-2">
-                      <span className={textColor}>{formatBRL(emp.totalEstimado)}</span>
-                    </div>
-                    <div className="text-xs font-black uppercase tracking-widest text-slate-400 mt-0.5">
-                      Total Estimado
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row items-center gap-2">
-                    {/* Botão de Renovação Rápida (Apenas À Vista) */}
-                    {!isQuitado && emp.isAVista && (
-                      <button
-                        onClick={(e) => openRenewModal(e, emp)}
-                        title="Renovar empréstimo (+30 dias)"
-                        className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer"
-                      >
-                        <RefreshCw className="w-5 h-5 pointer-events-none" />
-                      </button>
-                    )}
-
-                    {/* Botão de WhatsApp */}
-                    <button
-                      onClick={(e) => { e.preventDefault(); openWaModal(emp); }}
-                      className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer"
-                    >
-                      <MessageCircle className="w-5 h-5 pointer-events-none" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })
+          paginatedGrupos.map((grupo) =>
+            grupo.emprestimos.length === 1
+              ? renderCard(grupo.emprestimos[0])
+              : renderGrupo(grupo)
+          )
         )}
       </div>
 
