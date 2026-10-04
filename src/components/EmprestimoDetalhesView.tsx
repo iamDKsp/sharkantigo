@@ -19,6 +19,7 @@ import {
 } from "@/app/emprestimos/[id]/actions";
 import { enviarMensagemManual, legendaCronograma, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
+import { calcularJurosAtraso, descreverRegraAtraso, regraAtiva } from "@/lib/jurosAtraso";
 import { baixarCronogramaPdfCliente, obterCronogramaPdfBase64 } from "@/lib/cronogramaPdf";
 
 interface Cliente { id: string; nome: string; telefone: string; blacklist: boolean; foto_url: string | null; }
@@ -29,6 +30,7 @@ interface Emprestimo {
   data_vencimento: any; status: string; tipo_pagamento: string; frequencia: string;
   categoria: string; observacoes: string | null; cliente: Cliente; parcelas: Parcela[]; parceiro?: Parceiro | null;
   data_prevista_pagamento: string | null;
+  atraso_tipo?: string | null; atraso_valor?: number | null;
 }
 
 const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all placeholder:text-slate-400";
@@ -229,14 +231,48 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
   const tipoLabel: Record<string, string> = { a_vista: "À Vista", a_vista_juros: "À Vista + Juros", juros_compostos: "Juros Compostos", parcelado: "Parcelado", juros_mensais: "Juros Mensais" };
 
   // ── Handlers ──
+  // ── Juros de atraso (por dia) ──
+  const regraAtraso = { tipo: emprestimo.atraso_tipo, valor: emprestimo.atraso_valor };
+  const jurosDe = (p: { valor: number; data_vencimento: any }) =>
+    calcularJurosAtraso(regraAtraso, p.valor, p.data_vencimento, hojeUTC);
+
+  /**
+   * Pede a confirmação do recebimento. Se houver juros de atraso, mostra o total e deixa
+   * o usuário escolher entre cobrar ou receber só o valor da parcela (perdoar o atraso).
+   * O valor é recalculado no servidor; aqui só se decide cobrar ou não.
+   */
+  const confirmarRecebimento = (
+    descricao: string,
+    parcelas: { valor: number; data_vencimento: any }[]
+  ): { ok: boolean; cobrar: boolean } => {
+    const calcs = parcelas.map(jurosDe);
+    const juros = calcs.reduce((a, x) => a + x.juros, 0);
+    if (juros <= 0) return { ok: confirm(`Confirmar ${descricao}?`), cobrar: true };
+    const base = parcelas.reduce((a, x) => a + x.valor, 0);
+    const dias = Math.max(...calcs.map((x) => x.dias));
+    const cobrar = confirm(
+      `Confirmar ${descricao}?\n\n` +
+      `Valor: ${fmt(base)}\n` +
+      `Juros de atraso (${dias} dia${dias === 1 ? "" : "s"} · ${descreverRegraAtraso(regraAtraso)}): ${fmt(juros)}\n` +
+      `Total a receber: ${fmt(base + juros)}\n\n` +
+      `OK = cobrar com os juros de atraso\nCancelar = mais opções`
+    );
+    if (cobrar) return { ok: true, cobrar: true };
+    return { ok: confirm(`Receber SEM cobrar os juros de atraso (${fmt(base)})?`), cobrar: false };
+  };
+
   const pay = (withDelay: boolean) => {
     const acaoLabel = isAVista || !multiplas
       ? "QUITAÇÃO"
       : `recebimento da Parcela ${proximaParcelaAberta?.numero || ""}`;
-    if (!confirm(`Confirmar ${acaoLabel} como ${withDelay ? "atrasado" : "pago"}?`)) return;
+    const dec = confirmarRecebimento(
+      `${acaoLabel} como ${withDelay ? "atrasado" : "pago"}`,
+      proximaParcelaAberta ? [proximaParcelaAberta] : []
+    );
+    if (!dec.ok) return;
     startTransition(async () => {
       try {
-        const res = await payNextInstallment(emprestimo.id, withDelay);
+        const res = await payNextInstallment(emprestimo.id, withDelay, dec.cobrar);
         if (res?.whatsappEnviado) {
           alert(`Pagamento confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
@@ -250,10 +286,14 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     });
   };
   const payAll = (withDelay: boolean) => {
-    if (!confirm(`Confirmar QUITAÇÃO TOTAL como ${withDelay ? "com atraso" : "pago"}?`)) return;
+    const dec = confirmarRecebimento(
+      `QUITAÇÃO TOTAL como ${withDelay ? "com atraso" : "pago"}`,
+      emprestimo.parcelas.filter((x) => x.status === "aberto")
+    );
+    if (!dec.ok) return;
     startTransition(async () => {
       try {
-        const res = await payFullLoan(emprestimo.id, withDelay);
+        const res = await payFullLoan(emprestimo.id, withDelay, dec.cobrar);
         if (res?.whatsappEnviado) {
           alert(`Quitação confirmada com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
@@ -267,10 +307,15 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
     });
   };
   const paySpecific = (parcelaId: string, parcelaNumero: number, withDelay = false) => {
-    if (!confirm(`Confirmar recebimento da Parcela ${parcelaNumero} como ${withDelay ? "atrasada" : "paga"}?`)) return;
+    const alvo = emprestimo.parcelas.find((x) => x.id === parcelaId);
+    const dec = confirmarRecebimento(
+      `recebimento da Parcela ${parcelaNumero} como ${withDelay ? "atrasada" : "paga"}`,
+      alvo ? [alvo] : []
+    );
+    if (!dec.ok) return;
     startTransition(async () => {
       try {
-        const res = await payInstallmentById(parcelaId, withDelay);
+        const res = await payInstallmentById(parcelaId, withDelay, dec.cobrar);
         if (res?.whatsappEnviado) {
           alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
@@ -712,6 +757,17 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
 
                       <div className="flex items-center gap-2.5">
                         <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
+                        {p.status === "aberto" && (() => {
+                          const a = jurosDe(p);
+                          return a.juros > 0 ? (
+                            <span
+                              className="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 rounded-full px-2 py-0.5"
+                              title={`Juros de atraso: ${descreverRegraAtraso(regraAtraso)} × ${a.dias} dia(s)`}
+                            >
+                              + {fmt(a.juros)} · {a.dias}d
+                            </span>
+                          ) : null;
+                        })()}
                         {p.status === "aberto" && (
                           <div className="flex gap-1">
                             {isAVista ? (
@@ -778,7 +834,15 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
             {[
               { label: "Principal", value: fmt(emprestimo.valor_emprestado), color: "text-slate-900" },
               { label: "Juros", value: `${emprestimo.taxa_juros}%`, color: "text-emerald-600" },
-              { label: "Multa", value: `${emprestimo.taxa_multa}%`, color: "text-rose-500" },
+              {
+                label: "Juros atraso",
+                value: regraAtiva(regraAtraso)
+                  ? descreverRegraAtraso(regraAtraso)
+                  : emprestimo.taxa_multa > 0
+                  ? `${emprestimo.taxa_multa}% (antigo, não aplicado)`
+                  : "Não cobra",
+                color: "text-rose-500",
+              },
               { label: "Frequência", value: freqLabel[emprestimo.frequencia] || emprestimo.frequencia, color: "text-slate-900" },
             ].map(({ label, value, color }) => (
               <div key={label}>

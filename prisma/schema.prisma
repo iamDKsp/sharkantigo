@@ -57,6 +57,9 @@ model Emprestimo {
   frequencia       String    @default("mensal")
   data_inicio      DateTime  @default(now())
   juros_atraso     Decimal   @db.Decimal(5, 2) @default(0.00)
+  // Juros de atraso cobrados POR DIA: "nenhum" | "percentual_dia" (% da parcela) | "fixo_dia" (R$)
+  atraso_tipo      String    @default("nenhum")
+  atraso_valor     Float     @default(0)
   categoria        String    @default("Sem categoria")
   observacoes              String?   @db.Text
   data_prevista_pagamento  DateTime? @db.Date

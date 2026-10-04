@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Loader2, Calendar, User, Wallet, Settings, FileText, C
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import SearchableSelect from "@/components/SearchableSelect";
+import AtrasoField from "@/components/AtrasoField";
 
 interface Cliente {
   id: string;
@@ -64,8 +65,6 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
   const [dataInicio, setDataInicio] = useState("");
   const [vencimentoPrimeira, setVencimentoPrimeira] = useState("");
   const [categoria, setCategoria] = useState("Sem categoria");
-  const [cobrarAtraso, setCobrarAtraso] = useState(false);
-  const [jurosAtraso, setJurosAtraso] = useState<number>(2); // default 2%
   const [observacoes, setObservacoes] = useState("");
   const [enviarPdfWhatsapp, setEnviarPdfWhatsapp] = useState(true);
   const [vencimentoManual, setVencimentoManual] = useState(false);
@@ -657,50 +656,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             </div>
 
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
-                <div className="mb-4 sm:mb-0">
-                  <span className="block text-sm font-bold text-slate-800">
-                    Cobrar juros automáticos por atraso
-                  </span>
-                  <span className="text-sm text-slate-500 mt-1 block">
-                    Quando ativado, é acrescida uma porcentagem ao valor das parcelas em atraso.
-                  </span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={cobrarAtraso}
-                    onChange={(e) => setCobrarAtraso(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                </label>
-              </div>
-
-              {cobrarAtraso ? (
-                <div className="space-y-2 max-w-xs animate-fade-in pl-1">
-                  <label htmlFor="taxaMulta" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
-                    Juros por atraso (%) <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      id="taxaMulta"
-                      name="taxaMulta"
-                      required
-                      min="0"
-                      step="any"
-                      value={jurosAtraso}
-                      onChange={(e) => setJurosAtraso(Number(e.target.value))}
-                      placeholder="Ex: 2"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 font-semibold hover:border-emerald-400 transition-colors"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
-                  </div>
-                </div>
-              ) : (
-                <input type="hidden" name="taxaMulta" value="0" />
-              )}
+              <AtrasoField />
 
               <div className="space-y-2 pt-2">
                 <label htmlFor="observacoes" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">

@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Loader2, Calendar, User, Wallet, Settings, FileText, C
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import SearchableSelect from "@/components/SearchableSelect";
+import AtrasoField from "@/components/AtrasoField";
 
 interface Cliente  { id: string; nome: string; telefone: string; }
 interface Parceiro { id: string; nome: string; }
@@ -13,6 +14,7 @@ interface ParcelaEmp { id: string; numero: number; valor: number; data_venciment
 interface EmprestimoEditar {
   id: string; cliente_id: string; parceiro_id: string | null;
   valor_emprestado: number; taxa_juros: number; taxa_multa: number; juros_atraso: number;
+  atraso_tipo?: string | null; atraso_valor?: number | null;
   data_inicio: Date | string | null; data_vencimento: Date | string;
   tipo_pagamento: string; frequencia: string; categoria: string;
   observacoes: string | null; status: string; parcelas: ParcelaEmp[];
@@ -49,8 +51,6 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
   const [dataInicio, setDataInicio] = useState(toInputDate(emprestimo.data_inicio || emprestimo.data_vencimento));
   const [vencimentoPrimeira, setVencimentoPrimeira] = useState(() => { const ab = emprestimo.parcelas.filter(p => p.status === "aberto"); return ab.length > 0 ? toInputDate(ab[0].data_vencimento) : toInputDate(emprestimo.data_vencimento); });
   const [categoria, setCategoria] = useState(emprestimo.categoria || "Sem categoria");
-  const [cobrarAtraso, setCobrarAtraso] = useState(emprestimo.taxa_multa > 0);
-  const [jurosAtraso, setJurosAtraso] = useState<number>(emprestimo.taxa_multa || 2);
   const [observacoes, setObservacoes] = useState(emprestimo.observacoes || "");
   const [recriarParcelas, setRecriarParcelas] = useState(false);
   const parcelasPagas = emprestimo.parcelas.filter(p => !p.status.startsWith("aberto"));
@@ -236,23 +236,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
               <div><h2 className="text-base font-black text-slate-800 tracking-tight">Opções Avançadas</h2><p className="text-sm text-slate-500 mt-0.5">Juros de atraso, parcelas e anotações.</p></div>
             </div>
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
-                <div className="mb-4 sm:mb-0"><span className="block text-sm font-bold text-slate-800">Cobrar juros por atraso</span><span className="text-sm text-slate-500 mt-1 block">% acrescida nas parcelas em atraso.</span></div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                  <input type="checkbox" checked={cobrarAtraso} onChange={(e) => setCobrarAtraso(e.target.checked)} className="sr-only peer" />
-                  <div className="w-11 h-6 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500" />
-                </label>
-              </div>
-              {cobrarAtraso && (
-                <div className="space-y-2 max-w-xs pl-1">
-                  <label className="text-sm font-bold text-slate-600 uppercase tracking-wider">Juros por atraso (%)</label>
-                  <div className="relative">
-                    <input type="number" name="taxaMulta" min="0" step="any" value={jurosAtraso} onChange={(e) => setJurosAtraso(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 font-semibold hover:border-emerald-400 transition-colors" />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
-                  </div>
-                </div>
-              )}
-              {!cobrarAtraso && <input type="hidden" name="taxaMulta" value="0" />}
+              <AtrasoField tipoInicial={emprestimo.atraso_tipo} valorInicial={emprestimo.atraso_valor} />
               <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-rose-50 rounded-xl border border-rose-200">
                 <div className="mb-4 sm:mb-0">
                   <span className="block text-sm font-bold text-rose-800">Recriar parcelas em aberto</span>

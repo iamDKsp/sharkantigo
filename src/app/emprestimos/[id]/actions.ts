@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { enviarPorEvento, montarContexto, type OpcoesContexto } from "@/lib/mensagens/servidor";
 import { formatarBRL, formatarDataUTC } from "@/lib/mensagens/render";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
+import { calcularJurosAtraso, lerRegraAtraso } from "@/lib/jurosAtraso";
 
 /**
  * Dispara uma mensagem de evento (template editável). Nunca lança: falha de
@@ -31,6 +32,22 @@ async function dispararEvento(
   }
 }
 
+/** Juros de atraso de uma parcela (0 se a regra do empréstimo estiver desligada ou o cliente for perdoado). */
+function jurosDaParcela(
+  emprestimo: { atraso_tipo?: string | null; atraso_valor?: number | null } | null | undefined,
+  parcela: { valor: unknown; data_vencimento: Date },
+  hoje: Date,
+  cobrar: boolean
+) {
+  if (!cobrar || !emprestimo) return { dias: 0, juros: 0 };
+  return calcularJurosAtraso(
+    { tipo: emprestimo.atraso_tipo, valor: emprestimo.atraso_valor },
+    Number(parcela.valor),
+    parcela.data_vencimento,
+    hoje
+  );
+}
+
 /** Variante que descobre o telefone do cliente a partir do empréstimo. */
 async function dispararEventoEmprestimo(chave: string, emprestimoId: string) {
   try {
@@ -45,7 +62,7 @@ async function dispararEventoEmprestimo(chave: string, emprestimoId: string) {
 }
 
 // 1. Pagar Próxima Parcela (com ou sem atraso)
-export async function payNextInstallment(emprestimoId: string, withDelay: boolean) {
+export async function payNextInstallment(emprestimoId: string, withDelay: boolean, cobrarJurosAtraso = true) {
   const hoje = hojeEmBrasilia();
 
   // Buscar empréstimo com dados do cliente
@@ -64,13 +81,16 @@ export async function payNextInstallment(emprestimoId: string, withDelay: boolea
     throw new Error("Não há parcelas em aberto para este empréstimo.");
   }
 
+  // Juros de atraso (por dia) calculado NO SERVIDOR; o cliente só escolhe se cobra ou perdoa.
+  const atraso = jurosDaParcela(emprestimo, proximaParcela, hoje, cobrarJurosAtraso);
+
   // Atualizar a parcela para paga
   await prisma.parcela.update({
     where: { id: proximaParcela.id },
     data: {
-      status: withDelay ? "pago_com_atraso" : "pago",
+      status: withDelay || atraso.juros > 0 ? "pago_com_atraso" : "pago",
       data_pagamento: hoje,
-      valor_pago: proximaParcela.valor,
+      valor_pago: atraso.juros > 0 ? Number(proximaParcela.valor) + atraso.juros : proximaParcela.valor,
     },
   });
 
@@ -115,7 +135,7 @@ export async function payNextInstallment(emprestimoId: string, withDelay: boolea
 }
 
 // 1b. Pagar Parcela Específica (por ID da parcela)
-export async function payInstallmentById(parcelaId: string, withDelay: boolean) {
+export async function payInstallmentById(parcelaId: string, withDelay: boolean, cobrarJurosAtraso = true) {
   const hoje = hojeEmBrasilia();
 
   const parcela = await prisma.parcela.findUnique({
@@ -137,13 +157,15 @@ export async function payInstallmentById(parcelaId: string, withDelay: boolean) 
 
   const emprestimoId = parcela.emprestimo_id;
 
+  const atraso = jurosDaParcela(parcela.emprestimo, parcela, hoje, cobrarJurosAtraso);
+
   // Atualizar a parcela específica para paga
   await prisma.parcela.update({
     where: { id: parcelaId },
     data: {
-      status: withDelay ? "pago_com_atraso" : "pago",
+      status: withDelay || atraso.juros > 0 ? "pago_com_atraso" : "pago",
       data_pagamento: hoje,
-      valor_pago: parcela.valor,
+      valor_pago: atraso.juros > 0 ? Number(parcela.valor) + atraso.juros : parcela.valor,
     },
   });
 
@@ -188,11 +210,12 @@ export async function payInstallmentById(parcelaId: string, withDelay: boolean) 
 }
 
 // 2. Quitação Total (com ou sem atraso)
-export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
+export async function payFullLoan(emprestimoId: string, withDelay: boolean, cobrarJurosAtraso = true) {
   const hoje = hojeEmBrasilia();
   let clienteTelefone = "";
   let clienteNome = "";
   let totalQuitado = 0;
+  let teveJurosAtraso = false;
 
   await prisma.$transaction(async (tx) => {
     const emp = await tx.emprestimo.findUnique({
@@ -210,13 +233,16 @@ export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
     });
 
     for (const p of parcelasAbertas) {
-      totalQuitado += Number(p.valor);
+      const atraso = jurosDaParcela(emp, p, hoje, cobrarJurosAtraso);
+      if (atraso.juros > 0) teveJurosAtraso = true;
+      const valorPago = Number(p.valor) + atraso.juros;
+      totalQuitado += valorPago;
       await tx.parcela.update({
         where: { id: p.id },
         data: {
-          status: withDelay ? "pago_com_atraso" : "pago",
+          status: withDelay || atraso.juros > 0 ? "pago_com_atraso" : "pago",
           data_pagamento: hoje,
-          valor_pago: p.valor,
+          valor_pago: atraso.juros > 0 ? valorPago : p.valor,
         },
       });
     }
@@ -225,7 +251,7 @@ export async function payFullLoan(emprestimoId: string, withDelay: boolean) {
     await tx.emprestimo.update({
       where: { id: emprestimoId },
       data: {
-        status: withDelay ? "quitado_com_atraso" : "quitado",
+        status: withDelay || teveJurosAtraso ? "quitado_com_atraso" : "quitado",
       },
     });
   });
@@ -600,7 +626,8 @@ export async function updateEmprestimo(emprestimoId: string, formData: FormData)
   const tipoPagamento    = formData.get("tipoPagamento") as string;
   const frequencia       = formData.get("frequencia") as string;
   const taxaJuros        = Number(formData.get("taxaJuros")) || 0;
-  const taxaMulta        = Number(formData.get("taxaMulta")) || 0;
+  const regraAtraso      = lerRegraAtraso(formData);
+  const taxaMulta        = regraAtraso.taxaMulta;
   const dataInicioStr    = formData.get("dataInicio") as string;
   const dataVencimentoStr= formData.get("dataVencimento") as string;
   const categoria        = formData.get("categoria") as string;
@@ -623,6 +650,8 @@ export async function updateEmprestimo(emprestimoId: string, formData: FormData)
         taxa_juros:       taxaJuros,
         taxa_multa:       taxaMulta,
         juros_atraso:     taxaMulta,
+        atraso_tipo:      regraAtraso.tipo,
+        atraso_valor:     regraAtraso.valor,
         data_inicio:      new Date(dataInicioStr),
         data_vencimento:  new Date(dataVencimentoStr),
         tipo_pagamento:   tipoPagamento,

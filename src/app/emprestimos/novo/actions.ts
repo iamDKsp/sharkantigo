@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { montarContexto, renderizarEvento } from "@/lib/mensagens/servidor";
+import { lerRegraAtraso } from "@/lib/jurosAtraso";
 
 interface ParcelaInput {
   numero: number;
@@ -17,7 +18,8 @@ export async function createEmprestimo(formData: FormData) {
   const tipoPagamento = formData.get("tipoPagamento") as string;
   const frequencia = formData.get("frequencia") as string;
   const taxaJuros = Number(formData.get("taxaJuros")) || 0;
-  const taxaMulta = Number(formData.get("taxaMulta")) || 0;
+  const regraAtraso = lerRegraAtraso(formData);
+  const taxaMulta = regraAtraso.taxaMulta;
   const dataInicioStr = formData.get("dataInicio") as string;
   const dataVencimentoStr = formData.get("dataVencimento") as string;
   const categoria = formData.get("categoria") as string;
@@ -68,6 +70,8 @@ export async function createEmprestimo(formData: FormData) {
         frequencia: frequencia,
         data_inicio: new Date(dataInicioStr),
         juros_atraso: taxaMulta,
+        atraso_tipo: regraAtraso.tipo,
+        atraso_valor: regraAtraso.valor,
         categoria: categoria || "Sem categoria",
         observacoes: observacoes || null,
       },
