@@ -210,7 +210,7 @@ export async function payInstallmentById(parcelaId: string, withDelay: boolean, 
 }
 
 // 2. Quitação Total (com ou sem atraso)
-export async function payFullLoan(emprestimoId: string, withDelay: boolean, cobrarJurosAtraso = true) {
+export async function payFullLoan(emprestimoId: string, withDelay: boolean, cobrarJurosAtraso = true, enviarWhatsapp = true) {
   const hoje = hojeEmBrasilia();
   let clienteTelefone = "";
   let clienteNome = "";
@@ -257,11 +257,13 @@ export async function payFullLoan(emprestimoId: string, withDelay: boolean, cobr
   });
 
   // Disparar mensagem de confirmação de quitação no WhatsApp (template editável)
-  const wa = await dispararEvento(
-    "pagamento.quitacao",
-    { emprestimoId, extra: { valor: formatarBRL(totalQuitado) } },
-    clienteTelefone
-  );
+  const wa = enviarWhatsapp
+    ? await dispararEvento(
+        "pagamento.quitacao",
+        { emprestimoId, extra: { valor: formatarBRL(totalQuitado) } },
+        clienteTelefone
+      )
+    : { whatsappEnviado: false as boolean, whatsappErro: undefined as string | undefined, whatsappTexto: undefined as string | undefined, whatsappIgnorado: undefined as boolean | undefined };
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
@@ -389,7 +391,8 @@ export async function reprogramarEmprestimo(
   novaDataVencimento: string,
   principalExtra: number,
   taxaJuros: number,
-  frequencia: string
+  frequencia: string,
+  enviarWhatsapp = true
 ) {
   if (!novaDataVencimento) {
     throw new Error("A data de vencimento é obrigatória.");
@@ -480,7 +483,9 @@ export async function reprogramarEmprestimo(
   });
 
   // Mensagem opcional (desligada por padrão; ativável em Configurações → Mensagens)
-  const wa = await dispararEventoEmprestimo("reprogramacao.confirmada", emprestimoId);
+  const wa = enviarWhatsapp
+    ? await dispararEventoEmprestimo("reprogramacao.confirmada", emprestimoId)
+    : { whatsappEnviado: false };
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
@@ -513,7 +518,7 @@ export async function deleteLoan(id: string) {
 }
 
 // 7. Receber só os juros (Renovar +30d)
-export async function receberSoJurosEmprestimo(emprestimoId: string) {
+export async function receberSoJurosEmprestimo(emprestimoId: string, enviarWhatsapp = true) {
   const hoje = hojeEmBrasilia();
   let clienteTelefone = "";
   let clienteNome = "";
@@ -596,17 +601,19 @@ export async function receberSoJurosEmprestimo(emprestimoId: string) {
   });
 
   // Disparar mensagem automática no WhatsApp do cliente após a renovação (template editável)
-  const wa = await dispararEvento(
-    "renovacao.confirmada",
-    {
-      emprestimoId,
-      extra: {
-        valor: formatarBRL(valorJurosPago),
-        ...(novoVencimentoRenovacao ? { novo_vencimento: formatarDataUTC(novoVencimentoRenovacao) } : {}),
-      },
-    },
-    clienteTelefone
-  );
+  const wa = enviarWhatsapp
+    ? await dispararEvento(
+        "renovacao.confirmada",
+        {
+          emprestimoId,
+          extra: {
+            valor: formatarBRL(valorJurosPago),
+            ...(novoVencimentoRenovacao ? { novo_vencimento: formatarDataUTC(novoVencimentoRenovacao) } : {}),
+          },
+        },
+        clienteTelefone
+      )
+    : { whatsappEnviado: false as boolean, whatsappErro: undefined as string | undefined, whatsappTexto: undefined as string | undefined, whatsappIgnorado: undefined as boolean | undefined };
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");

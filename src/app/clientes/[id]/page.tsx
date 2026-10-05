@@ -12,12 +12,12 @@ import {
   AlertCircle,
   TrendingUp,
   CheckCircle2,
-  Plus,
   Wallet
 } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import DeleteClientButton from "@/components/DeleteClientButton";
 import DocumentosLightbox from "@/components/DocumentosLightbox";
+import EmprestimosClienteCard, { type EmprestimoClienteItem } from "@/components/EmprestimosClienteCard";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 interface PageProps {
@@ -337,80 +337,31 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
       })()}
 
       {/* Empréstimos da Pessoa */}
-      <div className="premium-card overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="font-bold text-slate-900">Empréstimos</h2>
-          <Link
-            href={`/emprestimos/novo?clienteId=${cliente.id}`}
-            className="flex items-center space-x-1 bg-emerald-50 text-emerald-700 p-2 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Criar Empréstimo</span>
-          </Link>
-        </div>
+      <EmprestimosClienteCard
+        clienteId={cliente.id}
+        emprestimos={cliente.emprestimos.map((emp) => {
+          const principal = Number(emp.valor_emprestado);
+          const juros = Number(emp.taxa_juros);
 
-        <div className="divide-y divide-slate-100">
-          {cliente.emprestimos.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">
-              Nenhum empréstimo cadastrado para esta pessoa.
-            </div>
-          ) : (
-            cliente.emprestimos.map((emp) => {
-              const principal = Number(emp.valor_emprestado);
-              const juros = Number(emp.taxa_juros);
-              const totalComJuros = principal * (1 + juros / 100);
+          const vencObj = new Date(emp.data_vencimento);
+          const vencimentoUTC = new Date(Date.UTC(vencObj.getUTCFullYear(), vencObj.getUTCMonth(), vencObj.getUTCDate()));
 
-              const vencObj = new Date(emp.data_vencimento);
-              const vencimentoUTC = new Date(Date.UTC(vencObj.getUTCFullYear(), vencObj.getUTCMonth(), vencObj.getUTCDate()));
+          const quitado = emp.status.startsWith("quitado");
+          const venceHoje = emp.status === "ativo" && vencimentoUTC.getTime() === hojeUTC.getTime();
+          const estaAtrasado = emp.status === "ativo" && vencimentoUTC < hojeUTC;
 
-              const venceHoje = emp.status === "ativo" && vencimentoUTC.getTime() === hojeUTC.getTime();
-              const estaAtrasado = emp.status === "ativo" && vencimentoUTC < hojeUTC;
-
-              return (
-                <Link 
-                  key={emp.id} 
-                  href={`/emprestimos/${emp.id}`}
-                  className="p-4 flex items-center justify-between hover:bg-slate-50/60 transition-colors"
-                >
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-bold text-slate-900">
-                        Vencimento: {formatData(emp.data_vencimento)}
-                      </span>
-                      {emp.status === "quitado" ? (
-                        <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
-                          Quitado
-                        </span>
-                      ) : estaAtrasado ? (
-                        <span className="bg-rose-100 text-rose-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
-                          Atrasado
-                        </span>
-                      ) : venceHoje ? (
-                        <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
-                          Vencendo Hoje
-                        </span>
-                      ) : (
-                        <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
-                          Em dia
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                      Taxa de juros: {juros}% ({formatBRL(principal * (juros / 100))}) | Multa: {Number(emp.taxa_multa)}%
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-slate-900">
-                      {formatBRL(principal)} → <span className="text-emerald-600">{formatBRL(totalComJuros)}</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })
-          )}
-        </div>
-      </div>
+          return {
+            id: emp.id,
+            vencimento: formatData(emp.data_vencimento),
+            situacao: quitado ? "quitado" : estaAtrasado ? "atrasado" : venceHoje ? "hoje" : "em_dia",
+            principal,
+            total: principal * (1 + juros / 100),
+            valorJuros: principal * (juros / 100),
+            taxaJuros: juros,
+            taxaMulta: Number(emp.taxa_multa),
+          } satisfies EmprestimoClienteItem;
+        })}
+      />
 
       {/* Cheques da Pessoa */}
       <div className="premium-card overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl">
