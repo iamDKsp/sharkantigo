@@ -63,5 +63,15 @@ export default async function EmprestimoDetalhesPage({ params }: PageProps) {
       : null,
   };
 
-  return <EmprestimoDetalhesView emprestimo={serializedEmprestimo as any} />;
+  const configSistema = await prisma.configuracao.findUnique({
+    where: { chave: "perguntar_whatsapp_renovacao" }
+  });
+  const perguntarWhatsappRenovacao = configSistema?.valor === "true";
+
+  return (
+    <EmprestimoDetalhesView 
+      emprestimo={serializedEmprestimo as any} 
+      perguntarWhatsappRenovacao={perguntarWhatsappRenovacao}
+    />
+  );
 }

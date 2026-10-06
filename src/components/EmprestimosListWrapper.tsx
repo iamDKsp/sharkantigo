@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useTransition } from "react";
 import { useUrlState } from "@/hooks/useUrlState";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
-import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle, Layers } from "lucide-react";
+import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle, Layers, TrendingUp } from "lucide-react";
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
 import { enviarMensagemManual, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
@@ -42,29 +42,62 @@ interface Emprestimo {
 
 interface EmprestimosListWrapperProps {
   initialEmprestimos: any[];
-  initialFiltro?:   string;
-  initialSearch?:   string;
-  initialParceiro?: string;
-  initialSort?:     string;
-  initialPagina?:   number;
+  initialFiltro?:      string;
+  initialSearch?:      string;
+  initialParceiro?:    string;
+  initialSort?:        string;
+  initialPagina?:      number;
+  initialDiasAtraso?:  string;
 }
 
 type StatusFilter = "todos" | "ativos" | "atrasados" | "ontem" | "quitados" | "hoje" | "pausados";
-type SortOption = "padrao" | "maior_valor" | "menor_valor" | "mais_proximo" | "mais_distante";
+type SortOption = 
+  | "padrao" 
+  | "alfabetica_az"
+  | "alfabetica_za"
+  | "maior_valor" 
+  | "menor_valor" 
+  | "mais_proximo" 
+  | "mais_distante"
+  | "maior_juros"
+  | "menor_juros"
+  | "mais_atrasados";
 
 const sortLabels: Record<SortOption, string> = {
   padrao: "Padrão",
+  alfabetica_az: "Ordem Alfabética (A-Z)",
+  alfabetica_za: "Ordem Alfabética (Z-A)",
   maior_valor: "Maior Valor",
   menor_valor: "Menor Valor",
   mais_proximo: "Vence Antes",
   mais_distante: "Vence Depois",
+  maior_juros: "Maior Taxa de Juros",
+  menor_juros: "Menor Taxa de Juros",
+  mais_atrasados: "Mais Dias de Atraso",
 };
 
 function resolveSort(sort?: string): SortOption {
-  if (sort === "maior_valor" || sort === "menor_valor" || sort === "mais_proximo" || sort === "mais_distante") {
+  if (
+    sort === "alfabetica_az" ||
+    sort === "alfabetica_za" ||
+    sort === "maior_valor" ||
+    sort === "menor_valor" ||
+    sort === "mais_proximo" ||
+    sort === "mais_distante" ||
+    sort === "maior_juros" ||
+    sort === "menor_juros" ||
+    sort === "mais_atrasados"
+  ) {
     return sort;
   }
   return "padrao";
+}
+
+function resolveDiasAtraso(val?: string): string {
+  if (val === "5" || val === "10" || val === "15" || val === "30") {
+    return val;
+  }
+  return "0";
 }
 
 function resolveStatus(filtro: string): StatusFilter {
@@ -80,30 +113,53 @@ function resolveStatus(filtro: string): StatusFilter {
 
 export default function EmprestimosListWrapper({
   initialEmprestimos,
-  initialFiltro   = "ativos",
-  initialSearch   = "",
-  initialParceiro = "todos",
-  initialSort     = "padrao",
-  initialPagina   = 1,
+  initialFiltro     = "ativos",
+  initialSearch     = "",
+  initialParceiro   = "todos",
+  initialSort       = "padrao",
+  initialPagina     = 1,
+  initialDiasAtraso = "0",
 }: EmprestimosListWrapperProps) {
   // ── Scroll restoration ──
   useScrollRestoration("emprestimos-list");
 
   // ── Estado persistido na URL ──
-  const [search, setSearch]               = useUrlState("q",       initialSearch,   "");
-  const [statusFilter, setStatusFilter]   = useUrlState<StatusFilter>("status", resolveStatus(initialFiltro), "ativos", resolveStatus);
-  const [parceiroFilter, setParceiroFilter] = useUrlState("parceiro", initialParceiro, "todos");
-  const [sortOption, setSortOption]       = useUrlState<SortOption>("sort", resolveSort(initialSort), "padrao", resolveSort);
-  const [currentPage, setCurrentPage]     = useUrlState("pagina",  String(initialPagina), "1");
-
-
-
+  const [search, setSearch]                 = useUrlState("q",           initialSearch,   "");
+  const [statusFilter, setStatusFilter]     = useUrlState<StatusFilter>("status", resolveStatus(initialFiltro), "ativos", resolveStatus);
+  const [parceiroFilter, setParceiroFilter] = useUrlState("parceiro",    initialParceiro, "todos");
+  const [sortOption, setSortOption]         = useUrlState<SortOption>("sort", resolveSort(initialSort), "padrao", resolveSort);
+  const [currentPage, setCurrentPage]       = useUrlState("pagina",      String(initialPagina), "1");
+  const [diasAtraso, setDiasAtraso]         = useUrlState("dias_atraso", resolveDiasAtraso(initialDiasAtraso), "0", resolveDiasAtraso);
 
   // Helper para mudar filtros e resetar página
   const setStatusAndReset   = (v: StatusFilter) => { setStatusFilter(v);   setCurrentPage("1"); };
   const setParceiroAndReset = (v: string)       => { setParceiroFilter(v); setCurrentPage("1"); };
   const setSortAndReset     = (v: SortOption)   => { setSortOption(v);     setCurrentPage("1"); };
   const setSearchAndReset   = (v: string)       => { setSearch(v);         setCurrentPage("1"); };
+
+  // Handler para cliques nas tabs de status (com ciclo especial para atrasados: 0 -> 5 -> 10 -> 15 -> 30 -> 0)
+  const handleTabClick = (tabId: StatusFilter) => {
+    if (tabId === "atrasados") {
+      if (statusFilter !== "atrasados") {
+        setStatusFilter("atrasados");
+        setDiasAtraso("0");
+        setCurrentPage("1");
+      } else {
+        const cur = parseInt(diasAtraso, 10) || 0;
+        let next = "0";
+        if (cur === 0) next = "5";
+        else if (cur === 5) next = "10";
+        else if (cur === 10) next = "15";
+        else if (cur === 15) next = "30";
+        else next = "0";
+        setDiasAtraso(next);
+        setCurrentPage("1");
+      }
+    } else {
+      setStatusAndReset(tabId);
+      if (diasAtraso !== "0") setDiasAtraso("0");
+    }
+  };
 
   const currentPageNum = parseInt(currentPage, 10) || 1;
   const ITEMS_PER_PAGE = 10;
@@ -279,6 +335,27 @@ export default function EmprestimosListWrapper({
         }
       }
 
+      // Cálculo dos dias de atraso (para filtro cíclico >5d, >10d, >15d, >30d)
+      let diasAtrasado = 0;
+      if (emp.parcelas && emp.parcelas.length > 0) {
+        const parcelasAtrasadas = emp.parcelas.filter((p: any) => {
+          if (p.status !== "aberto") return false;
+          const vObj = new Date(p.data_vencimento);
+          const vUTC = new Date(Date.UTC(vObj.getUTCFullYear(), vObj.getUTCMonth(), vObj.getUTCDate()));
+          return vUTC < hojeUTC;
+        });
+        if (parcelasAtrasadas.length > 0) {
+          const diffs = parcelasAtrasadas.map((p: any) => {
+            const vObj = new Date(p.data_vencimento);
+            const vUTC = new Date(Date.UTC(vObj.getUTCFullYear(), vObj.getUTCMonth(), vObj.getUTCDate()));
+            return Math.floor((hojeUTC.getTime() - vUTC.getTime()) / (1000 * 3600 * 24));
+          });
+          diasAtrasado = Math.max(0, ...diffs);
+        }
+      } else if (emp.status === "ativo" && dataVencimentoObjUTC < hojeUTC) {
+        diasAtrasado = Math.max(0, Math.floor((hojeUTC.getTime() - dataVencimentoObjUTC.getTime()) / (1000 * 3600 * 24)));
+      }
+
       // Próxima parcela aberta
       let proxVencimentoUTC: Date | null = null;
       if (emp.parcelas && emp.parcelas.length > 0) {
@@ -319,6 +396,7 @@ export default function EmprestimosListWrapper({
         totalEstimado,
         statusReal,
         estaAtrasado: temAtrasada,
+        diasAtrasado,
         estaAtrasadoOntem: temAtrasadaOntem,
         venceHoje,
         venceEmBreve,
@@ -343,7 +421,11 @@ export default function EmprestimosListWrapper({
       if (!bateTexto) return false;
 
       if (statusFilter === "ativos" && (emp.statusReal !== "ativo" || emp.estaAtrasado || emp.status === "pausado")) return false;
-      if (statusFilter === "atrasados" && !emp.estaAtrasado) return false;
+      if (statusFilter === "atrasados") {
+        if (!emp.estaAtrasado) return false;
+        const minDias = parseInt(diasAtraso, 10) || 0;
+        if (minDias > 0 && emp.diasAtrasado <= minDias) return false;
+      }
       if (statusFilter === "ontem" && !emp.estaAtrasadoOntem) return false;
       if (statusFilter === "quitados" && emp.statusReal !== "quitado") return false;
       if (statusFilter === "hoje" && !emp.venceHoje) return false;
@@ -363,6 +445,16 @@ export default function EmprestimosListWrapper({
 
     // Ordenação
     switch (sortOption) {
+      case "alfabetica_az":
+        lista = [...lista].sort((a, b) =>
+          a.cliente.nome.localeCompare(b.cliente.nome, "pt-BR", { sensitivity: "base" })
+        );
+        break;
+      case "alfabetica_za":
+        lista = [...lista].sort((a, b) =>
+          b.cliente.nome.localeCompare(a.cliente.nome, "pt-BR", { sensitivity: "base" })
+        );
+        break;
       case "maior_valor":
         lista = [...lista].sort((a, b) => b.totalEstimado - a.totalEstimado);
         break;
@@ -383,12 +475,21 @@ export default function EmprestimosListWrapper({
           return tb - ta;
         });
         break;
+      case "maior_juros":
+        lista = [...lista].sort((a, b) => (Number(b.taxa_juros) || 0) - (Number(a.taxa_juros) || 0));
+        break;
+      case "menor_juros":
+        lista = [...lista].sort((a, b) => (Number(a.taxa_juros) || 0) - (Number(b.taxa_juros) || 0));
+        break;
+      case "mais_atrasados":
+        lista = [...lista].sort((a, b) => b.diasAtrasado - a.diasAtrasado);
+        break;
       default:
         break;
     }
 
     return lista;
-  }, [emprestimosProcessados, search, statusFilter, sortOption, parceiroFilter]);
+  }, [emprestimosProcessados, search, statusFilter, sortOption, parceiroFilter, diasAtraso]);
 
   // Agrupar empréstimos filtrados por cliente (a ordem do primeiro empréstimo de cada cliente é mantida)
   const grupos = useMemo(() => {
@@ -671,13 +772,17 @@ export default function EmprestimosListWrapper({
 
   // Contadores por categoria (usados nos badges das tabs)
   const contadores = useMemo(() => ({
-    todos:     emprestimosProcessados.length,
-    ativos:    emprestimosProcessados.filter(e => e.statusReal === "ativo" && !e.estaAtrasado && e.status !== "pausado").length,
-    atrasados: emprestimosProcessados.filter(e => e.estaAtrasado).length,
-    ontem:     emprestimosProcessados.filter(e => e.estaAtrasadoOntem).length,
-    hoje:      emprestimosProcessados.filter(e => e.venceHoje).length,
-    quitados:  emprestimosProcessados.filter(e => e.statusReal === "quitado").length,
-    pausados:  emprestimosProcessados.filter(e => e.status === "pausado").length,
+    todos:        emprestimosProcessados.length,
+    ativos:       emprestimosProcessados.filter(e => e.statusReal === "ativo" && !e.estaAtrasado && e.status !== "pausado").length,
+    atrasados:    emprestimosProcessados.filter(e => e.estaAtrasado).length,
+    atrasados_5:  emprestimosProcessados.filter(e => e.estaAtrasado && e.diasAtrasado > 5).length,
+    atrasados_10: emprestimosProcessados.filter(e => e.estaAtrasado && e.diasAtrasado > 10).length,
+    atrasados_15: emprestimosProcessados.filter(e => e.estaAtrasado && e.diasAtrasado > 15).length,
+    atrasados_30: emprestimosProcessados.filter(e => e.estaAtrasado && e.diasAtrasado > 30).length,
+    ontem:        emprestimosProcessados.filter(e => e.estaAtrasadoOntem).length,
+    hoje:         emprestimosProcessados.filter(e => e.venceHoje).length,
+    quitados:     emprestimosProcessados.filter(e => e.statusReal === "quitado").length,
+    pausados:     emprestimosProcessados.filter(e => e.status === "pausado").length,
   }), [emprestimosProcessados]);
 
   return (
@@ -719,10 +824,15 @@ export default function EmprestimosListWrapper({
               {(Object.entries(sortLabels) as [SortOption, string][]).map(([key, label]) => {
                 const icons: Record<SortOption, React.ReactNode> = {
                   padrao: <ArrowUpDown className="w-4 h-4" />,
+                  alfabetica_az: <ArrowDownUp className="w-4 h-4 text-emerald-500" />,
+                  alfabetica_za: <ArrowUpDown className="w-4 h-4 text-emerald-500" />,
                   maior_valor: <ArrowDownUp className="w-4 h-4" />,
                   menor_valor: <ArrowUpDown className="w-4 h-4" />,
                   mais_proximo: <Clock className="w-4 h-4" />,
                   mais_distante: <Calendar className="w-4 h-4" />,
+                  maior_juros: <TrendingUp className="w-4 h-4 text-amber-500" />,
+                  menor_juros: <TrendingUp className="w-4 h-4 text-slate-400 rotate-180" />,
+                  mais_atrasados: <AlertCircle className="w-4 h-4 text-rose-500" />,
                 };
                 const isActive = sortOption === key;
                 return (
@@ -792,24 +902,36 @@ export default function EmprestimosListWrapper({
         </div>
       </div>
 
-      {/* Filtros de Status — grade 3 colunas mobile, 7 em sm+ */}
+      {/* Filtros de Status — grade 4 colunas mobile, 7 em sm+ */}
       <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
         {([
           { id: "todos"     as StatusFilter, label: "Todos",      sublabel: "Empréstimos",  color: "slate"   },
           { id: "ativos"    as StatusFilter, label: "Ativos",     sublabel: "Em dia",        color: "emerald" },
-          { id: "atrasados" as StatusFilter, label: "Atrasados",  sublabel: "Todos",          color: "rose"    },
+          { 
+            id: "atrasados" as StatusFilter, 
+            label: "Atrasados",  
+            sublabel: statusFilter === "atrasados" && diasAtraso !== "0"
+              ? `> ${diasAtraso} dias`
+              : statusFilter === "atrasados"
+                ? "Todos (+5d)"
+                : "Todos",          
+            color: "rose"    
+          },
           { id: "ontem"     as StatusFilter, label: "Ontem",      sublabel: "Atrasados",     color: "orange"  },
           { id: "hoje"      as StatusFilter, label: "Hoje",       sublabel: "Vencem",         color: "amber"   },
           { id: "quitados"  as StatusFilter, label: "Quitados",   sublabel: "Pagos",          color: "blue"    },
           { id: "pausados"  as StatusFilter, label: "Pausados",   sublabel: "Acordos",        color: "yellow"  },
         ] as const).map((tab) => {
           const isSelected = statusFilter === tab.id;
-          const count = contadores[tab.id];
+          const count = tab.id === "atrasados" && diasAtraso !== "0"
+            ? ((contadores as any)[`atrasados_${diasAtraso}`] ?? contadores.atrasados)
+            : contadores[tab.id as keyof typeof contadores];
           return (
             <button
               key={tab.id}
-              onClick={() => setStatusAndReset(tab.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              onClick={() => handleTabClick(tab.id)}
+              title={tab.id === "atrasados" ? "Clique repetidamente para alternar: Todos -> >5d -> >10d -> >15d -> >30d" : undefined}
+              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
                 isSelected
                   ? tab.color === "emerald" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
                   : tab.color === "rose"    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
@@ -832,21 +954,64 @@ export default function EmprestimosListWrapper({
                 "text-slate-600"
               }` }>{count}</span>
               <span className="font-extrabold text-[11px] leading-tight uppercase tracking-wide">{tab.label}</span>
-              <span className="text-[9px] leading-tight opacity-60">{tab.sublabel}</span>
+              <span className="text-[9px] leading-tight opacity-75">{tab.sublabel}</span>
             </button>
           );
         })}
       </div>
 
+      {/* Subfiltros de Atraso Cíclico (>5d, >10d, >15d, >30d) */}
+      {statusFilter === "atrasados" && (
+        <div className="flex flex-wrap items-center gap-2 p-2.5 bg-rose-50/80 border border-rose-200 rounded-2xl text-xs animate-in fade-in duration-150">
+          <span className="text-rose-800 font-extrabold flex items-center gap-1.5 pl-1">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+            Filtro de Atraso:
+          </span>
+          {([
+            { val: "0", label: "Todos Atrasados" },
+            { val: "5", label: "> 5 dias" },
+            { val: "10", label: "> 10 dias" },
+            { val: "15", label: "> 15 dias" },
+            { val: "30", label: "> 30 dias" },
+          ] as const).map((opt) => {
+            const isCurrent = diasAtraso === opt.val;
+            const countOpt = opt.val === "0" ? contadores.atrasados : (contadores as any)[`atrasados_${opt.val}`];
+            return (
+              <button
+                key={opt.val}
+                type="button"
+                onClick={() => { setDiasAtraso(opt.val); setCurrentPage("1"); }}
+                className={`px-3 py-1 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                  isCurrent
+                    ? "bg-rose-600 text-white shadow-sm font-black"
+                    : "bg-white text-rose-700 hover:bg-rose-100 border border-rose-200"
+                }`}
+              >
+                {opt.label} ({countOpt})
+              </button>
+            );
+          })}
+          <span className="ml-auto text-[11px] text-rose-500 font-semibold hidden md:inline">
+            Clique no botão &quot;Atrasados&quot; para avançar no ciclo (+5d, +10d, +15d, +30d)
+          </span>
+        </div>
+      )}
 
       {/* Contador de resultados */}
       <div className="flex items-center justify-between px-1">
-        <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-          {emprestimosFiltrados.length === grupos.length
-            ? `${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`
-            : `${grupos.length} cliente${grupos.length !== 1 ? "s" : ""} · ${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`}
+        <div className="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center flex-wrap gap-2">
+          <span>
+            {emprestimosFiltrados.length === grupos.length
+              ? `${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`
+              : `${grupos.length} cliente${grupos.length !== 1 ? "s" : ""} · ${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`}
+          </span>
+          {statusFilter === "atrasados" && diasAtraso !== "0" && (
+            <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md font-black">
+              Atrasados &gt; {diasAtraso} dias
+            </span>
+          )}
           {sortOption !== "padrao" && (
-            <span className="ml-3 bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md">
+            <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md">
               Ordenado: {sortLabels[sortOption]}
             </span>
           )}

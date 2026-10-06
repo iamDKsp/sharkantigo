@@ -54,10 +54,16 @@ function Modal({ onClose, title, subtitle, children }: { onClose: () => void; ti
   );
 }
 
-export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emprestimo }) {
+export default function EmprestimoDetalhesView({ 
+  emprestimo,
+  perguntarWhatsappRenovacao = false 
+}: { 
+  emprestimo: Emprestimo;
+  perguntarWhatsappRenovacao?: boolean;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [modal, setModal] = useState<null | "renegociar" | "reprogramar" | "delete" | "wa">(null);
+  const [modal, setModal] = useState<null | "renegociar" | "reprogramar" | "delete" | "wa" | "renovar_juros">(null);
 
   // ── Data Prevista de Pagamento ──
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -356,19 +362,28 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
 
 
   const receiveJuros = () => {
+    if (perguntarWhatsappRenovacao) {
+      setModal("renovar_juros");
+      return;
+    }
     if (!confirm("Confirmar recebimento de APENAS os juros e renovar o principal para +30 dias?")) return;
+    executarRenovacao(false);
+  };
+
+  const executarRenovacao = (enviarWhatsapp: boolean) => {
+    setModal(null);
     startTransition(async () => {
       try {
-        const res = await receberSoJurosEmprestimo(emprestimo.id);
+        const res = await receberSoJurosEmprestimo(emprestimo.id, enviarWhatsapp);
         if (res?.whatsappEnviado) {
           alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
-        } else if (res?.whatsappErro) {
+        } else if (res?.whatsappErro && enviarWhatsapp) {
           alert(`Empréstimo renovado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
         } else {
           alert("Empréstimo renovado com sucesso!");
         }
       } catch (err: any) {
-        alert(err.message);
+        alert(err.message || "Erro ao renovar empréstimo.");
       }
     });
   };
@@ -1125,6 +1140,57 @@ export default function EmprestimoDetalhesView({ emprestimo }: { emprestimo: Emp
             <button onClick={() => { setModal(null); excluir(); }} disabled={isPending} className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
               {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Excluir Definitivamente
             </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── MODAL: Confirmar Renovação de Juros (com escolha de WhatsApp) ── */}
+      {modal === "renovar_juros" && (
+        <Modal 
+          onClose={() => setModal(null)} 
+          title="Renovar Apenas Juros (+30d)" 
+          subtitle={`Cliente: ${emprestimo.cliente.nome}`}
+        >
+          <div className="space-y-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5">
+              <p className="text-xs text-emerald-800 leading-relaxed font-medium">
+                Dar baixa no recebimento dos juros da parcela e prorrogar o contrato por mais 30 dias.
+              </p>
+              <p className="text-[11px] text-emerald-700 font-bold mt-2">
+                Deseja disparar mensagem de comprovante via WhatsApp?
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <button 
+                type="button"
+                onClick={() => executarRenovacao(true)} 
+                disabled={isPending} 
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
+                Renovar e Enviar WhatsApp
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => executarRenovacao(false)} 
+                disabled={isPending} 
+                className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-900 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                Apenas Renovar (Não Enviar WhatsApp)
+              </button>
+
+              <button 
+                type="button"
+                onClick={() => setModal(null)} 
+                disabled={isPending}
+                className="w-full py-2 text-slate-500 hover:text-slate-700 text-xs font-bold transition-colors cursor-pointer text-center mt-1"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </Modal>
       )}

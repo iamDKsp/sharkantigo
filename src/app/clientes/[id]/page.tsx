@@ -18,6 +18,7 @@ import { revalidatePath } from "next/cache";
 import DeleteClientButton from "@/components/DeleteClientButton";
 import DocumentosLightbox from "@/components/DocumentosLightbox";
 import EmprestimosClienteCard, { type EmprestimoClienteItem } from "@/components/EmprestimosClienteCard";
+import ValorTotalDividaCard, { type EmprestimoItemWizard } from "@/components/ValorTotalDividaCard";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 interface PageProps {
@@ -68,10 +69,20 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
   let totalRecebido = 0;
   let totalAReceber = 0;
   let totalAtrasado = 0;
-  let lucroCheques = 0;
-
   let countAbertos = 0;
   let countAtrasados = 0;
+  let lucroCheques = 0;
+  let valorTotalDivida = 0;
+  const emprestimosAtivosWizard: EmprestimoItemWizard[] = [];
+
+  const formatData = (date: Date) => {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(date));
+  };
 
   cliente.emprestimos.forEach((emp) => {
     const principal = Number(emp.valor_emprestado);
@@ -88,6 +99,14 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
     } else if (emp.status === "ativo") {
       totalEmprestadoAtivo += principal;
       totalAReceber += totalComJuros;
+      valorTotalDivida += totalComJuros;
+      emprestimosAtivosWizard.push({
+        id: emp.id,
+        data_vencimento: formatData(emp.data_vencimento),
+        principal,
+        taxa_juros: juros,
+        totalComJuros,
+      });
       countAbertos++;
       
       if (estaAtrasado) {
@@ -109,15 +128,6 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
       style: "currency",
       currency: "BRL",
     }).format(val);
-  };
-
-  const formatData = (date: Date) => {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "UTC",
-    }).format(new Date(date));
   };
 
   // Iniciais para o avatar
@@ -192,7 +202,16 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
       <div className="space-y-4">
         <h2 className="text-base font-bold text-slate-900">Resumo financeiro</h2>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          {/* Valor Total da Dívida (com Mini Wizard ao Clicar) */}
+          <ValorTotalDividaCard
+            valorTotalDivida={valorTotalDivida}
+            totalEmprestadoAtivo={totalEmprestadoAtivo}
+            totalAReceber={totalAReceber}
+            emprestimosAtivos={emprestimosAtivosWizard}
+            clienteNome={cliente.nome}
+          />
+
           {/* Emprestado (Ativo) */}
           <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
             <div className="flex items-center space-x-2 text-slate-400">
@@ -238,7 +257,7 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
           </div>
 
           {/* Lucro Cheques */}
-          <div className="premium-card p-4 bg-white border border-emerald-200 bg-emerald-50/40 shadow-sm rounded-2xl sm:col-span-2 md:col-span-4">
+          <div className="premium-card p-4 bg-white border border-emerald-200 bg-emerald-50/40 shadow-sm rounded-2xl col-span-2 md:col-span-3 lg:col-span-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-emerald-700">
                 <Wallet className="w-5 h-5" />

@@ -472,12 +472,29 @@ export async function reprogramarEmprestimo(
       });
     }
 
+    // Verificar se devemos preservar o dia-base original
+    const cfg = await tx.configuracao.findUnique({
+      where: { chave: "preservar_dia_base_reprogramacao" },
+    });
+    const empAtual = await tx.emprestimo.findUnique({ where: { id: emprestimoId } });
+    let novasObservacoes = empAtual?.observacoes || undefined;
+    if (cfg?.valor === "true" && empAtual) {
+      const jaTemDiaBase = empAtual.observacoes && /\[DIA_BASE:\s*\d+\]/i.test(empAtual.observacoes);
+      if (!jaTemDiaBase) {
+        const diaBaseOriginal = new Date(empAtual.data_vencimento).getUTCDate();
+        novasObservacoes = empAtual.observacoes
+          ? `${empAtual.observacoes}\n[DIA_BASE: ${diaBaseOriginal}]`
+          : `[DIA_BASE: ${diaBaseOriginal}]`;
+      }
+    }
+
     // 4. Atualizar o vencimento e frequência do empréstimo pai
     await tx.emprestimo.update({
       where: { id: emprestimoId },
       data: {
         data_vencimento: finalDueDate,
         frequencia: frequencia,
+        ...(novasObservacoes ? { observacoes: novasObservacoes } : {}),
       },
     });
   });
@@ -566,9 +583,51 @@ export async function receberSoJurosEmprestimo(emprestimoId: string, enviarWhats
     });
 
     // 5. Cria uma NOVA parcela com o valor integral original (Principal + Juros)
-    // O vencimento será +1 mês em relação à parcela atual.
-    const novoVencimento = new Date(parcelaAtual.data_vencimento);
-    novoVencimento.setUTCMonth(novoVencimento.getUTCMonth() + 1);
+    let novoVencimento = new Date(parcelaAtual.data_vencimento);
+
+    // Verificar se deve preservar o dia base original
+    const cfgBase = await tx.configuracao.findUnique({
+      where: { chave: "preservar_dia_base_reprogramacao" },
+    });
+
+    if (cfgBase?.valor === "true") {
+      let diaBase: number | null = null;
+      if (emprestimo.observacoes) {
+        const match = emprestimo.observacoes.match(/\[DIA_BASE:\s*(\d+)\]/i);
+        if (match) diaBase = parseInt(match[1], 10);
+        else {
+          const matchCobrador = emprestimo.observacoes.match(/dia\s*0?(\d+)/i);
+          if (matchCobrador) diaBase = parseInt(matchCobrador[1], 10);
+        }
+      }
+      if (!diaBase) {
+        const primeiraParcela = await tx.parcela.findFirst({
+          where: { emprestimo_id: emprestimoId },
+          orderBy: { numero: "asc" },
+        });
+        if (primeiraParcela) {
+          diaBase = new Date(primeiraParcela.data_vencimento).getUTCDate();
+        }
+      }
+
+      if (diaBase && diaBase >= 1 && diaBase <= 31) {
+        const currentYear = parcelaAtual.data_vencimento.getUTCFullYear();
+        const currentMonth = parcelaAtual.data_vencimento.getUTCMonth();
+        let nextYear = currentYear;
+        let nextMonth = currentMonth + 1;
+        if (nextMonth > 11) {
+          nextMonth = 0;
+          nextYear += 1;
+        }
+        const diasNoMes = new Date(Date.UTC(nextYear, nextMonth + 1, 0)).getUTCDate();
+        const finalDay = Math.min(diaBase, diasNoMes);
+        novoVencimento = new Date(Date.UTC(nextYear, nextMonth, finalDay));
+      } else {
+        novoVencimento.setUTCMonth(novoVencimento.getUTCMonth() + 1);
+      }
+    } else {
+      novoVencimento.setUTCMonth(novoVencimento.getUTCMonth() + 1);
+    }
 
     // Identificar o número da nova parcela
     const ultimaParcela = await tx.parcela.findFirst({

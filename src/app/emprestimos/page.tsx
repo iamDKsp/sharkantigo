@@ -16,15 +16,17 @@ export default async function EmprestimosPage({
     parceiro?: string;
     sort?:     string;
     pagina?:   string;
+    dias_atraso?: string;
   }>;
 }) {
   const params = await searchParams;
   // ?status= tem prioridade sobre o legado ?filtro=
-  const statusInicial  = params?.status   ?? params?.filtro ?? "ativos";
-  const searchInicial  = params?.q        ?? "";
-  const parceiroInicial= params?.parceiro ?? "todos";
-  const sortInicial    = params?.sort     ?? "padrao";
-  const paginaInicial  = parseInt(params?.pagina ?? "1", 10) || 1;
+  const statusInicial      = params?.status      ?? params?.filtro ?? "ativos";
+  const searchInicial      = params?.q           ?? "";
+  const parceiroInicial    = params?.parceiro    ?? "todos";
+  const sortInicial        = params?.sort        ?? "padrao";
+  const paginaInicial      = parseInt(params?.pagina ?? "1", 10) || 1;
+  const diasAtrasoInicial  = params?.dias_atraso ?? "0";
   // Buscar todos os empréstimos de uma só vez para possibilitar busca instantânea no client-side.
   // select explícito exclui foto_url e documentos_urls do cliente, que não são usados pela listagem.
   const emprestimos = await prisma.emprestimo.findMany({
@@ -121,6 +123,7 @@ export default async function EmprestimosPage({
         initialParceiro={parceiroInicial}
         initialSort={sortInicial}
         initialPagina={paginaInicial}
+        initialDiasAtraso={diasAtrasoInicial}
       />
     </div>
   );
