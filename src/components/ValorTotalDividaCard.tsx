@@ -5,12 +5,6 @@ import {
   Receipt, 
   HelpCircle, 
   X, 
-  ChevronRight, 
-  Info, 
-  Calculator, 
-  CheckCircle2, 
-  TrendingUp, 
-  HandCoins,
   ArrowRight
 } from "lucide-react";
 
@@ -38,7 +32,6 @@ export default function ValorTotalDividaCard({
   clienteNome,
 }: Props) {
   const [modalAberto, setModalAberto] = useState(false);
-  const [etapa, setEtapa] = useState<1 | 2>(1);
 
   const formatBRL = (val: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -49,268 +42,163 @@ export default function ValorTotalDividaCard({
 
   return (
     <>
-      {/* Card Clicável com Efeito Hover e Indicação de Wizard */}
+      {/* Card no Resumo Financeiro — em harmonia com os outros cards da grade */}
       <div
-        onClick={() => {
-          setEtapa(1);
-          setModalAberto(true);
-        }}
+        onClick={() => setModalAberto(true)}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            setEtapa(1);
             setModalAberto(true);
           }
         }}
-        className="premium-card p-4 bg-white border border-indigo-200 hover:border-indigo-400 bg-gradient-to-br from-white to-indigo-50/30 shadow-sm hover:shadow-md rounded-2xl transition-all duration-200 cursor-pointer group relative overflow-hidden"
-        title="Clique para ver o mini wizard com a explicação detalhada de cada número"
+        className="premium-card p-4 bg-white border border-slate-200 hover:border-slate-300 shadow-sm rounded-2xl transition-all duration-200 cursor-pointer group flex flex-col justify-between"
+        title="Clique para ver os detalhes da Dívida Total"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-indigo-600">
-            <Receipt className="w-4.5 h-4.5" />
-            <span className="text-xs font-bold uppercase tracking-wider">
-              Valor total da dívida
+        <div>
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center space-x-2 text-slate-500 min-w-0">
+              <Receipt className="w-4.5 h-4.5 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-wider truncate">
+                Dívida Total
+              </span>
+            </div>
+            <span 
+              className="w-5 h-5 rounded-full bg-slate-100 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors flex items-center justify-center shrink-0"
+              title="Ver detalhes"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
             </span>
           </div>
-          <span className="text-[10px] font-bold text-indigo-600 bg-indigo-100/70 group-hover:bg-indigo-600 group-hover:text-white px-2 py-0.5 rounded-full transition-colors flex items-center gap-1">
-            <HelpCircle className="w-3 h-3" />
-            Explicar
-          </span>
+
+          <div className="text-lg font-bold text-slate-900 mt-2">
+            {formatBRL(valorTotalDivida)}
+          </div>
         </div>
 
-        <div className="text-lg font-black text-slate-900 mt-2 tracking-tight group-hover:text-indigo-900 transition-colors">
-          {formatBRL(valorTotalDivida)}
-        </div>
-
-        <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1 font-medium">
-          <span>{emprestimosAtivos.length} contrato{emprestimosAtivos.length !== 1 ? "s" : ""} ativo{emprestimosAtivos.length !== 1 ? "s" : ""}</span>
-          <span>•</span>
-          <span className="text-indigo-600 font-semibold group-hover:underline">Toque para ver a conta</span>
+        <div className="text-[10px] text-slate-400 group-hover:text-emerald-600 font-semibold mt-1 flex items-center gap-1 transition-colors truncate">
+          <span>Ver detalhes</span>
+          <ArrowRight className="w-2.5 h-2.5 shrink-0" />
         </div>
       </div>
 
-      {/* Modal Mini Wizard Explicativo */}
+      {/* Modal Limpo e Harmonizado com o Sistema */}
       {modalAberto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div 
+          onClick={() => setModalAberto(false)}
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+        >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200"
+            className="bg-white border border-slate-200 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
           >
-            {/* Header do Wizard */}
-            <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-5 text-white flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white">
-                  <Calculator className="w-5 h-5" />
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/70">
+              <div className="flex items-center space-x-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-emerald-600 shadow-xs shrink-0">
+                  <Receipt className="w-5 h-5" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-base leading-tight">
-                    Mini Wizard: Valor Total da Dívida
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base text-slate-900 leading-tight">
+                    Dívida Total Contratada
                   </h3>
-                  <p className="text-xs text-indigo-100">
-                    {clienteNome} · Entenda como esse valor é formado
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    {clienteNome} · Empréstimos Ativos
                   </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setModalAberto(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer shrink-0 ml-2"
+                title="Fechar"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Navegação entre etapas do Wizard */}
-            <div className="flex border-b border-slate-100 bg-slate-50/70 text-xs font-bold text-slate-500">
-              <button
-                onClick={() => setEtapa(1)}
-                className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer ${
-                  etapa === 1
-                    ? "border-indigo-600 text-indigo-700 bg-white"
-                    : "border-transparent hover:text-slate-900"
-                }`}
-              >
-                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] flex items-center justify-center font-black">
-                  1
+            {/* Conteúdo */}
+            <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-600 leading-relaxed font-medium">
+                Este valor representa a soma contratual (capital + juros) de todos os empréstimos ativos deste cliente.
+              </div>
+
+              {/* Lista dos Contratos Ativos */}
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block px-0.5">
+                  Contratos Ativos ({emprestimosAtivos.length})
                 </span>
-                <span>Contratos Ativos</span>
-              </button>
-              <button
-                onClick={() => setEtapa(2)}
-                className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 border-b-2 transition-all cursor-pointer ${
-                  etapa === 2
-                    ? "border-indigo-600 text-indigo-700 bg-white"
-                    : "border-transparent hover:text-slate-900"
-                }`}
-              >
-                <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] flex items-center justify-center font-black">
-                  2
-                </span>
-                <span>Por Que Não Diminui?</span>
-              </button>
+
+                {emprestimosAtivos.length === 0 ? (
+                  <div className="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    Nenhum empréstimo ativo no momento.
+                  </div>
+                ) : (
+                  emprestimosAtivos.map((emp, idx) => (
+                    <div
+                      key={emp.id || idx}
+                      className="p-3.5 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-xs"
+                    >
+                      <div className="space-y-0.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-bold text-slate-900">
+                            Empréstimo #{idx + 1}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            Venc: {emp.data_vencimento}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          {formatBRL(emp.principal)} com {emp.taxa_juros}% de juros
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                          Total
+                        </span>
+                        <span className="text-sm font-black text-slate-900">
+                          {formatBRL(emp.totalComJuros)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Resumo Consolidado */}
+              <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2.5 shadow-md">
+                <div className="flex items-center justify-between text-xs text-slate-300">
+                  <span>Capital puro emprestado:</span>
+                  <span className="font-semibold text-white">{formatBRL(totalEmprestadoAtivo)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-300">
+                  <span>Juros totais contratados:</span>
+                  <span className="font-semibold text-white">
+                    {formatBRL(Math.max(0, valorTotalDivida - totalEmprestadoAtivo))}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                    Dívida Total:
+                  </span>
+                  <span className="text-lg font-black text-emerald-400">
+                    {formatBRL(valorTotalDivida)}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* Conteúdo da Etapa 1: Discriminação de cada número */}
-            {etapa === 1 && (
-              <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
-                <div className="p-3 bg-indigo-50/60 border border-indigo-100 rounded-2xl flex items-start space-x-2.5">
-                  <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-                  <p className="text-xs text-indigo-900 leading-relaxed">
-                    O <strong>Valor Total da Dívida</strong> é a soma exata do <strong>Capital Emprestado + Juros contratados</strong> de todos os empréstimos ativos.
-                  </p>
-                </div>
-
-                <div className="space-y-2.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Discriminação dos Contratos Ativos ({emprestimosAtivos.length})
-                  </span>
-
-                  {emprestimosAtivos.length === 0 ? (
-                    <div className="text-center py-6 text-sm text-slate-400">
-                      Nenhum empréstimo ativo no momento.
-                    </div>
-                  ) : (
-                    emprestimosAtivos.map((emp, idx) => (
-                      <div
-                        key={emp.id || idx}
-                        className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between"
-                      >
-                        <div className="space-y-0.5">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs font-black text-slate-800">
-                              Contrato #{idx + 1}
-                            </span>
-                            <span className="text-[10px] font-semibold text-slate-400">
-                              Venc: {emp.data_vencimento}
-                            </span>
-                          </div>
-                          <div className="text-xs text-slate-500 font-medium">
-                            {formatBRL(emp.principal)} + {emp.taxa_juros}% de juros
-                          </div>
-                        </div>
-
-                        <div className="text-right">
-                          <span className="text-xs text-slate-400 block font-semibold text-[10px] uppercase">
-                            Total com Juros
-                          </span>
-                          <span className="text-sm font-black text-indigo-600">
-                            {formatBRL(emp.totalComJuros)}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Totalizador Consolidado */}
-                <div className="p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between shadow-md">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
-                      Soma Total da Dívida Contratada
-                    </span>
-                    <span className="text-xs text-slate-300">
-                      Total de todos os empréstimos ativos
-                    </span>
-                  </div>
-                  <div className="text-xl font-black text-emerald-400">
-                    {formatBRL(valorTotalDivida)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Conteúdo da Etapa 2: Explicação didática e comparativo */}
-            {etapa === 2 && (
-              <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
-                <div className="space-y-3 text-xs leading-relaxed text-slate-600">
-                  <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start space-x-3 text-amber-900">
-                    <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-xs">Por que este número permanece fixo?</p>
-                      <p className="text-xs text-amber-800 mt-1">
-                        Para evitar que o cliente compare o <strong>Total Recebido</strong> (que inclui contratos antigos quitados no passado) com o valor emprestado atual e peça descontos indevidos.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                      Comparativo dos 3 Indicadores:
-                    </span>
-
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <div className="flex items-center space-x-2">
-                        <HandCoins className="w-4 h-4 text-slate-500" />
-                        <span className="font-semibold text-slate-700">Emprestado (Ativo):</span>
-                      </div>
-                      <span className="font-bold text-slate-900">{formatBRL(totalEmprestadoAtivo)}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 -mt-1 pl-6">
-                      Apenas o capital puro que saiu do seu bolso.
-                    </p>
-
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 pt-1">
-                      <div className="flex items-center space-x-2 text-indigo-700">
-                        <Receipt className="w-4 h-4 text-indigo-600" />
-                        <span className="font-bold">Valor Total da Dívida:</span>
-                      </div>
-                      <span className="font-black text-indigo-700">{formatBRL(valorTotalDivida)}</span>
-                    </div>
-                    <p className="text-[11px] text-indigo-600 -mt-1 pl-6 font-medium">
-                      O montante total contratado com juros. Não muda com pagamentos de juros ou amortizações.
-                    </p>
-
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="w-4 h-4 text-emerald-600" />
-                        <span className="font-semibold text-slate-700">A Receber (Saldo Devedor):</span>
-                      </div>
-                      <span className="font-bold text-slate-900">{formatBRL(totalAReceber)}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 -mt-1 pl-6">
-                      O que ainda falta quitar hoje (este sim diminui conforme o cliente paga parcelas).
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Footer do Wizard com Ações */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              {etapa === 1 ? (
-                <>
-                  <button
-                    onClick={() => setModalAberto(false)}
-                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-                  >
-                    Fechar
-                  </button>
-                  <button
-                    onClick={() => setEtapa(2)}
-                    className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
-                  >
-                    <span>Próximo Passo</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => setEtapa(1)}
-                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    onClick={() => setModalAberto(false)}
-                    className="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm flex items-center space-x-1.5 cursor-pointer"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Entendi</span>
-                  </button>
-                </>
-              )}
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/70 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setModalAberto(false)}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer w-full sm:w-auto shadow-sm"
+              >
+                Entendi
+              </button>
             </div>
           </div>
         </div>

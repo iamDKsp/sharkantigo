@@ -213,9 +213,9 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
           />
 
           {/* Emprestado (Ativo) */}
-          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl flex flex-col justify-between">
             <div className="flex items-center space-x-2 text-slate-400">
-              <HandCoins className="w-4.5 h-4.5" />
+              <HandCoins className="w-4.5 h-4.5 shrink-0" />
               <span className="text-xs font-bold uppercase tracking-wider">Emprestado (ativo)</span>
             </div>
             <div className="text-lg font-bold text-slate-900 mt-2">
@@ -224,9 +224,9 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
           </div>
 
           {/* Total Recebido */}
-          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl flex flex-col justify-between">
             <div className="flex items-center space-x-2 text-emerald-500">
-              <CheckCircle2 className="w-4.5 h-4.5" />
+              <CheckCircle2 className="w-4.5 h-4.5 shrink-0" />
               <span className="text-xs font-bold uppercase tracking-wider">Total recebido</span>
             </div>
             <div className="text-lg font-bold text-emerald-600 mt-2">
@@ -235,9 +235,9 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
           </div>
 
           {/* A receber */}
-          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl flex flex-col justify-between">
             <div className="flex items-center space-x-2 text-slate-400">
-              <TrendingUp className="w-4.5 h-4.5" />
+              <TrendingUp className="w-4.5 h-4.5 shrink-0" />
               <span className="text-xs font-bold uppercase tracking-wider">A receber</span>
             </div>
             <div className="text-lg font-bold text-slate-900 mt-2">
@@ -246,9 +246,9 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
           </div>
 
           {/* Total Atrasado */}
-          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="premium-card p-4 bg-white border border-slate-200 shadow-sm rounded-2xl flex flex-col justify-between">
             <div className="flex items-center space-x-2 text-rose-500">
-              <AlertCircle className="w-4.5 h-4.5" />
+              <AlertCircle className="w-4.5 h-4.5 shrink-0" />
               <span className="text-xs font-bold uppercase tracking-wider">Total Atrasado</span>
             </div>
             <div className="text-lg font-bold text-rose-600 mt-2">
