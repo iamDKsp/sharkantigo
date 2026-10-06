@@ -35,20 +35,36 @@ interface Emprestimo {
 
 const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all placeholder:text-slate-400";
 
-function Modal({ onClose, title, subtitle, children }: { onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
+function Modal({ 
+  onClose, 
+  title, 
+  subtitle, 
+  maxWidth = "max-w-sm",
+  children 
+}: { 
+  onClose: () => void; 
+  title: string; 
+  subtitle?: string; 
+  maxWidth?: string;
+  children: React.ReactNode 
+}) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm shadow-2xl">
-        <div className="flex items-start justify-between p-5 border-b border-slate-100">
-          <div>
-            <h3 className="font-black text-sm text-slate-900">{title}</h3>
-            {subtitle && <p className="text-sm text-slate-400 mt-0.5">{subtitle}</p>}
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+      <div className={`bg-white border border-slate-200 rounded-3xl w-full ${maxWidth} shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150`}>
+        <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50">
+          <div className="min-w-0 pr-2">
+            <h3 className="font-black text-sm sm:text-base text-slate-900 tracking-tight">{title}</h3>
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5 truncate">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors ml-4 flex-shrink-0 cursor-pointer">
-            <X className="w-3.5 h-3.5 text-slate-500" />
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 cursor-pointer shadow-sm"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="p-5 space-y-4">{children}</div>
+        <div className="p-5 sm:p-6 space-y-4">{children}</div>
       </div>
     </div>
   );
@@ -64,6 +80,14 @@ export default function EmprestimoDetalhesView({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [modal, setModal] = useState<null | "renegociar" | "reprogramar" | "delete" | "wa" | "renovar_juros">(null);
+  const [renovEnviarWa, setRenovEnviarWa] = useState(true);
+  const [renovFeedback, setRenovFeedback] = useState<{
+    sucesso: boolean;
+    erro?: string;
+    whatsappEnviado?: boolean;
+    whatsappErro?: string;
+    whatsappTexto?: string;
+  } | null>(null);
 
   // ── Data Prevista de Pagamento ──
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -362,28 +386,27 @@ export default function EmprestimoDetalhesView({
 
 
   const receiveJuros = () => {
-    if (perguntarWhatsappRenovacao) {
-      setModal("renovar_juros");
-      return;
-    }
-    if (!confirm("Confirmar recebimento de APENAS os juros e renovar o principal para +30 dias?")) return;
-    executarRenovacao(true);
+    setRenovFeedback(null);
+    setRenovEnviarWa(true);
+    setModal("renovar_juros");
   };
 
   const executarRenovacao = (enviarWhatsapp: boolean) => {
-    setModal(null);
+    setRenovFeedback(null);
     startTransition(async () => {
       try {
         const res = await receberSoJurosEmprestimo(emprestimo.id, enviarWhatsapp);
-        if (res?.whatsappEnviado) {
-          alert(`Empréstimo renovado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
-        } else if (res?.whatsappErro && enviarWhatsapp) {
-          alert(`Empréstimo renovado com sucesso!\n(Aviso: não foi possível enviar WhatsApp: ${res.whatsappErro})`);
-        } else {
-          alert("Empréstimo renovado com sucesso!");
-        }
+        setRenovFeedback({
+          sucesso: true,
+          whatsappEnviado: res?.whatsappEnviado,
+          whatsappErro: res?.whatsappErro,
+          whatsappTexto: res?.whatsappTexto,
+        });
       } catch (err: any) {
-        alert(err.message || "Erro ao renovar empréstimo.");
+        setRenovFeedback({
+          sucesso: false,
+          erro: err?.message || "Erro ao renovar empréstimo.",
+        });
       }
     });
   };
@@ -1147,51 +1170,186 @@ export default function EmprestimoDetalhesView({
       {/* ── MODAL: Confirmar Renovação de Juros (com escolha de WhatsApp) ── */}
       {modal === "renovar_juros" && (
         <Modal 
-          onClose={() => setModal(null)} 
-          title="Renovar Apenas Juros (+30d)" 
+          onClose={() => {
+            if (isPending) return;
+            setModal(null);
+            setRenovFeedback(null);
+          }} 
+          title={renovFeedback ? (renovFeedback.sucesso ? "Renovação Concluída" : "Aviso na Renovação") : "Renovar Empréstimo (+30 dias)"} 
           subtitle={`Cliente: ${emprestimo.cliente.nome}`}
+          maxWidth="max-w-md"
         >
-          <div className="space-y-4">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5">
-              <p className="text-xs text-emerald-800 leading-relaxed font-medium">
-                Dar baixa no recebimento dos juros da parcela e prorrogar o contrato por mais 30 dias.
+          {renovFeedback ? (
+            renovFeedback.sucesso ? (
+              <div className="space-y-4 py-1 text-center">
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <div>
+                  <h4 className="text-base font-black text-slate-900 tracking-tight">Empréstimo Renovado!</h4>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    O recebimento dos juros de <strong className="text-emerald-700">{fmt(valorJurosCalculado)}</strong> foi confirmado e o vencimento foi estendido por mais 30 dias.
+                  </p>
+                </div>
+
+                {renovFeedback.whatsappEnviado && (
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 text-left text-xs space-y-2 shadow-sm">
+                    <div className="flex items-center gap-1.5 font-black text-emerald-800">
+                      <MessageSquare className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Comprovante enviado no WhatsApp:</span>
+                    </div>
+                    {renovFeedback.whatsappTexto && (
+                      <p className="text-[11px] font-mono text-emerald-950 bg-white/80 p-3 rounded-xl border border-emerald-200/60 whitespace-pre-wrap leading-relaxed break-words max-h-40 overflow-y-auto">
+                        "{renovFeedback.whatsappTexto}"
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {renovFeedback.whatsappErro && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-left text-xs text-amber-900 flex items-start gap-2.5 shadow-sm">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="font-black text-amber-800">Renovado no sistema, mas WhatsApp não entregou:</span>
+                      <p className="text-[11px] text-amber-700 leading-relaxed">{renovFeedback.whatsappErro}</p>
+                    </div>
+                  </div>
+                )}
+
+                {!renovFeedback.whatsappEnviado && !renovFeedback.whatsappErro && (
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs text-slate-600 font-medium">
+                    Operação registrada no sistema com sucesso (sem envio de mensagem).
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModal(null);
+                    setRenovFeedback(null);
+                  }}
+                  className="btn-press w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-md shadow-emerald-600/20 active:scale-[0.98] cursor-pointer"
+                >
+                  Concluir
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 py-1 text-center">
+                <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+                  <AlertCircle className="w-8 h-8" />
+                </div>
+                <div>
+                  <h4 className="text-base font-black text-slate-900">Não foi possível renovar</h4>
+                  <p className="text-xs text-rose-600 mt-1 font-medium">{renovFeedback.erro}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModal(null);
+                      setRenovFeedback(null);
+                    }}
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                  >
+                    Fechar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRenovFeedback(null)}
+                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-sm"
+                  >
+                    Tentar Novamente
+                  </button>
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="space-y-4">
+              {/* Card financeiro de resumo */}
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60">
+                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Juros a Receber Hoje</span>
+                  <span className="text-base font-black text-emerald-600 tabular-nums">{fmt(valorJurosCalculado)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60">
+                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Principal Mantido</span>
+                  <span className="text-xs font-bold text-slate-700 tabular-nums">{fmt(emprestimo.valor_emprestado)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Novo Vencimento</span>
+                  <span className="inline-flex items-center gap-1 font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full text-[10px]">
+                    <CalendarClock className="w-3 h-3" /> +30 dias
+                  </span>
+                </div>
+              </div>
+
+              {/* Informação */}
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Dar baixa no recebimento dos juros (<strong className="text-slate-700 font-bold">{fmt(valorJurosCalculado)}</strong>) e estender o vencimento do contrato por mais 30 dias.
               </p>
-              <p className="text-[11px] text-emerald-700 font-bold mt-2">
-                Deseja disparar mensagem de comprovante via WhatsApp?
-              </p>
+
+              {/* Opção WhatsApp com card interativo e responsivo */}
+              <button
+                type="button"
+                onClick={() => setRenovEnviarWa(!renovEnviarWa)}
+                className={`w-full p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                  renovEnviarWa
+                    ? "bg-emerald-50/80 border-emerald-300 text-emerald-950 shadow-sm"
+                    : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`p-2.5 rounded-xl shrink-0 transition-colors ${renovEnviarWa ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-200 text-slate-500"}`}>
+                    <MessageSquare className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black truncate">Enviar comprovante via WhatsApp</p>
+                    <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                      Para: {emprestimo.cliente.nome} {emprestimo.cliente.telefone ? `(${emprestimo.cliente.telefone})` : ""}
+                    </p>
+                  </div>
+                </div>
+                <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${
+                  renovEnviarWa
+                    ? "bg-emerald-600 border-emerald-600 text-white"
+                    : "bg-white border-slate-300"
+                }`}>
+                  {renovEnviarWa && <CheckCircle2 className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+
+              {/* Botões de Ação */}
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => executarRenovacao(renovEnviarWa)}
+                  disabled={isPending}
+                  className="btn-press w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Processando renovação...</span>
+                    </>
+                  ) : (
+                    <>
+                      {renovEnviarWa ? <MessageSquare className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                      <span>{renovEnviarWa ? "Confirmar Renovação e Enviar WhatsApp" : "Confirmar Renovação no Sistema"}</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setModal(null)}
+                  disabled={isPending}
+                  className="w-full py-2 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors cursor-pointer text-center"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
-
-            <div className="flex flex-col gap-2">
-              <button 
-                type="button"
-                onClick={() => executarRenovacao(true)} 
-                disabled={isPending} 
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
-              >
-                {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
-                Renovar e Enviar WhatsApp
-              </button>
-
-              <button 
-                type="button"
-                onClick={() => executarRenovacao(false)} 
-                disabled={isPending} 
-                className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-900 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50"
-              >
-                {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                Apenas Renovar (Não Enviar WhatsApp)
-              </button>
-
-              <button 
-                type="button"
-                onClick={() => setModal(null)} 
-                disabled={isPending}
-                className="w-full py-2 text-slate-500 hover:text-slate-700 text-xs font-bold transition-colors cursor-pointer text-center mt-1"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+          )}
         </Modal>
       )}
 
