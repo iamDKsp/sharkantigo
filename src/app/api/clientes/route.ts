@@ -6,6 +6,27 @@ import { NextResponse } from "next/server";
 const norm = (s: string) =>
   (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
+let unaccentChecked = false;
+let unaccentAvailable = false;
+
+async function checkUnaccentSupport(): Promise<boolean> {
+  if (unaccentChecked) return unaccentAvailable;
+  try {
+    // Tenta habilitar a extensão nativa do Postgres automaticamente se ainda não estiver ativa
+    await prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS unaccent;`);
+    unaccentAvailable = true;
+  } catch {
+    try {
+      await prisma.$queryRawUnsafe(`SELECT unaccent('teste');`);
+      unaccentAvailable = true;
+    } catch {
+      unaccentAvailable = false;
+    }
+  }
+  unaccentChecked = true;
+  return unaccentAvailable;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query") || "";
@@ -31,11 +52,11 @@ export async function GET(request: Request) {
       });
     }
 
-    // Com busca: divide em palavras e faz AND de ILIKE para cada uma.
-    // Ex: "Viviane Costa" → nome ILIKE '%Viviane%' AND nome ILIKE '%Costa%'
-    // Garante que buscas com nome + sobrenome funcionem corretamente.
-    try {
-      // Normaliza espaços múltiplos e divide em palavras não-vazias
+    const hasUnaccent = await checkUnaccentSupport();
+
+    if (hasUnaccent) {
+      try {
+        // Normaliza espaços múltiplos e divide em palavras não-vazias
       const words = query.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
 
       if (words.length === 0) throw new Error("empty");
@@ -78,11 +99,15 @@ export async function GET(request: Request) {
         totalCount,
         hasMore: offset + clientesRaw.length < totalCount,
       });
-    } catch {
-      // Fallback JS: quando unaccent não está disponível no Postgres
-      // Divide a query em palavras e exige que todas apareçam no nome normalizado
-      const q = norm(query);
-      const words = q.replace(/\s+/g, " ").split(" ").filter(Boolean);
+    } catch (err) {
+      console.warn("[clientes] Falha na query SQL com unaccent, usando fallback:", err);
+    }
+  }
+
+  // Fallback JS: quando unaccent não está disponível no Postgres
+  // Divide a query em palavras e exige que todas apareçam no nome normalizado
+  const q = norm(query);
+  const words = q.replace(/\s+/g, " ").split(" ").filter(Boolean);
 
       const todos = await prisma.cliente.findMany({
         orderBy: { nome: "asc" },
@@ -108,7 +133,6 @@ export async function GET(request: Request) {
         totalCount,
         hasMore: offset + paginados.length < totalCount,
       });
-    }
   } catch (error) {
     console.error("Erro na busca de clientes:", error);
     return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });

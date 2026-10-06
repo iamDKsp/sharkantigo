@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require("@whiskeysockets/baileys");
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore } = require("@whiskeysockets/baileys");
 const http = require("http");
 const QRCode = require("qrcode");
 const path = require("path");
@@ -48,7 +48,10 @@ async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
 
   sock = makeWASocket({
-    auth: state,
+    auth: {
+      creds: state.creds,
+      keys: makeCacheableSignalKeyStore(state.keys),
+    },
     printQRInTerminal: false,
     defaultQueryTimeoutMs: undefined,
   });
@@ -102,6 +105,52 @@ async function connectToWhatsApp() {
   });
 
   sock.ev.on("creds.update", saveCreds);
+}
+
+async function resolveWhatsAppJid(phone) {
+  let clean = (phone || "").replace(/\D/g, "");
+  if (!clean.startsWith("55") && (clean.length === 10 || clean.length === 11)) {
+    clean = "55" + clean;
+  }
+
+  // Se não for número brasileiro (+55) ou formato fora do padrão, envia diretamente
+  if (!clean.startsWith("55") || clean.length < 12 || clean.length > 13) {
+    return clean + "@s.whatsapp.net";
+  }
+
+  const ddd = clean.slice(2, 4);
+  const rest = clean.slice(4);
+  const candidates = [];
+
+  // No Brasil, muitas contas antigas estão registradas no WhatsApp sem o 9º dígito (8 dígitos locais).
+  // Se enviarmos para o JID errado, o WhatsApp aceita mas NUNCA entrega ao cliente.
+  if (rest.length === 9 && rest.startsWith("9")) {
+    candidates.push(clean);                       // com 9 dígitos
+    candidates.push(`55${ddd}${rest.slice(1)}`); // sem 9 dígitos
+  } else if (rest.length === 8) {
+    candidates.push(`55${ddd}9${rest}`);         // com 9 dígitos
+    candidates.push(clean);                       // sem 9 dígitos
+  } else {
+    candidates.push(clean);
+  }
+
+  if (sock && typeof sock.onWhatsApp === "function") {
+    try {
+      const results = await sock.onWhatsApp(...candidates);
+      if (Array.isArray(results) && results.length > 0) {
+        const found = results.find(r => r.exists && r.jid);
+        if (found) {
+          console.log(`[WhatsApp] Resolvido JID para ${phone}: ${found.jid}`);
+          return found.jid;
+        }
+      }
+    } catch (err) {
+      console.warn(`[WhatsApp] Falha ao consultar onWhatsApp para ${phone}:`, err.message);
+    }
+  }
+
+  // Fallback se a consulta não achar
+  return candidates[0] + "@s.whatsapp.net";
 }
 
 // Start WhatsApp socket connection
@@ -182,16 +231,7 @@ const server = http.createServer(async (req, res) => {
 
         const logs = [];
         for (const item of messages) {
-          let formattedPhone = item.phone.replace(/\D/g, "");
-          if (formattedPhone.length === 11 && !formattedPhone.startsWith("55")) {
-            formattedPhone = "55" + formattedPhone;
-          } else if (formattedPhone.length === 10) {
-            formattedPhone = "55" + formattedPhone; // prefix country code
-          } else if (formattedPhone.length === 9) {
-            // Missing DDD, fallback or keep as is.
-          }
-
-          const jid = formattedPhone + "@s.whatsapp.net";
+          const jid = await resolveWhatsAppJid(item.phone);
           console.log(`Sending message to: ${jid}`);
           if (item.document) {
             const docBuffer = Buffer.isBuffer(item.document)
@@ -206,7 +246,7 @@ const server = http.createServer(async (req, res) => {
           } else {
             await sock.sendMessage(jid, { text: item.text });
           }
-          logs.push({ phone: item.phone, status: "sent" });
+          logs.push({ phone: item.phone, jid, status: "sent" });
           
           // delay to mitigate anti-spam restrictions
           await new Promise(resolve => setTimeout(resolve, 2000));

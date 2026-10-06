@@ -367,7 +367,7 @@ export default function EmprestimoDetalhesView({
       return;
     }
     if (!confirm("Confirmar recebimento de APENAS os juros e renovar o principal para +30 dias?")) return;
-    executarRenovacao(false);
+    executarRenovacao(true);
   };
 
   const executarRenovacao = (enviarWhatsapp: boolean) => {
