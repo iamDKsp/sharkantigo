@@ -61,10 +61,19 @@ export default function NotificacoesMenu() {
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [lidas, setLidas] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [loading, setLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const mobileSheetRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+
+  const fecharMenu = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      setOpen(false);
+    }, 160);
+  }, []);
 
   const fetchNotificacoes = useCallback(async () => {
     setLoading(true);
@@ -93,19 +102,19 @@ export default function NotificacoesMenu() {
 
   // Fecha ao clicar fora (desktop)
   useEffect(() => {
-    if (!open) return;
+    if (!open || closing) return;
     const handle = (e: MouseEvent) => {
       const target = e.target as Node;
       const insideDesktop = panelRef.current?.contains(target);
       const insideMobile  = mobileSheetRef.current?.contains(target);
       const insideBtn     = btnRef.current?.contains(target);
       if (!insideDesktop && !insideMobile && !insideBtn) {
-        setOpen(false);
+        fecharMenu();
       }
     };
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
-  }, [open]);
+  }, [open, closing, fecharMenu]);
 
   // Conta não lidas
   const naoLidas = notificacoes.filter((n) => !lidas[n.id]);
@@ -131,7 +140,15 @@ export default function NotificacoesMenu() {
       {/* Botão / âncora — sobrepõe ao cifrão dourado do logo via posicionamento */}
       <button
         ref={btnRef}
-        onClick={() => { setOpen((v) => !v); if (!open) { setLidas(getLidas()); } }}
+        onClick={() => {
+          if (open) {
+            fecharMenu();
+          } else {
+            setClosing(false);
+            setOpen(true);
+            setLidas(getLidas());
+          }
+        }}
         aria-label={`Notificações${count > 0 ? ` — ${count} novas` : ""}`}
         className="relative p-1.5 rounded-full text-emerald-200 hover:text-white hover:bg-emerald-800/50 transition-all active:scale-95 cursor-pointer"
       >
@@ -143,13 +160,15 @@ export default function NotificacoesMenu() {
         )}
       </button>
 
-      {/* ── PAINEL DESKTOP (dropdown) ── */}
+      {/* ── PAINEL DESKTOP (dropdown) & MOBILE SHEET ── */}
       {open && (
         <>
           {/* Overlay — cobre tela toda incluindo nav mobile */}
           <div
-            className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[55]"
-            onClick={() => setOpen(false)}
+            className={`md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[55] ${
+              closing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+            }`}
+            onClick={fecharMenu}
           />
 
           {/* Painel desktop */}
@@ -160,6 +179,7 @@ export default function NotificacoesMenu() {
               hidden md:flex md:flex-col
               absolute right-0 top-full mt-2 w-96 rounded-2xl
               max-h-[80vh] overflow-hidden
+              ${closing ? "motion-modal-card-out" : "animate-drop-in"}
             `}
           >
             <PainelConteudo
@@ -169,14 +189,16 @@ export default function NotificacoesMenu() {
               onMarcarLida={handleMarcarLida}
               onMarcarTodas={handleMarcarTodas}
               onAbrirEmprestimo={handleAbrirEmprestimo}
-              onClose={() => setOpen(false)}
+              onClose={fecharMenu}
             />
           </div>
 
           {/* Bottom sheet mobile — fica ACIMA da nav bar (bottom-16 = 64px) */}
           <div
             ref={mobileSheetRef}
-            className="md:hidden fixed bottom-16 left-0 right-0 z-[60] bg-white border-t border-slate-200 rounded-t-3xl shadow-2xl flex flex-col animate-slide-up"
+            className={`md:hidden fixed bottom-16 left-0 right-0 z-[60] bg-white border-t border-slate-200 rounded-t-3xl shadow-2xl flex flex-col ${
+              closing ? "motion-drawer-out" : "motion-drawer-in"
+            }`}
             style={{ maxHeight: 'calc(85vh - 4rem)' }}
           >
             {/* Handle */}
@@ -190,7 +212,7 @@ export default function NotificacoesMenu() {
               onMarcarLida={handleMarcarLida}
               onMarcarTodas={handleMarcarTodas}
               onAbrirEmprestimo={handleAbrirEmprestimo}
-              onClose={() => setOpen(false)}
+              onClose={fecharMenu}
             />
           </div>
         </>
