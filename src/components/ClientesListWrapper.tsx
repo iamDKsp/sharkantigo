@@ -34,6 +34,7 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
 
   // WhatsApp Modal State
   const [waModalOpen, setWaModalOpen] = useState(false);
+  const [waModalClosing, setWaModalClosing] = useState(false);
   const [waSelectedCliente, setWaSelectedCliente] = useState<Cliente | null>(null);
   const [waCustomMsg, setWaCustomMsg] = useState("");
   const [isWaSending, setIsWaSending] = useState(false);
@@ -47,7 +48,16 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
   const openWaModal = (cliente: Cliente) => {
     setWaSelectedCliente(cliente);
     setWaCustomMsg("");
+    setWaModalClosing(false);
     setWaModalOpen(true);
+  };
+
+  const closeWaModal = () => {
+    setWaModalClosing(true);
+    setTimeout(() => {
+      setWaModalClosing(false);
+      setWaModalOpen(false);
+    }, 150);
   };
 
   const sendWaMsg = async (text: string) => {
@@ -56,8 +66,7 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
     try {
       const res = await enviarMensagemManual({ clienteId: waSelectedCliente.id, texto: text });
       if (res.ok) {
-        setWaModalOpen(false);
-        alert("Mensagem enviada com sucesso!");
+        closeWaModal();
       } else {
         alert(`Falha ao enviar: ${res.erro || "Erro desconhecido"}`);
       }
@@ -173,24 +182,25 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
       </div>
 
       {/* Grid de Clientes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {loading && page === 1 ? (
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity duration-200 ${loading && page === 1 && clientes.length > 0 ? "opacity-60" : "opacity-100"}`}>
+        {loading && page === 1 && clientes.length === 0 ? (
           <div className="col-span-full flex flex-col items-center justify-center p-12 space-y-2">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
             <span className="text-sm text-slate-400">Buscando na lista...</span>
           </div>
         ) : clientes.length === 0 ? (
-          <div className="col-span-full premium-card p-12 text-center text-slate-500">
+          <div className="col-span-full premium-card p-12 text-center text-slate-500 animate-fade-in">
             Nenhum cliente encontrado para a busca.
           </div>
         ) : (
-          clientes.map((c) => {
+          clientes.map((c, index) => {
             const avatarLetra = c.nome.charAt(0).toUpperCase();
             
             return (
               <div 
                 key={c.id} 
-                className="premium-card p-4 flex items-center justify-between bg-white border border-slate-200 shadow-sm rounded-2xl active:scale-[0.98] transition-transform cursor-pointer hover:border-emerald-400"
+                style={{ "--i": Math.min(index, 10) } as React.CSSProperties}
+                className="animate-row-in premium-card p-4 flex items-center justify-between bg-white border border-slate-200 shadow-sm rounded-2xl active:scale-[0.98] transition-transform cursor-pointer hover:border-emerald-400"
               >
                 <Link href={`/clientes/${c.id}`} className="flex items-center space-x-4 flex-grow group">
                   {/* Foto de Perfil ou Letra */}
@@ -242,7 +252,7 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
           <button
             onClick={handleLoadMore}
             disabled={loadingMore}
-            className="flex items-center space-x-2 bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            className="flex items-center space-x-2 bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 cursor-pointer active:scale-95"
           >
             {loadingMore ? (
               <>
@@ -258,8 +268,18 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
 
       {/* WhatsApp Modal */}
       {waModalOpen && waSelectedCliente && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div 
+          onClick={closeWaModal}
+          className={`fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 ${
+            waModalClosing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+          }`}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 flex flex-col overflow-hidden ${
+              waModalClosing ? "motion-modal-card-out" : "motion-modal-card-in"
+            }`}
+          >
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
                 <h3 className="font-black text-slate-900 flex items-center gap-2">
@@ -268,7 +288,7 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">Para {waSelectedCliente.nome}</p>
               </div>
-              <button onClick={() => setWaModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors cursor-pointer">
+              <button onClick={closeWaModal} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors cursor-pointer active:scale-95">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -283,7 +303,7 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
                 </div>
                 <div className="flex flex-col gap-2">
                   {waTemplates.map((msg, i) => (
-                    <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                    <button key={i} onClick={() => sendWaMsg(msg)} disabled={isWaSending} className="text-left p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 hover:border-emerald-500 hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.99]">
                       {msg
                         .replace(/\{nome_completo\}/g, waSelectedCliente.nome)
                         .replace(/\{nome\}/g, waSelectedCliente.nome.split(" ")[0])}
@@ -307,7 +327,7 @@ export default function ClientesListWrapper({ initialQuery = "" }: { initialQuer
               <button 
                 onClick={() => sendWaMsg(waCustomMsg)}
                 disabled={!waCustomMsg.trim() || isWaSending}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
               >
                 {isWaSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 {isWaSending ? "Enviando..." : "Enviar Mensagem"}
