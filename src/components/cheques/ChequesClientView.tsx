@@ -111,12 +111,12 @@ export default function ChequesClientView({ cheques, clientes, parceiros }: Cheq
           filteredCheques.map((c) => (
             <div key={c.id} className="premium-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-4 sm:space-y-0">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-3">
-                    <h3 className="font-bold text-slate-900 text-base">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
+                    <h3 className="font-bold text-slate-900 text-base break-words">
                       {c.cliente?.nome || c.titular || "Cliente não informado"}
                     </h3>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase flex items-center space-x-1 ${
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase flex items-center gap-1 shrink-0 ${
                       c.status === "compensado" ? "bg-emerald-100 text-emerald-700" :
                       c.status === "devolvido" ? "bg-rose-100 text-rose-700" :
                       "bg-amber-100 text-amber-700"

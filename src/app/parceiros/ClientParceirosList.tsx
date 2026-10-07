@@ -95,7 +95,7 @@ export default function ClientParceirosList({ parceiros }: ClientParceirosListPr
       </div>
 
       {/* Grid de Parceiros */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
         {parceiros.length === 0 ? (
           <div className="col-span-full premium-card p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
             Nenhum parceiro cadastrado. Cadastre um parceiro para começar a associar empréstimos a ele.
@@ -112,20 +112,20 @@ export default function ClientParceirosList({ parceiros }: ClientParceirosListPr
             return (
               <div
                 key={p.id}
-                className="premium-card p-4 flex items-center justify-between bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-emerald-400 transition-all"
+                className="premium-card p-4 flex items-center justify-between bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-emerald-400 transition-all min-w-0"
               >
-                <Link href={`/parceiros/${p.id}`} className="flex items-center space-x-3.5 flex-1 group">
-                  <div className="w-12 h-12 bg-emerald-600 text-white font-bold rounded-2xl flex items-center justify-center text-sm shadow-sm group-hover:bg-emerald-700 transition-colors">
+                <Link href={`/parceiros/${p.id}`} className="flex items-center space-x-3.5 flex-1 min-w-0 group">
+                  <div className="w-12 h-12 bg-emerald-600 text-white font-bold rounded-2xl flex items-center justify-center text-sm shadow-sm group-hover:bg-emerald-700 transition-colors shrink-0">
                     {iniciais}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 leading-tight group-hover:text-emerald-600 transition-colors">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-slate-900 leading-tight truncate group-hover:text-emerald-600 transition-colors">
                       {p.nome}
                     </h3>
                     {p.telefone && (
-                      <p className="text-xs text-slate-500 mt-0.5 flex items-center space-x-1">
-                        <Phone className="w-3 h-3 text-slate-400" />
-                        <span>{p.telefone}</span>
+                      <p className="text-xs text-slate-500 mt-0.5 flex items-center space-x-1 truncate">
+                        <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{p.telefone}</span>
                       </p>
                     )}
                   </div>
@@ -156,10 +156,10 @@ export default function ClientParceirosList({ parceiros }: ClientParceirosListPr
 
       {/* Modal Add/Edit */}
       {showModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 animate-fade-in">
           <form
             onSubmit={handleSubmit}
-            className="bg-white border border-slate-200 rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl p-6 space-y-4 text-slate-900 animate-fade-in"
+            className="bg-white border border-slate-200 rounded-2xl max-w-sm w-full max-h-[calc(100dvh-2rem)] overflow-y-auto shadow-2xl p-5 sm:p-6 space-y-4 text-slate-900 animate-fade-in pb-[max(1.25rem,env(safe-area-inset-bottom))]"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <h3 className="font-bold text-xs">
@@ -168,7 +168,7 @@ export default function ClientParceirosList({ parceiros }: ClientParceirosListPr
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 cursor-pointer p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -199,18 +199,18 @@ export default function ClientParceirosList({ parceiros }: ClientParceirosListPr
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 cursor-pointer"
+                className="w-full sm:w-auto text-center px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 hover:bg-emerald-700 cursor-pointer"
+                className="w-full sm:w-auto justify-center px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 hover:bg-emerald-700 cursor-pointer"
               >
                 {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>Salvar</span>

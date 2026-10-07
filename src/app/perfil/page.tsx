@@ -201,7 +201,7 @@ export default function PerfilPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-fade-in pb-12">
+    <div className="w-full max-w-2xl xl:max-w-3xl 2xl:max-w-4xl mx-auto space-y-8 animate-fade-in pb-12">
       {/* Perfil Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Perfil</h1>
@@ -353,8 +353,8 @@ export default function PerfilPage() {
                   <p className="text-sm text-slate-700 font-bold max-w-xs mx-auto">
                     Abra o WhatsApp no seu celular, vá em Aparelhos Conectados &gt; Conectar um Aparelho e aponte a câmera para o QR Code abaixo:
                   </p>
-                  <div className="bg-white p-4 rounded-2xl shadow-md border border-slate-100 inline-block">
-                    <img src={qrCode} alt="WhatsApp QR Code Connection" className="w-56 h-56" />
+                  <div className="bg-white p-4 rounded-2xl shadow-md border border-slate-100 inline-block max-w-full">
+                    <img src={qrCode} alt="WhatsApp QR Code Connection" className="w-48 h-48 sm:w-56 sm:h-56 max-w-full object-contain mx-auto" />
                   </div>
                   <p className="text-sm text-slate-400 flex items-center justify-center space-x-2">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -493,7 +493,7 @@ export default function PerfilPage() {
           <button
             type="submit"
             disabled={isSavingAccount || loadingProfile}
-            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-60"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-60"
           >
             {isSavingAccount ? (
               <>
@@ -567,7 +567,7 @@ export default function PerfilPage() {
           <button 
             type="submit" 
             disabled={isSavingPassword}
-            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-60"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-60"
           >
             {isSavingPassword ? (
               <>

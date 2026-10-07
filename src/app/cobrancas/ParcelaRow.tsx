@@ -247,7 +247,7 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
           className="btn-press h-9 px-3 flex-shrink-0 inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-bold hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer"
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          <span className="md:hidden xl:inline">Empréstimo</span>
+          <span className="hidden sm:inline md:hidden xl:inline">Empréstimo</span>
         </Link>
 
         <MenuLinha p={p} onCopiar={onCopiar} />

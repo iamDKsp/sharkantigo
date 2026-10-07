@@ -137,17 +137,17 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
   return (
     <div
       onClick={handleClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 ${
         closing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
       }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${
+        className={`bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)] ${
           closing ? "motion-modal-card-out" : "motion-modal-card-in"
         }`}
       >
-        <div className="flex justify-between items-center p-6 border-b border-slate-100">
+        <div className="flex justify-between items-center p-4 sm:p-6 border-b border-slate-100 shrink-0">
           <h2 className="text-xl font-bold text-slate-900">Cadastrar cheque</h2>
           <button
             type="button"
@@ -158,7 +158,7 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto custom-scrollbar">
+        <div className="p-4 sm:p-6 overflow-y-auto custom-scrollbar">
           <form id="cheque-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-1.5">
@@ -316,11 +316,11 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
           </form>
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-white flex justify-end space-x-3">
+        <div className="p-4 sm:p-6 border-t border-slate-100 bg-white flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 shrink-0 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleClose}
-            className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 transition-colors cursor-pointer active:scale-95"
+            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 transition-colors cursor-pointer active:scale-95 text-center"
           >
             Cancelar
           </button>
@@ -328,7 +328,7 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
             type="submit"
             form="cheque-form"
             disabled={isLoading}
-            className="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             <span>{isLoading ? "Salvando..." : "Salvar"}</span>

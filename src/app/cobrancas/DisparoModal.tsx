@@ -42,6 +42,7 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
   const [progresso, setProgresso] = useState(0);
   const [resumo, setResumo] = useState<Resumo>({ enviados: 0, falhas: 0, ignorados: 0, cancelado: false });
   const [idsFalha, setIdsFalha] = useState<string[]>([]);
+  const [closing, setClosing] = useState(false);
   const cancelarRef = useRef(false);
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -50,6 +51,14 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
   const previa = alvo[0] ?? itens[0];
   const minutos = Math.max(1, Math.round((alvo.length * 1.6) / 60));
 
+  const fechar = () => {
+    if (fase === "enviando" || closing) return;
+    setClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 150);
+  };
+
   // Rola o log sozinho para a linha mais nova
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
@@ -57,10 +66,10 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
 
   // Esc fecha (menos durante o envio)
   useEffect(() => {
-    const aoTecla = (e: KeyboardEvent) => e.key === "Escape" && fase !== "enviando" && onClose();
+    const aoTecla = (e: KeyboardEvent) => e.key === "Escape" && fase !== "enviando" && fechar();
     document.addEventListener("keydown", aoTecla);
     return () => document.removeEventListener("keydown", aoTecla);
-  }, [fase, onClose]);
+  }, [fase, closing]);
 
   const add = (tipoLog: LogTipo, texto: string) => setLogs((prev) => [...prev, { tipo: tipoLog, texto }]);
 
@@ -119,8 +128,6 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
     setFase("fim");
   };
 
-  const fechar = () => fase !== "enviando" && onClose();
-
   const corLog: Record<LogTipo, string> = {
     info: "text-slate-500",
     ok: "text-emerald-700",
@@ -130,7 +137,9 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 animate-fade-in"
+      className={`fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 ${
+        closing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+      }`}
       onClick={fechar}
     >
       <div
@@ -138,7 +147,9 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
         aria-modal="true"
         aria-label="Disparo de cobranças em massa"
         onClick={(e) => e.stopPropagation()}
-        className="bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 space-y-4 text-slate-900 animate-scale-up"
+        className={`bg-white border border-slate-200 rounded-t-3xl sm:rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl p-5 sm:p-6 space-y-4 text-slate-900 pb-[max(1.25rem,env(safe-area-inset-bottom))] ${
+          closing ? "motion-modal-card-out" : "motion-modal-card-in"
+        }`}
       >
         {/* Cabeçalho */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -149,7 +160,7 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
             <h3 className="font-extrabold text-sm">Disparo de cobranças em massa</h3>
           </div>
           {fase !== "enviando" && (
-            <button type="button" onClick={onClose} aria-label="Fechar" className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1">
+            <button type="button" onClick={fechar} aria-label="Fechar" className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer p-1 active:scale-95">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -198,15 +209,15 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-              <button type="button" onClick={onClose} className="btn-press px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold cursor-pointer">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button type="button" onClick={fechar} className="w-full sm:w-auto btn-press px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-95 transition-all rounded-xl text-xs font-bold cursor-pointer text-center">
                 Cancelar
               </button>
               <button
                 type="button"
                 disabled={alvo.length === 0}
                 onClick={() => executar(alvo)}
-                className="btn-press flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl text-xs font-bold shadow-md shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full sm:w-auto btn-press flex items-center justify-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl text-xs font-bold shadow-md shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
                 Enviar {alvo.length} {alvo.length === 1 ? "mensagem" : "mensagens"}
@@ -271,7 +282,7 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
               </p>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-100">
               {fase === "enviando" ? (
                 <button
                   type="button"
@@ -279,7 +290,7 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
                     cancelarRef.current = true;
                     add("aviso", "Cancelando… o envio atual termina e o restante é interrompido.");
                   }}
-                  className="btn-press px-5 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold cursor-pointer"
+                  className="w-full sm:w-auto btn-press px-5 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold cursor-pointer text-center"
                 >
                   Cancelar envio
                 </button>
@@ -289,12 +300,12 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
                     <button
                       type="button"
                       onClick={() => executar(itens.filter((p) => idsFalha.includes(p.id)))}
-                      className="btn-press px-5 py-2.5 bg-amber-500 text-white hover:bg-amber-600 rounded-xl text-xs font-bold shadow-md shadow-amber-500/25 cursor-pointer"
+                      className="w-full sm:w-auto btn-press px-5 py-2.5 bg-amber-500 text-white hover:bg-amber-600 rounded-xl text-xs font-bold shadow-md shadow-amber-500/25 cursor-pointer text-center"
                     >
                       Reenviar {idsFalha.length} {idsFalha.length === 1 ? "falha" : "falhas"}
                     </button>
                   )}
-                  <button type="button" onClick={onClose} className="btn-press px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-bold cursor-pointer">
+                  <button type="button" onClick={fechar} className="w-full sm:w-auto btn-press px-5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-95 transition-all rounded-xl text-xs font-bold cursor-pointer text-center">
                     Fechar
                   </button>
                 </>

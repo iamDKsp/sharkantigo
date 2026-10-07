@@ -226,79 +226,72 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
     formData.set("enviarPdfWhatsapp", String(enviarPdfWhatsapp));
 
     setShowOverlay(true);
-    setOverlayStep(0); // Passo 1: Validando
+    setOverlayStep(1); // Processando e calculando parcelas
 
-    setTimeout(() => {
-      setOverlayStep(1); // Passo 2: Calculando
-      setTimeout(() => {
-        setOverlayStep(2); // Passo 3: Finalizado
-        setTimeout(() => {
-          startTransition(async () => {
+    startTransition(async () => {
+      try {
+        const res = await createEmprestimo(formData);
+        if (res && res.success && res.redirectUrl) {
+          setOverlayStep(2); // Sucesso
+          // Envio do PDF via WhatsApp — feito no cliente (jspdf não funciona no servidor)
+          if (enviarPdfWhatsapp && res.clienteTelefone) {
+            setOverlayStep(3);
             try {
-              const res = await createEmprestimo(formData);
-              if (res && res.success && res.redirectUrl) {
-                // Envio do PDF via WhatsApp — feito no cliente (jspdf não funciona no servidor)
-                if (enviarPdfWhatsapp && res.clienteTelefone) {
-                  setOverlayStep(3);
-                  try {
-                    const { obterCronogramaPdfBase64 } = await import("@/lib/cronogramaPdf");
-                    const pdfBase64 = obterCronogramaPdfBase64({
-                      clienteNome: res.clienteNome,
-                      tipoPagamento: res.tipoPagamento,
-                      valorEmprestado: res.valorEmprestado,
-                      taxaJuros: res.taxaJuros,
-                      taxaMulta: res.taxaMulta,
-                      atrasoTipo: res.atrasoTipo,
-                      atrasoValor: res.atrasoValor,
-                      observacoes: res.observacoes,
-                      parcelas: res.parcelas.map((p: any) => ({
-                        numero: p.numero,
-                        valor: p.valor,
-                        data_vencimento: p.data_vencimento,
-                        status: "aberto",
-                      })),
-                    });
-                    const fileName = `cronograma-${res.clienteNome.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pdf`;
-                    const envio = await fetch("/api/whatsapp/send", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        messages: [{
-                          phone: res.clienteTelefone,
-                          document: pdfBase64,
-                          mimetype: "application/pdf",
-                          fileName,
-                          caption: res.legendaPdf || "Contratação realizada com sucesso!",
-                        }],
-                      }),
-                    });
-                    if (!envio.ok) {
-                      const d = await envio.json().catch(() => ({}));
-                      alert(`Empréstimo criado, mas o PDF não foi enviado: ${d.error || "verifique se o WhatsApp está conectado."}`);
-                    }
-                  } catch (pdfErr) {
-                    console.error("Erro ao enviar PDF via WhatsApp:", pdfErr);
-                    // Não bloqueia o redirect — PDF é opcional
-                  }
-                }
-                router.push(res.redirectUrl);
-              } else {
-                alert("Erro ao criar empréstimo.");
-                setShowOverlay(false);
+              const { obterCronogramaPdfBase64 } = await import("@/lib/cronogramaPdf");
+              const pdfBase64 = obterCronogramaPdfBase64({
+                clienteNome: res.clienteNome,
+                tipoPagamento: res.tipoPagamento,
+                valorEmprestado: res.valorEmprestado,
+                taxaJuros: res.taxaJuros,
+                taxaMulta: res.taxaMulta,
+                atrasoTipo: res.atrasoTipo,
+                atrasoValor: res.atrasoValor,
+                observacoes: res.observacoes,
+                parcelas: res.parcelas.map((p: any) => ({
+                  numero: p.numero,
+                  valor: p.valor,
+                  data_vencimento: p.data_vencimento,
+                  status: "aberto",
+                })),
+              });
+              const fileName = `cronograma-${res.clienteNome.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pdf`;
+              const envio = await fetch("/api/whatsapp/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  messages: [{
+                    phone: res.clienteTelefone,
+                    document: pdfBase64,
+                    mimetype: "application/pdf",
+                    fileName,
+                    caption: res.legendaPdf || "Contratação realizada com sucesso!",
+                  }],
+                }),
+              });
+              if (!envio.ok) {
+                const d = await envio.json().catch(() => ({}));
+                alert(`Empréstimo criado, mas o PDF não foi enviado: ${d.error || "verifique se o WhatsApp está conectado."}`);
               }
-            } catch (err) {
-              console.error("Erro ao salvar empréstimo:", err);
-              alert("Erro ao salvar empréstimo.");
-              setShowOverlay(false);
+            } catch (pdfErr) {
+              console.error("Erro ao enviar PDF via WhatsApp:", pdfErr);
+              // Não bloqueia o redirect — PDF é opcional
             }
-          });
-        }, 800);
-      }, 900);
-    }, 700);
+          }
+          router.push(res.redirectUrl);
+        } else {
+          alert("Erro ao criar empréstimo.");
+          setShowOverlay(false);
+        }
+      } catch (err) {
+        console.error("Erro ao salvar empréstimo:", err);
+        alert("Erro ao salvar empréstimo.");
+        setShowOverlay(false);
+      }
+    });
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="w-full max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto space-y-6">
       {/* Voltar */}
       <Link
         href="/emprestimos"
@@ -409,7 +402,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                 <label className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                   Tipo de Pagamento <span className="text-rose-500">*</span>
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
                   {[
                     { id: "a_vista", label: "À Vista" },
                     { id: "a_vista_juros", label: "À Vista + Juros" },
@@ -490,7 +483,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
             {/* Vencimento — Automático ou Manual */}
             {(tipoPagamento === "a_vista" || tipoPagamento === "a_vista_juros" || tipoPagamento === "juros_compostos") && (
               <div className={`rounded-xl border text-sm mb-6 shadow-sm overflow-hidden ${vencimentoManual ? "border-slate-300 bg-white" : "border-amber-200 bg-amber-50"}`}>
-                <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-4 py-3">
                   <span className={`font-bold ${vencimentoManual ? "text-slate-700" : "text-amber-800"}`}>
                     {vencimentoManual ? "Data de vencimento (manual)" : "Vencimento calculado automaticamente:"}
                   </span>
@@ -514,26 +507,30 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     </button>
                   </div>
                 </div>
-                {vencimentoManual && (
-                  <div className="px-4 pb-4">
-                    <input
-                      type="date"
-                      required
-                      value={vencimentoManualData}
-                      onChange={(e) => setVencimentoManualData(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors cursor-pointer"
-                    />
+                <div
+                  className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${
+                    vencimentoManual ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="px-4 pb-4">
+                      <input
+                        type="date"
+                        required={vencimentoManual}
+                        value={vencimentoManualData}
+                        onChange={(e) => setVencimentoManualData(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors cursor-pointer"
+                      />
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             )}
-
-
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Taxa de Juros */}
               {tipoPagamento !== "a_vista" && (
-                <div className="space-y-2 col-span-1">
+                <div className="space-y-2 col-span-1 animate-in fade-in duration-200">
                   <label htmlFor="taxaJuros" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     {tipoPagamento === "juros_compostos" || tipoPagamento === "juros_mensais" || tipoPagamento === "parcela_juros_mes"
                       ? "Taxa de Juros por Período (%) *"
@@ -559,7 +556,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
 
               {/* Número de parcelas */}
               {tipoPagamento !== "a_vista" && tipoPagamento !== "a_vista_juros" && (
-                <div className="space-y-2 col-span-1">
+                <div className="space-y-2 col-span-1 animate-in fade-in duration-200">
                   <label htmlFor="periodos" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     {tipoPagamento === "juros_compostos"
                       ? "Número de Períodos *"
@@ -599,7 +596,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
 
               {/* Vencimento 1ª Parcela */}
               {tipoPagamento !== "a_vista" && tipoPagamento !== "a_vista_juros" && tipoPagamento !== "juros_compostos" && (
-                <div className="space-y-2">
+                <div className="space-y-2 animate-in fade-in duration-200">
                   <label htmlFor="vencimentoPrimeira" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     Vencimento da 1ª Parcela <span className="text-rose-500">*</span>
                   </label>
@@ -739,13 +736,13 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
 
         {/* Opção de Envio do Cronograma por WhatsApp */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start space-x-3.5">
-              <div className={`p-2.5 rounded-xl transition-colors mt-0.5 ${enviarPdfWhatsapp ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-100 text-slate-400 border border-slate-200"}`}>
+              <div className={`p-2.5 rounded-xl transition-colors mt-0.5 shrink-0 ${enviarPdfWhatsapp ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-slate-100 text-slate-400 border border-slate-200"}`}>
                 <FileText className="w-5 h-5" />
               </div>
-              <div>
-                <div className="flex items-center space-x-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <h4 className="text-sm font-black text-slate-800">
                     Enviar Cronograma (PDF) via WhatsApp
                   </h4>
@@ -767,7 +764,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               role="switch"
               aria-checked={enviarPdfWhatsapp}
               onClick={() => setEnviarPdfWhatsapp(!enviarPdfWhatsapp)}
-              className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${
+              className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/30 self-start sm:self-center ${
                 enviarPdfWhatsapp ? "bg-emerald-600" : "bg-slate-300"
               }`}
             >
@@ -781,17 +778,17 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         </div>
 
         {/* Ações */}
-        <div className="flex items-center justify-end space-x-4 pt-6 mt-8 border-t border-slate-200">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 mt-8 border-t border-slate-200">
           <Link
             href="/emprestimos"
-            className="px-6 py-3.5 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-black tracking-wide hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
+            className="w-full sm:w-auto text-center px-6 py-3.5 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-black tracking-wide hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={isPending}
-            className="flex items-center space-x-2 bg-emerald-600 text-white px-8 py-3.5 rounded-xl text-sm font-black tracking-wide hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:hover:shadow-none shadow-md transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 text-white px-8 py-3.5 rounded-xl text-sm font-black tracking-wide hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:hover:shadow-none shadow-md transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
           >
             {isPending ? (
               <Loader2 className="w-5 h-5 animate-spin" />

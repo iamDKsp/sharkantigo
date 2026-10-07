@@ -91,11 +91,19 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
   const [alvoModal, setAlvoModal] = useState<Parcela[] | null>(null);
   const [toast, setToast] = useState<{ id: number; texto: string; erro?: boolean } | null>(null);
+  const [toastClosing, setToastClosing] = useState(false);
 
-  // Toast some sozinho
+  // Toast some sozinho com transição de saída
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2600);
+    setToastClosing(false);
+    const t = setTimeout(() => {
+      setToastClosing(true);
+      setTimeout(() => {
+        setToast(null);
+        setToastClosing(false);
+      }, 150);
+    }, 2400);
     return () => clearTimeout(t);
   }, [toast]);
 
@@ -166,6 +174,26 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   const selecionadasVisiveis = useMemo(() => visiveis.filter((p) => selecionados.has(p.id)), [visiveis, selecionados]);
   const todasMarcadas = visiveis.length > 0 && selecionadasVisiveis.length === visiveis.length;
   const algumaMarcada = selecionadasVisiveis.length > 0 && !todasMarcadas;
+
+  // Animação suave de entrada e saída da barra flutuante
+  const [barraVisivel, setBarraVisivel] = useState(false);
+  const [barraSaindo, setBarraSaindo] = useState(false);
+  const lastCountRef = useRef(0);
+
+  useEffect(() => {
+    if (selecionadasVisiveis.length > 0) {
+      lastCountRef.current = selecionadasVisiveis.length;
+      setBarraVisivel(true);
+      setBarraSaindo(false);
+    } else if (barraVisivel && !barraSaindo) {
+      setBarraSaindo(true);
+      const timer = setTimeout(() => {
+        setBarraVisivel(false);
+        setBarraSaindo(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [selecionadasVisiveis.length, barraVisivel, barraSaindo]);
 
   // Resumo da aba (sobre a lista completa, sem filtros)
   const resumo = useMemo(() => {
@@ -257,7 +285,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   const fecharModal = useCallback(() => setAlvoModal(null), []);
 
   return (
-    <div className="space-y-5 max-w-7xl mx-auto px-1 animate-fade-in">
+    <div className="space-y-5 w-full max-w-7xl 2xl:max-w-[1600px] 3xl:max-w-[1880px] mx-auto px-1 animate-fade-in">
       {/* Header mobile-compacto */}
       <div className="flex items-center justify-between">
         <div>
@@ -518,26 +546,28 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       </div>
 
       {/* Barra flutuante: aparece ao selecionar e acompanha a rolagem */}
-      {selecionadasVisiveis.length > 0 && (
-        <div className="fixed inset-x-0 bottom-20 md:bottom-6 z-40 flex justify-center px-3 pointer-events-none">
-          <div className="animate-slide-up pointer-events-auto w-full max-w-md flex items-center gap-2 bg-[#064e3b] text-white rounded-2xl pl-4 pr-2 py-2 shadow-2xl shadow-emerald-950/30 border border-emerald-800">
+      {barraVisivel && (
+        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6 z-40 flex justify-center px-3 pointer-events-none">
+          <div className={`pointer-events-auto w-full max-w-md flex items-center gap-2 bg-[#064e3b] text-white rounded-2xl pl-4 pr-2 py-2 shadow-2xl shadow-emerald-950/30 border border-emerald-800 ${
+            barraSaindo ? "motion-float-bar-out" : "animate-slide-up"
+          }`}>
             <span className="text-xs font-semibold flex-1 min-w-0 truncate">
-              <strong key={selecionadasVisiveis.length} className="animate-pop inline-block text-sm font-black tabular-nums">
-                {selecionadasVisiveis.length}
+              <strong key={selecionadasVisiveis.length || lastCountRef.current} className="animate-pop inline-block text-sm font-black tabular-nums">
+                {selecionadasVisiveis.length || lastCountRef.current}
               </strong>{" "}
-              {selecionadasVisiveis.length === 1 ? "selecionado" : "selecionados"}
+              {(selecionadasVisiveis.length || lastCountRef.current) === 1 ? "selecionado" : "selecionados"}
             </span>
             <button
               type="button"
               onClick={() => setSelecionados(new Set())}
-              className="btn-press px-3 py-2 rounded-xl text-xs font-bold text-emerald-100/80 hover:text-white hover:bg-white/10 cursor-pointer"
+              className="btn-press px-3 py-2 rounded-xl text-xs font-bold text-emerald-100/80 hover:text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
             >
               Limpar
             </button>
             <button
               type="button"
               onClick={() => setAlvoModal(selecionadasVisiveis)}
-              className="btn-press flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white shadow-md shadow-emerald-950/30 cursor-pointer"
+              className="btn-press flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white shadow-md shadow-emerald-950/30 cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               Disparo em Massa
@@ -563,7 +593,9 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
           <div
             key={toast.id}
             role="status"
-            className={`animate-toast-in pointer-events-auto flex items-center gap-2 bg-white border rounded-xl px-4 py-2.5 text-xs font-bold shadow-xl shadow-slate-900/10 ${
+            className={`pointer-events-auto flex items-center gap-2 bg-white border rounded-xl px-4 py-2.5 text-xs font-bold shadow-xl shadow-slate-900/10 ${
+              toastClosing ? "animate-toast-out" : "animate-toast-in"
+            } ${
               toast.erro ? "border-red-200 text-red-700" : "border-emerald-200 text-slate-700"
             }`}
           >

@@ -40,18 +40,29 @@ function Modal({
   title, 
   subtitle, 
   maxWidth = "max-w-sm",
+  isClosing = false,
   children 
 }: { 
   onClose: () => void; 
   title: string; 
   subtitle?: string; 
   maxWidth?: string;
+  isClosing?: boolean;
   children: React.ReactNode 
 }) {
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-      <div className={`bg-white border border-slate-200 rounded-3xl w-full ${maxWidth} shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150`}>
-        <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className={`fixed inset-0 p-3 sm:p-4 z-50 flex items-center justify-center ${
+        isClosing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+      }`}
+    >
+      <div className={`bg-white border border-slate-200 rounded-3xl w-full ${maxWidth} max-h-[calc(100dvh-2rem)] flex flex-col shadow-2xl overflow-hidden ${
+        isClosing ? "motion-modal-card-out" : "motion-modal-card-in"
+      }`}>
+        <div className="flex items-start justify-between p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50 shrink-0">
           <div className="min-w-0 pr-2">
             <h3 className="font-black text-sm sm:text-base text-slate-900 tracking-tight">{title}</h3>
             {subtitle && <p className="text-xs text-slate-500 mt-0.5 truncate">{subtitle}</p>}
@@ -59,12 +70,12 @@ function Modal({
           <button 
             type="button"
             onClick={onClose} 
-            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 cursor-pointer shadow-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 cursor-pointer shadow-sm active:scale-95"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="p-5 sm:p-6 space-y-4">{children}</div>
+        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">{children}</div>
       </div>
     </div>
   );
@@ -82,6 +93,22 @@ export default function EmprestimoDetalhesView({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [modal, setModal] = useState<null | "renegociar" | "reprogramar" | "delete" | "wa" | "renovar_juros">(null);
+  const [modalClosing, setModalClosing] = useState(false);
+
+  const closeModal = useCallback(() => {
+    setModalClosing(true);
+    setTimeout(() => {
+      setModal(null);
+      setModalClosing(false);
+      setRenovFeedback(null);
+    }, 150);
+  }, []);
+
+  const openModal = useCallback((type: "renegociar" | "reprogramar" | "delete" | "wa" | "renovar_juros") => {
+    setModalClosing(false);
+    setModal(type);
+  }, []);
+
   const [renovEnviarWa, setRenovEnviarWa] = useState(true);
   const [renovFeedback, setRenovFeedback] = useState<{
     sucesso: boolean;
@@ -125,6 +152,21 @@ export default function EmprestimoDetalhesView({
 
   // ── Editar Data do Pagamento da Parcela ──
   const [editingParcela, setEditingParcela] = useState<{ id: string; numero: number; data: string } | null>(null);
+  const [editingParcelaClosing, setEditingParcelaClosing] = useState(false);
+
+  const closeEditingParcela = useCallback(() => {
+    setEditingParcelaClosing(true);
+    setTimeout(() => {
+      setEditingParcela(null);
+      setEditingParcelaClosing(false);
+    }, 150);
+  }, []);
+
+  const openEditingParcela = useCallback((p: { id: string; numero: number; data: string }) => {
+    setEditingParcelaClosing(false);
+    setEditingParcela(p);
+  }, []);
+
   const [isSavingParcelaData, setIsSavingParcelaData] = useState(false);
 
   const [waTemplates, setWaTemplates] = useState<string[]>([]);
@@ -411,7 +453,7 @@ export default function EmprestimoDetalhesView({
   const receiveJuros = () => {
     setRenovFeedback(null);
     setRenovEnviarWa(true);
-    setModal("renovar_juros");
+    openModal("renovar_juros");
   };
 
   const executarRenovacao = (enviarWhatsapp: boolean) => {
@@ -445,7 +487,7 @@ export default function EmprestimoDetalhesView({
       });
       if (res.ok) {
         alert("Mensagem enviada com sucesso!");
-        setModal(null);
+        closeModal();
         setWaCustomMsg("");
       } else {
         alert(`Erro ao enviar mensagem: ${res.erro || "tente novamente"}`);
@@ -457,7 +499,7 @@ export default function EmprestimoDetalhesView({
   };
 
   const whatsapp = () => {
-    setModal("wa");
+    openModal("wa");
   };
 
   const [isSendingPdfWa, setIsSendingPdfWa] = useState(false);
@@ -578,10 +620,10 @@ export default function EmprestimoDetalhesView({
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-12 space-y-4">
+    <div className="w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto pb-12 space-y-4">
 
       {/* Top bar */}
-      <div className="flex items-center justify-between py-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 py-1">
         <button
           onClick={handleVoltar}
           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 text-sm font-semibold transition-colors group active:scale-95 cursor-pointer"
@@ -589,21 +631,21 @@ export default function EmprestimoDetalhesView({
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Voltar
         </button>
         {isPending && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <button
             onClick={handleBaixarPdf}
-            className="flex items-center gap-1.5 text-sm font-black text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer"
             title="Baixar Cronograma de Parcelas em PDF"
           >
-            <FileDown className="w-3.5 h-3.5 text-emerald-600" /> Baixar PDF
+            <FileDown className="w-3.5 h-3.5 text-emerald-600" /> <span className="hidden min-[380px]:inline">Baixar</span> PDF
           </button>
           <Link
             href={`/emprestimos/${emprestimo.id}/editar`}
-            className="flex items-center gap-1.5 text-sm font-black text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition-all"
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all"
           >
             <Pencil className="w-3.5 h-3.5" /> Editar
           </Link>
-          <button onClick={() => setModal("delete")} className="flex items-center gap-1.5 text-sm font-black text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer">
+          <button onClick={() => openModal("delete")} className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all cursor-pointer">
             <Trash2 className="w-3.5 h-3.5" /> Excluir
           </button>
         </div>
@@ -761,7 +803,7 @@ export default function EmprestimoDetalhesView({
           {/* LISTA DE PAGAMENTOS / PARCELAS / RENOVAÇÕES */}
           {itensComLabels.length > 0 && (
             <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+              <div className="px-5 py-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-slate-400" />
                   <span className="text-sm font-black text-slate-900">
@@ -776,7 +818,7 @@ export default function EmprestimoDetalhesView({
                     <FileDown className="w-3 h-3 text-emerald-600" /> PDF
                   </button>
                 </div>
-                <div className="flex gap-2 text-xs font-black uppercase tracking-widest">
+                <div className="flex flex-wrap gap-2 text-xs font-black uppercase tracking-widest">
                   {totalRenovacoes > 0 && (
                     <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">
                       {totalRenovacoes} {totalRenovacoes === 1 ? "renovação" : "renovações"}
@@ -822,8 +864,8 @@ export default function EmprestimoDetalhesView({
                   const isMaisAtual = proximaParcelaAberta?.id === p.id;
 
                   return (
-                    <div key={p.id} className={`flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors ${pAtras ? "bg-rose-50/40" : isMaisAtual && !isAv ? "bg-emerald-50/20" : ""}`}>
-                      <div className="flex items-center gap-3">
+                    <div key={p.id} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-5 py-3.5 hover:bg-slate-50 transition-colors ${pAtras ? "bg-rose-50/40" : isMaisAtual && !isAv ? "bg-emerald-50/20" : ""}`}>
+                      <div className="flex items-center gap-3 min-w-0">
                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
                           isRenov ? "bg-purple-50 text-purple-600" :
                           pPago ? "bg-emerald-50 text-emerald-600" :
@@ -844,8 +886,8 @@ export default function EmprestimoDetalhesView({
                             <Calendar className="w-3.5 h-3.5" />
                           )}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-1.5 mb-0.5">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
                             <span className="text-sm font-black text-slate-900">{p.label}</span>
                             <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full border ${
                               isRenov ? "bg-purple-50 text-purple-700 border-purple-200" :
@@ -864,12 +906,12 @@ export default function EmprestimoDetalhesView({
                                 : pAtras ? "atrasada" : pHoje ? "hoje" : "aberta"}
                             </span>
                           </div>
-                          <div className="text-xs text-slate-400 flex items-center gap-2">
+                          <div className="text-xs text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                             <span>Vence {fmtDate(p.data_vencimento)}</span>
                             {p.data_pagamento && (
                               <button
                                 type="button"
-                                onClick={() => setEditingParcela({ id: p.id, numero: p.numero, data: toInputDate(p.data_pagamento) })}
+                                onClick={() => openEditingParcela({ id: p.id, numero: p.numero, data: toInputDate(p.data_pagamento) })}
                                 className="text-emerald-600 hover:text-emerald-700 font-bold inline-flex items-center gap-1 hover:underline cursor-pointer group"
                                 title="Clique para editar a data de pagamento"
                               >
@@ -881,8 +923,8 @@ export default function EmprestimoDetalhesView({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2.5">
-                        <div className="text-right">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t border-slate-100 sm:border-0">
+                        <div className="text-left sm:text-right">
                           <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
                           {isAv && p.status === "aberto" && (
                             <span className="text-[10px] text-slate-400 block font-medium">
@@ -1066,7 +1108,7 @@ export default function EmprestimoDetalhesView({
                       <span className="text-sm font-black text-slate-900">{fmtDate(dp)}</span>
                     </div>
                   ) : showDatePicker ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 animate-in fade-in duration-150">
                       <input
                         type="date"
                         value={dataPrevistaInput}
@@ -1076,17 +1118,17 @@ export default function EmprestimoDetalhesView({
                       <button
                         onClick={handleSalvarDataPrevista}
                         disabled={isSavingData || !dataPrevistaInput}
-                        className="flex-shrink-0 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all disabled:opacity-60 cursor-pointer"
+                        className="flex-shrink-0 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black rounded-xl transition-all disabled:opacity-60 cursor-pointer shadow-sm"
                       >{isSavingData ? "..." : "Salvar"}</button>
                       <button
                         onClick={() => setShowDatePicker(false)}
-                        className="flex-shrink-0 px-2 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-all cursor-pointer"
+                        className="flex-shrink-0 px-2 py-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 text-xs font-black rounded-xl transition-all cursor-pointer"
                       ><X className="w-3.5 h-3.5" /></button>
                     </div>
                   ) : (
                     <button
                       onClick={() => setShowDatePicker(true)}
-                      className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                      className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-emerald-600 active:scale-95 transition-all cursor-pointer"
                     >
                       <Calendar className="w-4 h-4" />
                       Definir data prevista de pagamento
@@ -1128,8 +1170,8 @@ export default function EmprestimoDetalhesView({
                     </button>
                   )}
                   <div className="grid grid-cols-2 gap-2">
-                    <BtnSecondary onClick={() => setModal("renegociar")}><RefreshCw className="w-3.5 h-3.5" /> Renegociar</BtnSecondary>
-                    <BtnSecondary onClick={() => setModal("reprogramar")}><CalendarClock className="w-3.5 h-3.5" /> Reprogramar</BtnSecondary>
+                    <BtnSecondary onClick={() => openModal("renegociar")}><RefreshCw className="w-3.5 h-3.5" /> Renegociar</BtnSecondary>
+                    <BtnSecondary onClick={() => openModal("reprogramar")}><CalendarClock className="w-3.5 h-3.5" /> Reprogramar</BtnSecondary>
                   </div>
                 </>
               )}
@@ -1186,7 +1228,7 @@ export default function EmprestimoDetalhesView({
 
       {/* ── MODAL: Renegociar ── */}
       {modal === "renegociar" && (
-        <Modal onClose={() => setModal(null)} title="Renegociar Dívida" subtitle="Abate um valor do saldo devedor">
+        <Modal isClosing={modalClosing} onClose={closeModal} title="Renegociar Dívida" subtitle="Abate um valor do saldo devedor">
           <form onSubmit={submitReneg} className="space-y-4">
             <div>
               <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Valor Pago Agora (R$) *</label>
@@ -1204,7 +1246,7 @@ export default function EmprestimoDetalhesView({
               </div>
             )}
             <div className="flex gap-2 pt-1">
-              <button type="button" onClick={() => setModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
+              <button type="button" onClick={closeModal} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
               <button type="submit" disabled={isPending} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
                 {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Confirmar
               </button>
@@ -1215,7 +1257,7 @@ export default function EmprestimoDetalhesView({
 
       {/* ── MODAL: Reprogramar ── */}
       {modal === "reprogramar" && (
-        <Modal onClose={() => setModal(null)} title="Reprogramar Vencimento" subtitle="Redefine data e condições do contrato">
+        <Modal isClosing={modalClosing} onClose={closeModal} title="Reprogramar Vencimento" subtitle="Redefine data e condições do contrato">
           <form onSubmit={submitReprog} className="space-y-4">
             <div>
               <label className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Nova Data de Vencimento *</label>
@@ -1239,7 +1281,7 @@ export default function EmprestimoDetalhesView({
               <input type="number" step="any" value={taxaReprog} onChange={e => setTaxaReprog(e.target.value)} placeholder="Ex: 10 (sobre o novo saldo)" className={inputCls} />
             </div>
             <div className="flex gap-2 pt-1">
-              <button type="button" onClick={() => setModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
+              <button type="button" onClick={closeModal} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
               <button type="submit" disabled={isPending} className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
                 {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Confirmar
               </button>
@@ -1250,14 +1292,14 @@ export default function EmprestimoDetalhesView({
 
       {/* ── MODAL: Confirmar Exclusão ── */}
       {modal === "delete" && (
-        <Modal onClose={() => setModal(null)} title="Excluir Empréstimo?" subtitle="Esta ação é irreversível e não pode ser desfeita.">
+        <Modal isClosing={modalClosing} onClose={closeModal} title="Excluir Empréstimo?" subtitle="Esta ação é irreversível e não pode ser desfeita.">
           <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-xl p-4">
             <AlertTriangle className="w-5 h-5 text-rose-500 flex-shrink-0" />
             <p className="text-xs text-rose-700 font-semibold">Todos os dados deste empréstimo, incluindo parcelas e histórico, serão permanentemente removidos.</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
-            <button onClick={() => { setModal(null); excluir(); }} disabled={isPending} className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+            <button onClick={closeModal} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl transition-colors cursor-pointer">Cancelar</button>
+            <button onClick={() => { closeModal(); excluir(); }} disabled={isPending} className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
               {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Excluir Definitivamente
             </button>
           </div>
@@ -1267,10 +1309,10 @@ export default function EmprestimoDetalhesView({
       {/* ── MODAL: Confirmar Renovação de Juros (com escolha de WhatsApp) ── */}
       {modal === "renovar_juros" && (
         <Modal 
+          isClosing={modalClosing}
           onClose={() => {
             if (isPending) return;
-            setModal(null);
-            setRenovFeedback(null);
+            closeModal();
           }} 
           title={renovFeedback ? (renovFeedback.sucesso ? "Renovação Concluída" : "Aviso na Renovação") : "Renovar Empréstimo (+30 dias)"} 
           subtitle={`Cliente: ${emprestimo.cliente.nome}`}
@@ -1321,10 +1363,7 @@ export default function EmprestimoDetalhesView({
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setModal(null);
-                    setRenovFeedback(null);
-                  }}
+                  onClick={closeModal}
                   className="btn-press w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all shadow-md shadow-emerald-600/20 active:scale-[0.98] cursor-pointer"
                 >
                   Concluir
@@ -1342,10 +1381,7 @@ export default function EmprestimoDetalhesView({
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setModal(null);
-                      setRenovFeedback(null);
-                    }}
+                    onClick={closeModal}
                     className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
                   >
                     Fechar
@@ -1438,7 +1474,7 @@ export default function EmprestimoDetalhesView({
 
                 <button
                   type="button"
-                  onClick={() => setModal(null)}
+                  onClick={closeModal}
                   disabled={isPending}
                   className="w-full py-2 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors cursor-pointer text-center"
                 >
@@ -1452,8 +1488,12 @@ export default function EmprestimoDetalhesView({
 
       {/* ── MODAL: Disparo WhatsApp via Plataforma ── */}
       {modal === "wa" && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 ${
+          modalClosing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+        }`}>
+          <div className={`bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 flex flex-col overflow-hidden ${
+            modalClosing ? "motion-modal-card-out" : "motion-modal-card-in"
+          }`}>
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
                 <h3 className="font-black text-slate-900 flex items-center gap-2">
@@ -1462,7 +1502,7 @@ export default function EmprestimoDetalhesView({
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">Para {emprestimo.cliente.nome}</p>
               </div>
-              <button onClick={() => setModal(null)} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors cursor-pointer">
+              <button onClick={closeModal} className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1514,7 +1554,7 @@ export default function EmprestimoDetalhesView({
 
       {/* MODAL EDITAR DATA PAGAMENTO */}
       {editingParcela && (
-        <Modal onClose={() => setEditingParcela(null)} title="Editar Data do Pagamento" subtitle={`Parcela ${editingParcela.numero}`}>
+        <Modal isClosing={editingParcelaClosing} onClose={closeEditingParcela} title="Editar Data do Pagamento" subtitle={`Parcela ${editingParcela.numero}`}>
           <div className="space-y-4">
             <div>
               <label className="text-xs font-bold text-slate-600 block mb-1.5">Data em que o pagamento foi realizado</label>
@@ -1528,7 +1568,7 @@ export default function EmprestimoDetalhesView({
             <div className="flex gap-2 justify-end pt-2 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => setEditingParcela(null)}
+                onClick={closeEditingParcela}
                 className="px-3.5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
                 Cancelar
@@ -1540,7 +1580,7 @@ export default function EmprestimoDetalhesView({
                   setIsSavingParcelaData(true);
                   try {
                     await atualizarDataPagamentoParcela(editingParcela.id, emprestimo.id, editingParcela.data);
-                    setEditingParcela(null);
+                    closeEditingParcela();
                   } catch (err: any) {
                     alert(err.message || "Erro ao atualizar data");
                   } finally {

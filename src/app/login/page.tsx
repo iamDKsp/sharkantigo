@@ -52,7 +52,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-3 sm:p-4 font-sans">
       <div className="w-full max-w-md">
         <div className="text-center mb-10 animate-fade-in-up">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4 shadow-sm border border-emerald-200">
@@ -66,7 +66,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="premium-card bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/60 border border-slate-200/80 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
+        <div className="premium-card bg-white rounded-3xl p-5 sm:p-8 shadow-xl shadow-slate-200/60 border border-slate-200/80 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
           <form onSubmit={handleLogin} className="space-y-6">
             {error && (
               <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-semibold flex items-center">

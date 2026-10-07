@@ -141,7 +141,7 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
   const whatsappUrl = `https://wa.me/${cliente.telefone}`;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 w-full max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto">
       {/* Botão Voltar & Ações Rápidas */}
       <div className="flex items-center justify-between">
         <Link
@@ -202,7 +202,7 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
       <div className="space-y-4">
         <h2 className="text-base font-bold text-slate-900">Resumo financeiro</h2>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-3.5">
           {/* Valor Total da Dívida (com Mini Wizard ao Clicar) */}
           <ValorTotalDividaCard
             valorTotalDivida={valorTotalDivida}
@@ -257,7 +257,7 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
           </div>
 
           {/* Lucro Cheques */}
-          <div className="premium-card p-4 bg-white border border-emerald-200 bg-emerald-50/40 shadow-sm rounded-2xl col-span-2 md:col-span-3 lg:col-span-5">
+          <div className="premium-card p-4 bg-white border border-emerald-200 bg-emerald-50/40 shadow-sm rounded-2xl col-span-1 min-[360px]:col-span-2 md:col-span-3 lg:col-span-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-emerald-700">
                 <Wallet className="w-5 h-5" />
@@ -427,20 +427,20 @@ export default async function ClienteDetalhesPage({ params }: PageProps) {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="border border-slate-200 rounded-lg px-3 py-1.5 bg-white">
+                  <div className="flex flex-wrap items-center justify-between gap-2.5">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                      <div className="border border-slate-200 rounded-lg px-2.5 sm:px-3 py-1.5 bg-white">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Cheque</span>
-                        <span className="text-sm font-bold text-slate-900">{formatBRL(valorBruto)}</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900">{formatBRL(valorBruto)}</span>
                       </div>
-                      <div className="border border-slate-200 rounded-lg px-3 py-1.5 bg-white">
+                      <div className="border border-slate-200 rounded-lg px-2.5 sm:px-3 py-1.5 bg-white">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Taxa {taxa}%</span>
-                        <span className="text-sm font-bold text-slate-900">{formatBRL(valorBruto - valorLiquido)}</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900">{formatBRL(valorBruto - valorLiquido)}</span>
                       </div>
                     </div>
-                    <div className="text-right border border-emerald-200 bg-emerald-50 rounded-lg px-3 py-1.5">
+                    <div className="text-right border border-emerald-200 bg-emerald-50 rounded-lg px-2.5 sm:px-3 py-1.5">
                       <span className="text-[10px] uppercase font-bold text-emerald-600 block">Líquido</span>
-                      <span className="text-sm font-bold text-emerald-700">{formatBRL(valorLiquido)}</span>
+                      <span className="text-xs sm:text-sm font-bold text-emerald-700">{formatBRL(valorLiquido)}</span>
                     </div>
                   </div>
                 </div>

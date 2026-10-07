@@ -36,7 +36,7 @@ export default async function ConfiguracoesMensagensPage() {
   });
 
   return (
-    <div className="space-y-5 max-w-4xl mx-auto px-1">
+    <div className="space-y-5 w-full max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto px-1">
       <div>
         <Link
           href="/cobrancas"

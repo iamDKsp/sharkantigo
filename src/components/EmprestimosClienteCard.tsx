@@ -231,7 +231,7 @@ export default function EmprestimosClienteCard({ clienteId, emprestimos }: Props
             const badge = badgeClasses[emp.situacao];
             const conteudo = (
               <>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                     <span className="text-xs font-bold text-slate-900">Vencimento: {emp.vencimento}</span>
                     <span className={`${badge.cls} text-xs font-bold px-2 py-0.5 rounded-full uppercase`}>
@@ -242,7 +242,7 @@ export default function EmprestimosClienteCard({ clienteId, emprestimos }: Props
                     Taxa de juros: {emp.taxaJuros}% ({formatBRL(emp.valorJuros)}) | Multa: {emp.taxaMulta}%
                   </div>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="text-left sm:text-right shrink-0 pt-1 sm:pt-0">
                   <div className="text-sm font-bold text-slate-900">
                     {formatBRL(emp.principal)} → <span className="text-emerald-600">{formatBRL(emp.total)}</span>
                   </div>
@@ -255,7 +255,7 @@ export default function EmprestimosClienteCard({ clienteId, emprestimos }: Props
                 <Link
                   key={emp.id}
                   href={`/emprestimos/${emp.id}`}
-                  className="p-4 flex items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors"
+                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 hover:bg-slate-50/60 transition-colors"
                 >
                   {conteudo}
                 </Link>

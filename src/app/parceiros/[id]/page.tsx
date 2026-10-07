@@ -89,7 +89,7 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-7xl 2xl:max-w-[1600px] 3xl:max-w-[1880px] mx-auto">
       {/* Voltar e Título */}
       <div>
         <Link
@@ -113,7 +113,7 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="premium-card p-5 bg-white border border-slate-200 shadow-sm rounded-2xl flex items-center space-x-4">
           <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
             <Wallet className="w-6 h-6" />
@@ -196,8 +196,8 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
 
                 return (
                   <div key={cheque.id} className="p-4 flex flex-col space-y-3 hover:bg-slate-50/60 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-bold text-slate-900">
                           Vencimento: {formatData(cheque.data_compensacao)}
                         </span>
@@ -219,8 +219,8 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
                         {cheque.cliente?.nome || cheque.titular || "Cliente desconhecido"}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2.5">
+                      <div className="flex flex-wrap items-center gap-2">
                         <div className="border border-slate-200 rounded-lg px-3 py-1.5 bg-white">
                           <span className="text-[10px] uppercase font-bold text-slate-400 block">Cheque</span>
                           <span className="text-sm font-bold text-slate-900">{formatBRL(valorBruto)}</span>

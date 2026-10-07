@@ -50,7 +50,7 @@ export default function ConfiguracoesView({ initialConfig }: Props) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-16">
+    <div className="w-full max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto space-y-6 pb-16">
       {/* Header com Voltar */}
       <div className="flex items-center justify-between">
         <Link
@@ -101,7 +101,7 @@ export default function ConfiguracoesView({ initialConfig }: Props) {
         <div className="premium-card p-6 bg-white border border-slate-200 shadow-sm rounded-2xl">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5 flex-1">
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
                   <MessageSquare className="w-4.5 h-4.5" />
                 </span>
@@ -174,7 +174,7 @@ export default function ConfiguracoesView({ initialConfig }: Props) {
         <div className="premium-card p-6 bg-white border border-slate-200 shadow-sm rounded-2xl">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5 flex-1">
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
                   <Calendar className="w-4.5 h-4.5" />
                 </span>
@@ -223,7 +223,7 @@ export default function ConfiguracoesView({ initialConfig }: Props) {
         <div className="premium-card p-6 bg-white border border-slate-200 shadow-sm rounded-2xl">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5 flex-1">
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
                   <Clock className="w-4.5 h-4.5" />
                 </span>

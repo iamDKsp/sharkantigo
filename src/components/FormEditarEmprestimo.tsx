@@ -92,12 +92,32 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
     formData.set("dataVencimento", dataVencimentoFinal);
     formData.set("recriarParcelas", recriarParcelas ? "true" : "false");
     formData.set("parcelasJson", recriarParcelas ? JSON.stringify(parcelasSimuladas) : "[]");
-    setShowOverlay(true); setOverlayStep(0);
-    setTimeout(() => { setOverlayStep(1); setTimeout(() => { setOverlayStep(2); setTimeout(() => { startTransition(async () => { try { const res = await updateEmprestimo(emprestimo.id, formData); if (res?.success && res.redirectUrl) { router.push(res.redirectUrl); router.refresh(); } else { alert("Erro ao salvar."); setShowOverlay(false); } } catch { alert("Erro ao salvar."); setShowOverlay(false); } }); }, 800); }, 900); }, 700);
+    
+    setShowOverlay(true);
+    setOverlayStep(1);
+
+    startTransition(async () => {
+      try {
+        const res = await updateEmprestimo(emprestimo.id, formData);
+        if (res?.success && res.redirectUrl) {
+          setOverlayStep(2);
+          setTimeout(() => {
+            router.push(res.redirectUrl);
+            router.refresh();
+          }, 450);
+        } else {
+          alert("Erro ao salvar.");
+          setShowOverlay(false);
+        }
+      } catch {
+        alert("Erro ao salvar.");
+        setShowOverlay(false);
+      }
+    });
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="w-full max-w-3xl xl:max-w-4xl 2xl:max-w-5xl mx-auto space-y-6">
       <Link href={`/emprestimos/${emprestimo.id}`} className="flex items-center space-x-1.5 text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors">
         <ArrowLeft className="w-4 h-4" /><span>Voltar para Detalhes</span>
       </Link>
@@ -158,7 +178,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
               </div>
               <div className="space-y-3">
                 <label className="text-sm font-bold text-slate-600 uppercase tracking-wider">Tipo de Pagamento</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
                   {[{ id: "a_vista", label: "À Vista" }, { id: "a_vista_juros", label: "À Vista + Juros" }, { id: "juros_compostos", label: "Juros Compostos" }, { id: "parcelado", label: "Parcelado" }, { id: "juros_mensais", label: "Juros Mensais" }, { id: "parcela_juros_mes", label: "Parcela + Juros/Mês" }].map((tipo) => (
                     <button key={tipo.id} type="button" onClick={() => setTipoPagamento(tipo.id as TipoPagamento)} className={`relative py-3.5 px-4 rounded-xl border text-sm font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer ${tipoPagamento === tipo.id ? "bg-emerald-600 text-white border-emerald-600 shadow-md scale-[1.02]" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}>
                       {tipoPagamento === tipo.id && <CheckCircle2 className="w-4 h-4 absolute left-3 opacity-50" />}{tipo.label}
@@ -191,7 +211,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {tipoPagamento !== "a_vista" && (
-                <div className="space-y-2">
+                <div className="space-y-2 animate-in fade-in duration-200">
                   <label className="text-sm font-bold text-slate-600 uppercase tracking-wider">Taxa de Juros (%)</label>
                   <div className="relative">
                     <input type="number" name="taxaJuros" min="0" step="any" value={taxaJuros} onChange={(e) => setTaxaJuros(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors" />
@@ -201,7 +221,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
               )}
               {tipoPagamento === "a_vista" && <input type="hidden" name="taxaJuros" value="0" />}
               {tipoPagamento !== "a_vista" && tipoPagamento !== "a_vista_juros" && (
-                <div className="space-y-2">
+                <div className="space-y-2 animate-in fade-in duration-200">
                   <label className="text-sm font-bold text-slate-600 uppercase tracking-wider">Nº de Parcelas</label>
                   <input type="number" min="1" max="120" value={periodos} onChange={(e) => setPeriodos(Number(e.target.value))} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors" />
                 </div>
@@ -211,7 +231,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
                 <input type="date" name="dataInicio" required value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors cursor-pointer" />
               </div>
               {tipoPagamento !== "a_vista" && tipoPagamento !== "a_vista_juros" && tipoPagamento !== "juros_compostos" && (
-                <div className="space-y-2">
+                <div className="space-y-2 animate-in fade-in duration-200">
                   <label className="text-sm font-bold text-slate-600 uppercase tracking-wider">Vencimento 1ª Parcela</label>
                   <input type="date" value={vencimentoPrimeira} onChange={(e) => setVencimentoPrimeira(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-900 font-semibold hover:border-amber-400 transition-colors cursor-pointer" />
                 </div>
@@ -258,7 +278,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
           </div>
         </div>
         {recriarParcelas && parcelasSimuladas.length > 0 && (
-          <div className="bg-white border border-slate-200 shadow-lg rounded-2xl relative overflow-hidden">
+          <div className="bg-white border border-slate-200 shadow-lg rounded-2xl relative overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500" />
             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
               <h3 className="text-sm font-black text-slate-900 tracking-tight">Novas Parcelas Simuladas</h3>
@@ -286,26 +306,26 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
             </div>
           </div>
         )}
-        <div className="flex items-center justify-end space-x-4 pt-6 mt-8 border-t border-slate-200">
-          <Link href={`/emprestimos/${emprestimo.id}`} className="px-6 py-3.5 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-black tracking-wide hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm">Cancelar</Link>
-          <button type="submit" disabled={isPending} className="flex items-center space-x-2 bg-emerald-600 text-white px-8 py-3.5 rounded-xl text-sm font-black tracking-wide hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 shadow-md transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 mt-8 border-t border-slate-200">
+          <Link href={`/emprestimos/${emprestimo.id}`} className="w-full sm:w-auto text-center px-6 py-3.5 bg-white text-slate-600 border border-slate-200 rounded-xl text-sm font-black tracking-wide hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm">Cancelar</Link>
+          <button type="submit" disabled={isPending} className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-emerald-600 text-white px-8 py-3.5 rounded-xl text-sm font-black tracking-wide hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 shadow-md transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
             {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
             <span>{isPending ? "Salvando..." : "Salvar Alterações"}</span>
           </button>
         </div>
       </form>
       {showOverlay && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white p-8 rounded-3xl max-w-sm w-full mx-4 shadow-2xl border border-slate-200 flex flex-col items-center justify-center space-y-6 text-center">
-            <div className="relative flex items-center justify-center w-28 h-28 bg-emerald-50 rounded-full overflow-hidden">
-              {overlayStep === 2 ? <div className="w-full h-full flex items-center justify-center"><CheckCircle2 className="w-16 h-16 text-emerald-500 drop-shadow-md" /></div> : <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm motion-modal-backdrop-in">
+          <div className="bg-white p-8 rounded-3xl max-w-sm w-full mx-4 shadow-2xl border border-slate-200 flex flex-col items-center justify-center space-y-6 text-center motion-modal-card-in">
+            <div className="relative flex items-center justify-center w-28 h-28 bg-emerald-50 rounded-full overflow-hidden transition-transform duration-300">
+              {overlayStep === 2 ? <div className="w-full h-full flex items-center justify-center animate-in zoom-in-90 duration-200"><CheckCircle2 className="w-16 h-16 text-emerald-500 drop-shadow-md" /></div> : <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />}
             </div>
             <div className="space-y-2">
               <h3 className="text-base font-black text-slate-800 tracking-tight">{overlayStep === 0 && "Validando dados..."}{overlayStep === 1 && "Atualizando empréstimo..."}{overlayStep === 2 && "Alterações salvas!"}</h3>
               <p className="text-sm font-medium text-slate-500">{overlayStep === 0 && "Verificando informações."}{overlayStep === 1 && (recriarParcelas ? "Recalculando parcelas." : "Atualizando dados.")}{overlayStep === 2 && "Tudo pronto! Redirecionando..."}</p>
             </div>
             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 transition-all duration-700 ease-in-out" style={{ width: overlayStep === 0 ? "33%" : overlayStep === 1 ? "66%" : "100%" }} />
+              <div className="h-full bg-emerald-500 transition-all duration-300 ease-in-out" style={{ width: overlayStep === 0 ? "33%" : overlayStep === 1 ? "66%" : "100%" }} />
             </div>
           </div>
         </div>
