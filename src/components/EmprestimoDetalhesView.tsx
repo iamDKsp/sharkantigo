@@ -448,6 +448,9 @@ export default function EmprestimoDetalhesView({
         valorEmprestado: emprestimo.valor_emprestado,
         taxaJuros: emprestimo.taxa_juros,
         taxaMulta: emprestimo.taxa_multa,
+        atrasoTipo: emprestimo.atraso_tipo,
+        atrasoValor: emprestimo.atraso_valor,
+        observacoes: emprestimo.observacoes,
         dataGeracao: new Date(),
         parcelas: emprestimo.parcelas.map((p) => ({
           numero: p.numero,
@@ -474,6 +477,9 @@ export default function EmprestimoDetalhesView({
         valorEmprestado: emprestimo.valor_emprestado,
         taxaJuros: emprestimo.taxa_juros,
         taxaMulta: emprestimo.taxa_multa,
+        atrasoTipo: emprestimo.atraso_tipo,
+        atrasoValor: emprestimo.atraso_valor,
+        observacoes: emprestimo.observacoes,
         dataGeracao: new Date(),
         parcelas: emprestimo.parcelas.map((p) => ({
           numero: p.numero,
@@ -629,26 +635,63 @@ export default function EmprestimoDetalhesView({
 
               {/* Valores */}
               <div className="flex flex-wrap gap-x-8 gap-y-3 mb-6">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Saldo a Receber</p>
-                  <p className="text-2xl font-black text-slate-900 leading-none tracking-tight">{fmt(saldoRestante > 0 ? saldoRestante : totalEstimado)}</p>
-                </div>
-                <div className="flex gap-6 items-end pb-1">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros</p>
-                    <p className="text-sm font-black text-slate-500 leading-none">{fmt(totalEstimado - emprestimo.valor_emprestado)}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Recebido</p>
-                    <p className="text-sm font-black text-emerald-600 leading-none">{fmt(totalPago)}</p>
-                  </div>
-                </div>
+                {isAVista ? (
+                  <>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Valor Investido</p>
+                      <p className="text-2xl font-black text-slate-900 leading-none tracking-tight">{fmt(emprestimo.valor_emprestado)}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-6 items-end pb-1">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros</p>
+                        <p className="text-sm font-black text-slate-700 leading-none">{fmt(valorJurosCalculado)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Quitação</p>
+                        <p className="text-sm font-black text-slate-900 leading-none">{fmt(saldoRestante > 0 ? saldoRestante : totalEstimado)}</p>
+                      </div>
+                      {totalPago > 0 && (
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros Recebidos</p>
+                          <p className="text-sm font-black text-emerald-600 leading-none">{fmt(totalPago)}</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Saldo a Receber</p>
+                      <p className="text-2xl font-black text-slate-900 leading-none tracking-tight">{fmt(saldoRestante > 0 ? saldoRestante : totalEstimado)}</p>
+                    </div>
+                    <div className="flex gap-6 items-end pb-1">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros</p>
+                        <p className="text-sm font-black text-slate-500 leading-none">{fmt(totalEstimado - emprestimo.valor_emprestado)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Recebido</p>
+                        <p className="text-sm font-black text-emerald-600 leading-none">{fmt(totalPago)}</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Barra de progresso */}
               <div>
                 <div className="flex justify-between text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  <span>Progresso — {progresso.toFixed(0)}% pago</span>
+                  <span>
+                    {isAVista ? (
+                      todasPagas
+                        ? "Progresso — 100% quitado"
+                        : totalRenovacoes > 0
+                        ? `Status — ${totalRenovacoes} ${totalRenovacoes === 1 ? "renovação paga" : "renovações pagas"}`
+                        : "Status — Empréstimo à Vista"
+                    ) : (
+                      `Progresso — ${progresso.toFixed(0)}% pago`
+                    )}
+                  </span>
                   <span>
                     {isAVista ? (
                       totalRenovacoes > 0 ? (
@@ -664,7 +707,14 @@ export default function EmprestimoDetalhesView({
                   </span>
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${s.bar} transition-all duration-700`} style={{ width: `${Math.max(progresso, progresso > 0 ? 3 : 0)}%` }} />
+                  <div
+                    className={`h-full rounded-full ${s.bar} transition-all duration-700`}
+                    style={{
+                      width: isAVista
+                        ? "100%"
+                        : `${Math.max(progresso, progresso > 0 ? 3 : 0)}%`,
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -794,7 +844,14 @@ export default function EmprestimoDetalhesView({
                       </div>
 
                       <div className="flex items-center gap-2.5">
-                        <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
+                        <div className="text-right">
+                          <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
+                          {isAv && p.status === "aberto" && (
+                            <span className="text-[10px] text-slate-400 block font-medium">
+                              (Principal {fmt(emprestimo.valor_emprestado)} + Juros {fmt(valorJurosCalculado)})
+                            </span>
+                          )}
+                        </div>
                         {p.status === "aberto" && (() => {
                           const a = jurosDe(p);
                           return a.juros > 0 ? (
@@ -1022,12 +1079,14 @@ export default function EmprestimoDetalhesView({
                     </>
                   ) : (
                     <>
-                      <BtnPrimary onClick={() => pay(false)}><CheckCircle2 className="w-4 h-4" /> {isAVista ? "Quitar À Vista" : "Quitar Agora"}</BtnPrimary>
+                      <BtnPrimary onClick={() => pay(false)}>
+                        <CheckCircle2 className="w-4 h-4" /> {isAVista ? `Quitar À Vista (${fmt(saldoRestante > 0 ? saldoRestante : totalEstimado)})` : "Quitar Agora"}
+                      </BtnPrimary>
                     </>
                   )}
                   {isAVista && (
                     <button onClick={receiveJuros} disabled={isPending} className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black rounded-xl transition-all active:scale-[0.98] shadow-sm cursor-pointer">
-                      <RefreshCw className="w-4 h-4" /> Receber só os juros (renovar +30d)
+                      <RefreshCw className="w-4 h-4" /> Receber só os juros — {fmt(valorJurosCalculado)} (renovar +30d)
                     </button>
                   )}
                   <div className="grid grid-cols-2 gap-2">

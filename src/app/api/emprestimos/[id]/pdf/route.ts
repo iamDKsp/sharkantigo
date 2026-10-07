@@ -31,6 +31,9 @@ export async function GET(req: Request, { params }: RouteParams) {
       valorEmprestado: Number(emprestimo.valor_emprestado),
       taxaJuros: Number(emprestimo.taxa_juros),
       taxaMulta: Number(emprestimo.taxa_multa),
+      atrasoTipo: emprestimo.atraso_tipo,
+      atrasoValor: emprestimo.atraso_valor,
+      observacoes: emprestimo.observacoes,
       dataGeracao: new Date(),
       parcelas: emprestimo.parcelas.map((p) => ({
         numero: p.numero,

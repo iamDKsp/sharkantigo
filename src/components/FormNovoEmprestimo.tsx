@@ -248,6 +248,9 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                       valorEmprestado: res.valorEmprestado,
                       taxaJuros: res.taxaJuros,
                       taxaMulta: res.taxaMulta,
+                      atrasoTipo: res.atrasoTipo,
+                      atrasoValor: res.atrasoValor,
+                      observacoes: res.observacoes,
                       parcelas: res.parcelas.map((p: any) => ({
                         numero: p.numero,
                         valor: p.valor,

@@ -126,5 +126,8 @@ export async function createEmprestimo(formData: FormData) {
     valorEmprestado,
     taxaJuros,
     taxaMulta,
+    atrasoTipo: regraAtraso.tipo,
+    atrasoValor: regraAtraso.valor,
+    observacoes: observacoes || null,
   };
 }

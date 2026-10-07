@@ -19,6 +19,9 @@ export interface CronogramaPdfData {
   valorEmprestado: number;
   taxaJuros?: number;
   taxaMulta?: number;
+  atrasoTipo?: string | null;
+  atrasoValor?: number | null;
+  observacoes?: string | null;
   dataGeracao?: string | Date;
   parcelas: ParcelaPdfItem[];
 }
@@ -43,7 +46,7 @@ export function formatarMoeda(val: number): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(val || 0);
+  }).format(val || 0).replace(/\u00A0/g, " ");
 }
 
 export function getTipoModalityTitle(tipo?: string): string {
@@ -228,13 +231,13 @@ export function gerarCronogramaPdf(data: CronogramaPdfData): jsPDF {
       valign: "middle",
     },
     columnStyles: {
-      0: { halign: "center", cellWidth: 42 }, // Parcela
-      1: { halign: "center", cellWidth: 76 }, // Vencimento
+      0: { halign: "center", cellWidth: 45 }, // Parcela
+      1: { halign: "center", cellWidth: 75 }, // Vencimento
       2: { halign: "center", cellWidth: 80 }, // Principal
-      3: { halign: "center", cellWidth: 66 }, // Juros
-      4: { halign: "center", cellWidth: 64 }, // Multa
+      3: { halign: "center", cellWidth: 70 }, // Juros
+      4: { halign: "center", cellWidth: 70 }, // Multa
       5: { halign: "center", fontStyle: "bold", cellWidth: 88 }, // Total
-      6: { halign: "center", cellWidth: 88 }, // Status
+      6: { halign: "center", cellWidth: 87.28 }, // Status
     },
     margin: { left: marginX, right: marginX },
   });
@@ -248,7 +251,104 @@ export function gerarCronogramaPdf(data: CronogramaPdfData): jsPDF {
     align: "center",
   });
 
+  // 8. Observações / Condições em Caso de Atraso
+  const textoAtraso = obterTextoAtrasoPdf(data.atrasoTipo, data.atrasoValor);
+  const obsLimpa = data.observacoes?.replace(/\[DIA_BASE:\s*\d+\]/gi, "").trim();
+
+  if (textoAtraso || obsLimpa) {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const boxWidth = pageWidth - marginX * 2;
+    const paddingX = 14;
+    const paddingY = 12;
+    const maxTextWidth = boxWidth - paddingX * 2;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+
+    let linhasAtraso: string[] = [];
+    if (textoAtraso) {
+      linhasAtraso = doc.splitTextToSize(textoAtraso, maxTextWidth);
+    }
+
+    let linhasObs: string[] = [];
+    if (obsLimpa) {
+      linhasObs = doc.splitTextToSize(`Observações adicionais: ${obsLimpa}`, maxTextWidth);
+    }
+
+    const espacoLinha = 11.5;
+    let alturaConteudo = 14; // Altura do cabeçalho da caixa
+    if (linhasAtraso.length > 0) {
+      alturaConteudo += 6 + linhasAtraso.length * espacoLinha;
+    }
+    if (linhasObs.length > 0) {
+      alturaConteudo += (linhasAtraso.length > 0 ? 8 : 4) + linhasObs.length * espacoLinha;
+    }
+
+    const boxHeight = alturaConteudo + paddingY * 2;
+
+    let startY = finalY + 50;
+    // Se não couber na página atual, move para uma nova página
+    if (startY + boxHeight > pageHeight - 40) {
+      doc.addPage();
+      startY = 40;
+    }
+
+    // Fundo do card
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.roundedRect(marginX, startY, boxWidth, boxHeight, 6, 6, "FD");
+
+    // Barra lateral de destaque
+    doc.setFillColor(15, 23, 42); // #0F172A
+    doc.roundedRect(marginX, startY, 4, boxHeight, 2, 2, "F");
+
+    // Cabeçalho
+    let cursorY = startY + paddingY + 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text("CONDIÇÕES EM CASO DE ATRASO NO PAGAMENTO", marginX + paddingX, cursorY);
+
+    cursorY += 13;
+
+    // Texto de atraso
+    if (linhasAtraso.length > 0) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(51, 65, 85); // slate-700
+      doc.text(linhasAtraso, marginX + paddingX, cursorY);
+      cursorY += linhasAtraso.length * espacoLinha + 6;
+    }
+
+    // Observações adicionais
+    if (linhasObs.length > 0) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139); // slate-500
+      doc.text(linhasObs, marginX + paddingX, cursorY);
+    }
+  }
+
   return doc;
+}
+
+/**
+ * Retorna o texto formal e profissional de cobrança moratória por atraso diário
+ */
+export function obterTextoAtrasoPdf(tipo?: string | null, valor?: number | null): string | null {
+  const val = Number(valor);
+  if (!tipo || !val || val <= 0) return null;
+
+  if (tipo === "fixo_dia") {
+    const valorFmt = formatarMoeda(val);
+    return `Em caso de atraso ou inadimplemento no pagamento de qualquer parcela, incidirá acréscimo moratório no valor fixo de ${valorFmt} por dia de atraso, calculado a partir do primeiro dia subsequente ao vencimento até a efetiva quitação.`;
+  }
+
+  if (tipo === "percentual_dia") {
+    return `Em caso de atraso ou inadimplemento no pagamento de qualquer parcela, incidirão juros moratórios à razão de ${val}% ao dia sobre o valor da parcela em aberto, calculados a partir do primeiro dia subsequente ao vencimento até a efetiva quitação.`;
+  }
+
+  return null;
 }
 
 /**
