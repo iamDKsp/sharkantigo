@@ -9,9 +9,16 @@ interface DocumentosLightboxProps {
 
 export default function DocumentosLightbox({ documentos }: DocumentosLightboxProps) {
   const [aberto, setAberto] = useState<number | null>(null);
+  const [closing, setClosing] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  const fechar = useCallback(() => setAberto(null), []);
+  const fechar = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      setAberto(null);
+    }, 150);
+  }, []);
 
   const anterior = useCallback(() => {
     setAberto((i) => (i !== null ? (i - 1 + documentos.length) % documentos.length : null));
@@ -103,14 +110,16 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
       {/* LIGHTBOX */}
       {aberto !== null && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center"
+          className={`fixed inset-0 z-[9999] flex items-center justify-center ${
+            closing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+          }`}
           style={{ background: "rgba(0,0,0,0.95)" }}
           onClick={fechar}
         >
           {/* Botão fechar */}
           <button
             onClick={fechar}
-            className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90"
+            className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 cursor-pointer"
             aria-label="Fechar"
           >
             <X className="w-5 h-5" />
@@ -124,7 +133,7 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
           {/* Botão download */}
           <button
             onClick={(e) => { e.stopPropagation(); handleDownload(urlAtual!, aberto); }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-sm px-5 py-2.5 rounded-full shadow-lg transition-all z-10"
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-sm px-5 py-2.5 rounded-full shadow-lg transition-all z-10 cursor-pointer"
             aria-label="Baixar documento"
           >
             <Download className="w-4 h-4" />
@@ -135,7 +144,7 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
           {documentos.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); anterior(); }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 z-10"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 z-10 cursor-pointer"
               aria-label="Anterior"
             >
               <ChevronLeft className="w-6 h-6" />
@@ -146,7 +155,7 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
           {documentos.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); proximo(); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 z-10"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90 z-10 cursor-pointer"
               aria-label="Próximo"
             >
               <ChevronRight className="w-6 h-6" />
@@ -155,7 +164,10 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
 
           {/* Conteúdo principal */}
           <div
-            className="relative max-w-[95vw] max-h-[85vh] flex items-center justify-center"
+            key={aberto}
+            className={`relative max-w-[95vw] max-h-[85vh] flex items-center justify-center ${
+              closing ? "motion-modal-card-out" : "animate-in fade-in zoom-in-95 duration-200"
+            }`}
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
             onTouchEnd={(e) => {
