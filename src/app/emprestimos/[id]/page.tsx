@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import EmprestimoDetalhesView from "@/components/EmprestimoDetalhesView";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
+import { obterConfiguracoesSistema } from "@/app/configuracoes/actions";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -63,15 +64,15 @@ export default async function EmprestimoDetalhesPage({ params }: PageProps) {
       : null,
   };
 
-  const configSistema = await prisma.configuracao.findUnique({
-    where: { chave: "perguntar_whatsapp_renovacao" }
-  });
-  const perguntarWhatsappRenovacao = configSistema?.valor === "true";
+  const config = await obterConfiguracoesSistema();
+  const perguntarWhatsappRenovacao = config.perguntar_whatsapp_renovacao;
+  const modoCarencia = config.regra_carencia_30_dias;
 
   return (
     <EmprestimoDetalhesView 
       emprestimo={serializedEmprestimo as any} 
       perguntarWhatsappRenovacao={perguntarWhatsappRenovacao}
+      modoCarencia={modoCarencia}
     />
   );
 }

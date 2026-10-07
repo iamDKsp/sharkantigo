@@ -72,10 +72,12 @@ function Modal({
 
 export default function EmprestimoDetalhesView({ 
   emprestimo,
-  perguntarWhatsappRenovacao = false 
+  perguntarWhatsappRenovacao = false,
+  modoCarencia = false,
 }: { 
   emprestimo: Emprestimo;
   perguntarWhatsappRenovacao?: boolean;
+  modoCarencia?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -224,37 +226,58 @@ export default function EmprestimoDetalhesView({
   const totalParcelasNormais = countParcela;
 
   const todasPagas = emprestimo.parcelas.length > 0 && emprestimo.parcelas.every(p => p.status.startsWith("pago"));
+  const jurosRenovacoesPagas = itensComLabels
+    .filter(p => p.tipoItem === "renovacao" && p.status.startsWith("pago"))
+    .reduce((acc, p) => acc + p.valor, 0);
+  const lucroJurosTotal = todasPagas
+    ? Math.max(0, totalPago - Number(emprestimo.valor_emprestado))
+    : jurosRenovacoesPagas;
+  const valorQuitacao = proximaParcelaAberta ? proximaParcelaAberta.valor : 0;
   let statusReal = todasPagas ? "quitado" : emprestimo.status;
   let atrasado = false, venceHoje = false;
+  let maxAtrasoDias = 0;
 
   if (!todasPagas) {
-    atrasado = emprestimo.parcelas.some(p => {
-      if (p.status !== "aberto") return false;
+    emprestimo.parcelas.forEach((p) => {
+      if (p.status !== "aberto") return;
       const v = new Date(p.data_vencimento);
-      return new Date(Date.UTC(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate())) < hojeUTC;
+      const vUTC = new Date(Date.UTC(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate()));
+      if (vUTC < hojeUTC) {
+        const diff = Math.floor((hojeUTC.getTime() - vUTC.getTime()) / (1000 * 3600 * 24));
+        if (diff > maxAtrasoDias) maxAtrasoDias = diff;
+      }
     });
-    venceHoje = emprestimo.parcelas.some(p => {
+    if (emprestimo.parcelas.length === 0 && vencUTC < hojeUTC) {
+      maxAtrasoDias = Math.floor((hojeUTC.getTime() - vencUTC.getTime()) / (1000 * 3600 * 24));
+    }
+
+    const temVencido = maxAtrasoDias > 0;
+    atrasado = modoCarencia ? maxAtrasoDias > 30 : temVencido;
+    const emCarencia = modoCarencia && maxAtrasoDias > 0 && maxAtrasoDias <= 30;
+
+    venceHoje = emprestimo.parcelas.some((p) => {
       if (p.status !== "aberto") return false;
       const v = new Date(p.data_vencimento);
       return new Date(Date.UTC(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate())).getTime() === hojeUTC.getTime();
     });
     if (emprestimo.parcelas.length === 0) {
-      atrasado = vencUTC < hojeUTC;
       venceHoje = vencUTC.getTime() === hojeUTC.getTime();
     }
     if (atrasado) statusReal = "atrasado";
+    else if (emCarencia) statusReal = "carencia";
   }
 
   const isPausado = emprestimo.status === "pausado";
 
   const STATUS = {
     quitado:  { label: "Quitado",        icon: <CheckCircle2 className="w-3 h-3" />, bg: "bg-emerald-50 text-emerald-700 border-emerald-200", bar: "bg-emerald-500", stripe: "from-emerald-500/5 to-transparent" },
-    atrasado: { label: "Atrasado",        icon: <AlertCircle className="w-3 h-3" />, bg: "bg-rose-50 text-rose-700 border-rose-200", bar: "bg-rose-500", stripe: "from-rose-500/5 to-transparent" },
+    atrasado: { label: modoCarencia ? `Atrasado (+${maxAtrasoDias}d)` : "Atrasado", icon: <AlertCircle className="w-3 h-3" />, bg: "bg-rose-50 text-rose-700 border-rose-200", bar: "bg-rose-500", stripe: "from-rose-500/5 to-transparent" },
+    carencia: { label: `Em Carência (+${maxAtrasoDias}d)`, icon: <Clock className="w-3 h-3" />, bg: "bg-amber-50 text-amber-800 border-amber-200", bar: "bg-amber-500", stripe: "from-amber-500/5 to-transparent" },
     hoje:     { label: "Vence Hoje",      icon: <Clock className="w-3 h-3" />, bg: "bg-amber-50 text-amber-700 border-amber-200", bar: "bg-amber-500", stripe: "from-amber-500/5 to-transparent" },
     emDia:    { label: "Em Dia",          icon: <BadgeCheck className="w-3 h-3" />, bg: "bg-blue-50 text-blue-700 border-blue-200", bar: "bg-emerald-500", stripe: "from-blue-500/5 to-transparent" },
     pausado:  { label: "Pausado",         icon: <PauseCircle className="w-3 h-3" />, bg: "bg-yellow-50 text-yellow-700 border-yellow-200", bar: "bg-yellow-400", stripe: "from-yellow-500/5 to-transparent" },
   };
-  const s = STATUS[isPausado ? "pausado" : statusReal === "quitado" ? "quitado" : atrasado ? "atrasado" : venceHoje ? "hoje" : "emDia"];
+  const s = STATUS[isPausado ? "pausado" : statusReal === "quitado" ? "quitado" : statusReal === "carencia" ? "carencia" : atrasado ? "atrasado" : venceHoje ? "hoje" : "emDia"];
 
 
   const freqLabel: Record<string, string> = { diario: "Diário", semanal: "Semanal", quinzenal: "Quinzenal", mensal: "Mensal" };
@@ -643,18 +666,33 @@ export default function EmprestimoDetalhesView({
                     </div>
                     <div className="flex flex-wrap gap-6 items-end pb-1">
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{todasPagas ? "Juros (Mês)" : "Juros"}</p>
                         <p className="text-sm font-black text-slate-700 leading-none">{fmt(valorJurosCalculado)}</p>
                       </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Quitação</p>
-                        <p className="text-sm font-black text-slate-900 leading-none">{fmt(saldoRestante > 0 ? saldoRestante : totalEstimado)}</p>
-                      </div>
-                      {totalPago > 0 && (
-                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros Recebidos</p>
-                          <p className="text-sm font-black text-emerald-600 leading-none">{fmt(totalPago)}</p>
-                        </div>
+                      {todasPagas ? (
+                        <>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Lucro em Juros</p>
+                            <p className="text-sm font-black text-emerald-600 leading-none">{fmt(lucroJurosTotal)}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Recebido</p>
+                            <p className="text-sm font-black text-slate-900 leading-none">{fmt(totalPago)}</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Quitação</p>
+                            <p className="text-sm font-black text-slate-900 leading-none">{fmt(valorQuitacao > 0 ? valorQuitacao : (saldoRestante > 0 ? saldoRestante : totalEstimado))}</p>
+                          </div>
+                          {jurosRenovacoesPagas > 0 && (
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Juros Recebidos</p>
+                              <p className="text-sm font-black text-emerald-600 leading-none">{fmt(jurosRenovacoesPagas)}</p>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </>

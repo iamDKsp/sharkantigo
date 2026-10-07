@@ -50,12 +50,12 @@ export default function SearchableSelect({ options, value, onChange, placeholder
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left bg-transparent border-none p-3 text-slate-900 font-medium flex items-center justify-between"
+        className="w-full text-left bg-transparent border-none p-3 text-slate-900 font-medium flex items-center justify-between cursor-pointer active:scale-[0.99] transition-transform"
       >
         <span className={!selectedOption ? "text-slate-400" : ""}>
           {selectedOption ? selectedOption.nome : placeholder}
         </span>
-        <ChevronDown className="w-4 h-4 text-slate-400" />
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       {/* Menu Dropdown Animado */}

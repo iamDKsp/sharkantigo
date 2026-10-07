@@ -10,6 +10,7 @@ import {
   renderizarComTemplates,
   ultimasCobrancas,
 } from "@/lib/mensagens/servidor";
+import { obterConfiguracoesSistema } from "@/app/configuracoes/actions";
 
 export const revalidate = 0;
 
@@ -37,11 +38,13 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
   });
 
   // Modelos de mensagem + dados da base (Pix etc.): carregados UMA vez para todas as parcelas
-  const [templates, cfg, cobradasHoje] = await Promise.all([
+  const [templates, cfg, cobradasHoje, configSistema] = await Promise.all([
     carregarTemplates(),
     carregarConfiguracoes(),
     parcelasCobradasHoje(),
+    obterConfiguracoesSistema(),
   ]);
+  const modoCarencia = configSistema.regra_carencia_30_dias;
 
   const atrasadosOntem: any[] = [];
   const atrasadosAnteriores: any[] = [];
@@ -164,6 +167,7 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
       initialFiltro={initialFiltro}
       cobradasHoje={cobradasHoje}
       pixConfigurado={cfg.pix_chave.trim().length > 0}
+      modoCarencia={modoCarencia}
     />
   );
 }

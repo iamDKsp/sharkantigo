@@ -18,11 +18,16 @@ import Link from "next/link";
 import { ProjecaoBarChart } from "@/components/ProjecaoBarChart";
 import { CarteiraPieChart } from "@/components/CarteiraPieChart";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
+import { obterConfiguracoesSistema } from "@/app/configuracoes/actions";
 
 export const revalidate = 0;
 
 export default async function DashboardPage() {
-  const hojeUTC = hojeEmBrasilia();
+  const [hojeUTC, configSistema] = [hojeEmBrasilia(), await obterConfiguracoesSistema()];
+  const modoCarencia = configSistema.regra_carencia_30_dias;
+  const limiteCarenciaUTC = new Date(hojeUTC);
+  limiteCarenciaUTC.setUTCDate(hojeUTC.getUTCDate() - 30);
+
   const ontemUTC = new Date(hojeUTC);
   ontemUTC.setUTCDate(hojeUTC.getUTCDate() - 1);
 
@@ -102,7 +107,7 @@ export default async function DashboardPage() {
           if (p.status !== "aberto") return false;
           const pvObj = new Date(p.data_vencimento);
           const pvUTC = new Date(Date.UTC(pvObj.getUTCFullYear(), pvObj.getUTCMonth(), pvObj.getUTCDate()));
-          return pvUTC < hojeUTC;
+          return modoCarencia ? pvUTC < limiteCarenciaUTC : pvUTC < hojeUTC;
         });
 
         atrasouOntem = emp.parcelas.some((p) => {
@@ -120,7 +125,8 @@ export default async function DashboardPage() {
         });
       }
     } else {
-      if (vencimentoUTC < hojeUTC) {
+      const limiteAtraso = modoCarencia ? limiteCarenciaUTC : hojeUTC;
+      if (vencimentoUTC < limiteAtraso) {
         estaAtrasado = true;
         if (vencimentoUTC.getTime() === ontemUTC.getTime()) {
           atrasouOntem = true;

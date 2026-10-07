@@ -30,11 +30,12 @@ interface ParcelaRowProps {
   onToggle: (id: string, checked: boolean) => void;
   onCobrar: (p: Parcela, tipo: TipoCobranca) => void;
   onCopiar: (p: Parcela) => void;
+  modoCarencia?: boolean;
 }
 
 /** Selo de severidade + situação da cobrança. */
-function StatusBlock({ p, cobradoHoje, ultimoEnvio }: { p: Parcela; cobradoHoje: boolean; ultimoEnvio: string | null }) {
-  const sev = severidade(p.diasAtraso);
+function StatusBlock({ p, cobradoHoje, ultimoEnvio, modoCarencia }: { p: Parcela; cobradoHoje: boolean; ultimoEnvio: string | null; modoCarencia?: boolean }) {
+  const sev = severidade(p.diasAtraso, modoCarencia);
   const textoCobranca = ultimoEnvio ? `Cobrado ${tempoRelativo(ultimoEnvio)}` : cobradoHoje ? "Cobrado hoje" : "Ainda não cobrado";
   return (
     <>
@@ -148,9 +149,9 @@ function MenuLinha({ p, onCopiar }: { p: Parcela; onCopiar: (p: Parcela) => void
   );
 }
 
-function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimoEnvio, onToggle, onCobrar, onCopiar }: ParcelaRowProps) {
+function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimoEnvio, onToggle, onCobrar, onCopiar, modoCarencia }: ParcelaRowProps) {
   const cliente = p.emprestimo.cliente;
-  const sev = severidade(p.diasAtraso);
+  const sev = severidade(p.diasAtraso, modoCarencia);
   const semTelefone = !cliente.telefone?.replace(/\D/g, "");
   const totalLabel = isParcelaUnica(p) ? "À Vista" : `Parc. ${p.numero}/${p.emprestimo.totalParcelas}`;
 
@@ -194,7 +195,7 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
         </div>
         {/* Status — versão celular (no desktop vira coluna própria) */}
         <div className="mt-1.5 flex items-center gap-1.5 flex-wrap md:hidden">
-          <StatusBlock p={p} cobradoHoje={cobradoHoje} ultimoEnvio={ultimoEnvio} />
+          <StatusBlock p={p} cobradoHoje={cobradoHoje} ultimoEnvio={ultimoEnvio} modoCarencia={modoCarencia} />
         </div>
         {p.emprestimo.data_prevista_pagamento && (
           <div className="mt-1 flex items-center gap-1">
@@ -208,7 +209,7 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
 
       {/* Status — versão desktop */}
       <div className="hidden md:flex flex-col items-start gap-1.5">
-        <StatusBlock p={p} cobradoHoje={cobradoHoje} ultimoEnvio={ultimoEnvio} />
+        <StatusBlock p={p} cobradoHoje={cobradoHoje} ultimoEnvio={ultimoEnvio} modoCarencia={modoCarencia} />
       </div>
 
       {/* Valor */}

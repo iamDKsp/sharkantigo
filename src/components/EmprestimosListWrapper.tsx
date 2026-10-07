@@ -48,9 +48,23 @@ interface EmprestimosListWrapperProps {
   initialSort?:        string;
   initialPagina?:      number;
   initialDiasAtraso?:  string;
+  modoCarencia?:       boolean;
 }
 
-type StatusFilter = "todos" | "ativos" | "atrasados" | "ontem" | "quitados" | "hoje" | "pausados";
+type StatusFilter = 
+  | "todos" 
+  | "ativos" 
+  | "atrasados" 
+  | "ontem" 
+  | "quitados" 
+  | "hoje" 
+  | "pausados"
+  | "carencia"
+  | "carencia_5"
+  | "carencia_10"
+  | "carencia_15"
+  | "atrasados_30";
+
 type SortOption = 
   | "padrao" 
   | "alfabetica_az"
@@ -100,10 +114,21 @@ function resolveDiasAtraso(val?: string): string {
   return "0";
 }
 
-function resolveStatus(filtro: string): StatusFilter {
+function resolveStatus(filtro: string, modoCarencia = false): StatusFilter {
+  if (modoCarencia) {
+    if (filtro === "carencia")                       return "carencia";
+    if (filtro === "carencia_5" || filtro === "5")   return "carencia_5";
+    if (filtro === "carencia_10" || filtro === "10") return "carencia_10";
+    if (filtro === "carencia_15" || filtro === "15") return "carencia_15";
+    if (filtro === "atrasados_30" || filtro === "atrasados" || filtro === "30") return "atrasados_30";
+    if (filtro === "quitados")                       return "quitados";
+    if (filtro === "pausados")                       return "pausados";
+    if (filtro === "todos")                          return "todos";
+    return "carencia";
+  }
   if (filtro === "hoje")      return "hoje";
   if (filtro === "ontem")     return "ontem";
-  if (filtro === "atrasados") return "atrasados";
+  if (filtro === "atrasados" || filtro === "atrasados_30") return "atrasados";
   if (filtro === "quitados")  return "quitados";
   if (filtro === "todos")     return "todos";
   if (filtro === "pausados")  return "pausados";
@@ -119,13 +144,17 @@ export default function EmprestimosListWrapper({
   initialSort       = "padrao",
   initialPagina     = 1,
   initialDiasAtraso = "0",
+  modoCarencia      = false,
 }: EmprestimosListWrapperProps) {
   // ── Scroll restoration ──
   useScrollRestoration("emprestimos-list");
 
   // ── Estado persistido na URL ──
+  const parseStatus = (f: string) => resolveStatus(f, modoCarencia);
+  const defaultStatus: StatusFilter = modoCarencia ? "carencia" : "ativos";
+
   const [search, setSearch]                 = useUrlState("q",           initialSearch,   "");
-  const [statusFilter, setStatusFilter]     = useUrlState<StatusFilter>("status", resolveStatus(initialFiltro), "ativos", resolveStatus);
+  const [statusFilter, setStatusFilter]     = useUrlState<StatusFilter>("status", parseStatus(initialFiltro), defaultStatus, parseStatus);
   const [parceiroFilter, setParceiroFilter] = useUrlState("parceiro",    initialParceiro, "todos");
   const [sortOption, setSortOption]         = useUrlState<SortOption>("sort", resolveSort(initialSort), "padrao", resolveSort);
   const [currentPage, setCurrentPage]       = useUrlState("pagina",      String(initialPagina), "1");
@@ -137,8 +166,13 @@ export default function EmprestimosListWrapper({
   const setSortAndReset     = (v: SortOption)   => { setSortOption(v);     setCurrentPage("1"); };
   const setSearchAndReset   = (v: string)       => { setSearch(v);         setCurrentPage("1"); };
 
-  // Handler para cliques nas tabs de status (com ciclo especial para atrasados: 0 -> 5 -> 10 -> 15 -> 30 -> 0)
+  // Handler para cliques nas tabs de status (com ciclo especial para atrasados quando modoCarencia desativado)
   const handleTabClick = (tabId: StatusFilter) => {
+    if (modoCarencia) {
+      setStatusAndReset(tabId);
+      if (diasAtraso !== "0") setDiasAtraso("0");
+      return;
+    }
     if (tabId === "atrasados") {
       if (statusFilter !== "atrasados") {
         setStatusFilter("atrasados");
@@ -420,16 +454,36 @@ export default function EmprestimosListWrapper({
 
       if (!bateTexto) return false;
 
-      if (statusFilter === "ativos" && (emp.statusReal !== "ativo" || emp.estaAtrasado || emp.status === "pausado")) return false;
-      if (statusFilter === "atrasados") {
-        if (!emp.estaAtrasado) return false;
-        const minDias = parseInt(diasAtraso, 10) || 0;
-        if (minDias > 0 && emp.diasAtrasado <= minDias) return false;
+      if (modoCarencia) {
+        if (statusFilter === "carencia") {
+          // Todos os ativos dentro do período de tolerância/carência (diasAtrasado <= 30)
+          if (emp.statusReal !== "ativo" || emp.status === "pausado" || emp.diasAtrasado > 30) return false;
+        } else if (statusFilter === "carencia_5") {
+          if (emp.statusReal !== "ativo" || emp.status === "pausado" || emp.diasAtrasado <= 5 || emp.diasAtrasado > 30) return false;
+        } else if (statusFilter === "carencia_10") {
+          if (emp.statusReal !== "ativo" || emp.status === "pausado" || emp.diasAtrasado <= 10 || emp.diasAtrasado > 30) return false;
+        } else if (statusFilter === "carencia_15") {
+          if (emp.statusReal !== "ativo" || emp.status === "pausado" || emp.diasAtrasado <= 15 || emp.diasAtrasado > 30) return false;
+        } else if (statusFilter === "atrasados_30") {
+          // De fato atrasados (estouraram carência de 30 dias)
+          if (emp.statusReal !== "ativo" || emp.status === "pausado" || emp.diasAtrasado <= 30) return false;
+        } else if (statusFilter === "quitados") {
+          if (emp.statusReal !== "quitado") return false;
+        } else if (statusFilter === "pausados") {
+          if (emp.status !== "pausado") return false;
+        }
+      } else {
+        if (statusFilter === "ativos" && (emp.statusReal !== "ativo" || emp.estaAtrasado || emp.status === "pausado")) return false;
+        if (statusFilter === "atrasados") {
+          if (!emp.estaAtrasado) return false;
+          const minDias = parseInt(diasAtraso, 10) || 0;
+          if (minDias > 0 && emp.diasAtrasado <= minDias) return false;
+        }
+        if (statusFilter === "ontem" && !emp.estaAtrasadoOntem) return false;
+        if (statusFilter === "quitados" && emp.statusReal !== "quitado") return false;
+        if (statusFilter === "hoje" && !emp.venceHoje) return false;
+        if (statusFilter === "pausados" && emp.status !== "pausado") return false;
       }
-      if (statusFilter === "ontem" && !emp.estaAtrasadoOntem) return false;
-      if (statusFilter === "quitados" && emp.statusReal !== "quitado") return false;
-      if (statusFilter === "hoje" && !emp.venceHoje) return false;
-      if (statusFilter === "pausados" && emp.status !== "pausado") return false;
 
 
       if (parceiroFilter !== "todos") {
@@ -521,9 +575,12 @@ export default function EmprestimosListWrapper({
   // Card individual de um empréstimo (usado solto na lista ou como subcard dentro de um grupo)
   const renderCard = (emp: any, sub = false) => {
     const isQuitado = emp.statusReal === "quitado";
-    const isAtrasado = emp.estaAtrasado;
-    const isVencendo = emp.venceHoje || emp.venceEmBreve;
     const isPausado = emp.status === "pausado";
+    const isAtrasado = modoCarencia
+      ? (emp.statusReal === "ativo" && emp.diasAtrasado > 30 && !isPausado)
+      : emp.estaAtrasado;
+    const isCarencia = modoCarencia && emp.statusReal === "ativo" && !isPausado && !isQuitado && emp.diasAtrasado > 0 && emp.diasAtrasado <= 30;
+    const isVencendo = !isCarencia && !isAtrasado && (emp.venceHoje || emp.venceEmBreve);
 
     // Accent colors for the card
     let accentColor = "bg-emerald-500";
@@ -545,6 +602,11 @@ export default function EmprestimosListWrapper({
       borderColor = "border-rose-200";
       bgClass = "bg-white";
       textColor = "text-rose-600";
+    } else if (isCarencia) {
+      accentColor = "bg-amber-500";
+      borderColor = "border-amber-200";
+      bgClass = "bg-amber-50/30";
+      textColor = "text-amber-700";
     } else if (isVencendo) {
       accentColor = "bg-amber-500";
       borderColor = "border-amber-200";
@@ -583,7 +645,11 @@ export default function EmprestimosListWrapper({
               </span>
             ) : isAtrasado ? (
               <span className="flex items-center gap-1 bg-rose-100 text-rose-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-                <AlertCircle className="w-3 h-3" /> Atrasado
+                <AlertCircle className="w-3 h-3" /> {modoCarencia ? `Atrasado (+${emp.diasAtrasado}d)` : "Atrasado"}
+              </span>
+            ) : isCarencia ? (
+              <span className="flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <Clock className="w-3 h-3" /> Carência (+{emp.diasAtrasado}d)
               </span>
             ) : isVencendo ? (
               <span className="flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
@@ -660,9 +726,15 @@ export default function EmprestimosListWrapper({
     const aberto = gruposAbertos.has(grupo.clienteId);
     const cliente = emps[0].cliente;
 
-    const qtdAtrasados = emps.filter((e) => e.estaAtrasado).length;
+    const qtdAtrasados = modoCarencia
+      ? emps.filter((e) => e.statusReal === "ativo" && e.status !== "pausado" && e.diasAtrasado > 30).length
+      : emps.filter((e) => e.estaAtrasado).length;
     const temAtrasado = qtdAtrasados > 0;
-    const temVencendo = emps.some((e) => e.venceHoje || e.venceEmBreve);
+    const qtdCarencia = modoCarencia
+      ? emps.filter((e) => e.statusReal === "ativo" && e.status !== "pausado" && e.diasAtrasado > 0 && e.diasAtrasado <= 30).length
+      : 0;
+    const temCarencia = qtdCarencia > 0;
+    const temVencendo = !temCarencia && !temAtrasado && emps.some((e) => e.venceHoje || e.venceEmBreve);
     const todosPausados = emps.every((e) => e.status === "pausado");
     const todosQuitados = emps.every((e) => e.statusReal === "quitado");
 
@@ -673,6 +745,8 @@ export default function EmprestimosListWrapper({
 
     if (temAtrasado) {
       accentColor = "bg-rose-500"; borderColor = "border-rose-200"; textColor = "text-rose-600";
+    } else if (temCarencia) {
+      accentColor = "bg-amber-500"; borderColor = "border-amber-200"; bgClass = "bg-amber-50/30"; textColor = "text-amber-700";
     } else if (todosPausados) {
       accentColor = "bg-yellow-400"; borderColor = "border-yellow-200"; bgClass = "bg-yellow-50/30"; textColor = "text-yellow-700";
     } else if (todosQuitados) {
@@ -702,6 +776,10 @@ export default function EmprestimosListWrapper({
               {temAtrasado ? (
                 <span className="flex items-center gap-1 bg-rose-100 text-rose-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
                   <AlertCircle className="w-3 h-3" /> {qtdAtrasados === emps.length ? "Atrasado" : `${qtdAtrasados} atrasado${qtdAtrasados !== 1 ? "s" : ""}`}
+                </span>
+              ) : temCarencia ? (
+                <span className="flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  <Clock className="w-3 h-3" /> {qtdCarencia === emps.length ? "Em Carência" : `${qtdCarencia} em carência`}
                 </span>
               ) : todosPausados ? (
                 <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
@@ -783,6 +861,13 @@ export default function EmprestimosListWrapper({
     hoje:         emprestimosProcessados.filter(e => e.venceHoje).length,
     quitados:     emprestimosProcessados.filter(e => e.statusReal === "quitado").length,
     pausados:     emprestimosProcessados.filter(e => e.status === "pausado").length,
+
+    // Faixas de Carência
+    carencia:     emprestimosProcessados.filter(e => e.statusReal === "ativo" && e.status !== "pausado" && e.diasAtrasado <= 30).length,
+    carencia_5:   emprestimosProcessados.filter(e => e.statusReal === "ativo" && e.status !== "pausado" && e.diasAtrasado > 5 && e.diasAtrasado <= 30).length,
+    carencia_10:  emprestimosProcessados.filter(e => e.statusReal === "ativo" && e.status !== "pausado" && e.diasAtrasado > 10 && e.diasAtrasado <= 30).length,
+    carencia_15:  emprestimosProcessados.filter(e => e.statusReal === "ativo" && e.status !== "pausado" && e.diasAtrasado > 15 && e.diasAtrasado <= 30).length,
+    carencia_atrasados_30: emprestimosProcessados.filter(e => e.statusReal === "ativo" && e.status !== "pausado" && e.diasAtrasado > 30).length,
   }), [emprestimosProcessados]);
 
   return (
@@ -902,66 +987,121 @@ export default function EmprestimosListWrapper({
         </div>
       </div>
 
-      {/* Filtros de Status — grade 4 colunas mobile, 7 em sm+ */}
-      <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-        {([
-          { id: "todos"     as StatusFilter, label: "Todos",      sublabel: "Empréstimos",  color: "slate"   },
-          { id: "ativos"    as StatusFilter, label: "Ativos",     sublabel: "Em dia",        color: "emerald" },
-          { 
-            id: "atrasados" as StatusFilter, 
-            label: "Atrasados",  
-            sublabel: statusFilter === "atrasados" && diasAtraso !== "0"
-              ? `> ${diasAtraso} dias`
-              : statusFilter === "atrasados"
-                ? "Todos (+5d)"
-                : "Todos",          
-            color: "rose"    
-          },
-          { id: "ontem"     as StatusFilter, label: "Ontem",      sublabel: "Atrasados",     color: "orange"  },
-          { id: "hoje"      as StatusFilter, label: "Hoje",       sublabel: "Vencem",         color: "amber"   },
-          { id: "quitados"  as StatusFilter, label: "Quitados",   sublabel: "Pagos",          color: "blue"    },
-          { id: "pausados"  as StatusFilter, label: "Pausados",   sublabel: "Acordos",        color: "yellow"  },
-        ] as const).map((tab) => {
-          const isSelected = statusFilter === tab.id;
-          const count = tab.id === "atrasados" && diasAtraso !== "0"
-            ? ((contadores as any)[`atrasados_${diasAtraso}`] ?? contadores.atrasados)
-            : contadores[tab.id as keyof typeof contadores];
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
-              title={tab.id === "atrasados" ? "Clique repetidamente para alternar: Todos -> >5d -> >10d -> >15d -> >30d" : undefined}
-              className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
-                isSelected
-                  ? tab.color === "emerald" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
-                  : tab.color === "rose"    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
-                  : tab.color === "orange"  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                  : tab.color === "amber"   ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                  : tab.color === "blue"    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                  : tab.color === "yellow"  ? "bg-yellow-500 text-white shadow-lg shadow-yellow-500/20"
-                  : "bg-slate-700 text-white shadow-lg"
-                  : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
-              }`}
-            >
-              <span className={`text-lg font-black leading-none ${
-                isSelected ? "text-white" :
-                tab.color === "emerald" ? "text-emerald-600" :
-                tab.color === "rose"    ? "text-rose-500" :
-                tab.color === "orange"  ? "text-orange-500" :
-                tab.color === "amber"   ? "text-amber-500" :
-                tab.color === "blue"    ? "text-blue-500" :
-                tab.color === "yellow"  ? "text-yellow-600" :
-                "text-slate-600"
-              }` }>{count}</span>
-              <span className="font-extrabold text-[11px] leading-tight uppercase tracking-wide">{tab.label}</span>
-              <span className="text-[9px] leading-tight opacity-75">{tab.sublabel}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Filtros de Status */}
+      {!modoCarencia ? (
+        /* MODO PADRÃO (7 cards - grade 4 colunas mobile, 7 em sm+) */
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+          {([
+            { id: "todos"     as StatusFilter, label: "Todos",      sublabel: "Empréstimos",  color: "slate"   },
+            { id: "ativos"    as StatusFilter, label: "Ativos",     sublabel: "Em dia",        color: "emerald" },
+            { 
+              id: "atrasados" as StatusFilter, 
+              label: "Atrasados",  
+              sublabel: statusFilter === "atrasados" && diasAtraso !== "0"
+                ? `> ${diasAtraso} dias`
+                : statusFilter === "atrasados"
+                  ? "Todos (+5d)"
+                  : "Todos",          
+              color: "rose"    
+            },
+            { id: "ontem"     as StatusFilter, label: "Ontem",      sublabel: "Atrasados",     color: "orange"  },
+            { id: "hoje"      as StatusFilter, label: "Hoje",       sublabel: "Vencem",         color: "amber"   },
+            { id: "quitados"  as StatusFilter, label: "Quitados",   sublabel: "Pagos",          color: "blue"    },
+            { id: "pausados"  as StatusFilter, label: "Pausados",   sublabel: "Acordos",        color: "yellow"  },
+          ] as const).map((tab) => {
+            const isSelected = statusFilter === tab.id;
+            const count = tab.id === "atrasados" && diasAtraso !== "0"
+              ? ((contadores as any)[`atrasados_${diasAtraso}`] ?? contadores.atrasados)
+              : contadores[tab.id as keyof typeof contadores];
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                title={tab.id === "atrasados" ? "Clique repetidamente para alternar: Todos -> >5d -> >10d -> >15d -> >30d" : undefined}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
+                  isSelected
+                    ? tab.color === "emerald" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                    : tab.color === "rose"    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
+                    : tab.color === "orange"  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                    : tab.color === "amber"   ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                    : tab.color === "blue"    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                    : tab.color === "yellow"  ? "bg-yellow-500 text-white shadow-lg shadow-yellow-500/20"
+                    : "bg-slate-700 text-white shadow-lg"
+                    : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                <span className={`text-lg font-black leading-none ${
+                  isSelected ? "text-white" :
+                  tab.color === "emerald" ? "text-emerald-600" :
+                  tab.color === "rose"    ? "text-rose-500" :
+                  tab.color === "orange"  ? "text-orange-500" :
+                  tab.color === "amber"   ? "text-amber-500" :
+                  tab.color === "blue"    ? "text-blue-500" :
+                  tab.color === "yellow"  ? "text-yellow-600" :
+                  "text-slate-600"
+                }`}>{count}</span>
+                <span className="font-extrabold text-[11px] leading-tight uppercase tracking-wide">{tab.label}</span>
+                <span className="text-[9px] leading-tight opacity-75">{tab.sublabel}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        /* MODO CARÊNCIA ATIVADO: 8 CARDS COM RESPONSIVIDADE TOTAL (4x2 mobile/tablet, 8x1 desktop) */
+        <div className="grid grid-cols-4 lg:grid-cols-8 gap-2">
+          {([
+            { id: "todos"        as StatusFilter, label: "Todos",      sublabel: "Empréstimos",       color: "slate",   count: contadores.todos },
+            { id: "carencia"     as StatusFilter, label: "Carência",   sublabel: "Até 30 dias",       color: "emerald", count: contadores.carencia },
+            { id: "carencia_5"   as StatusFilter, label: "+5 Dias",    sublabel: "De carência",       color: "sky",     count: contadores.carencia_5 },
+            { id: "carencia_10"  as StatusFilter, label: "+10 Dias",   sublabel: "De carência",       color: "amber",   count: contadores.carencia_10 },
+            { id: "carencia_15"  as StatusFilter, label: "+15 Dias",   sublabel: "De carência",       color: "orange",  count: contadores.carencia_15 },
+            { id: "atrasados_30" as StatusFilter, label: "Atrasados",  sublabel: "30 dias carência",  color: "rose",    count: contadores.carencia_atrasados_30 },
+            { id: "quitados"     as StatusFilter, label: "Quitados",   sublabel: "Pagos",             color: "blue",    count: contadores.quitados },
+            { id: "pausados"     as StatusFilter, label: "Pausados",   sublabel: "Acordos",           color: "yellow",  count: contadores.pausados },
+          ] as const).map((tab) => {
+            const isSelected = statusFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer relative ${
+                  isSelected
+                    ? tab.color === "emerald" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                    : tab.color === "sky"     ? "bg-sky-600 text-white shadow-lg shadow-sky-600/20"
+                    : tab.color === "amber"   ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                    : tab.color === "orange"  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                    : tab.color === "rose"    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
+                    : tab.color === "blue"    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                    : tab.color === "yellow"  ? "bg-yellow-500 text-white shadow-lg shadow-yellow-500/20"
+                    : "bg-slate-700 text-white shadow-lg"
+                    : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                <span className={`text-base sm:text-lg font-black leading-none ${
+                  isSelected ? "text-white" :
+                  tab.color === "emerald" ? "text-emerald-600" :
+                  tab.color === "sky"     ? "text-sky-600" :
+                  tab.color === "amber"   ? "text-amber-500" :
+                  tab.color === "orange"  ? "text-orange-500" :
+                  tab.color === "rose"    ? "text-rose-500" :
+                  tab.color === "blue"    ? "text-blue-500" :
+                  tab.color === "yellow"  ? "text-yellow-600" :
+                  "text-slate-600"
+                }`}>{tab.count}</span>
+                <span className="font-extrabold text-[10px] sm:text-[11px] leading-tight uppercase tracking-wide truncate w-full text-center">
+                  {tab.label}
+                </span>
+                <span className="text-[8px] sm:text-[9px] leading-tight opacity-75 truncate w-full text-center">
+                  {tab.sublabel}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Subfiltros de Atraso Cíclico (>5d, >10d, >15d, >30d) */}
-      {statusFilter === "atrasados" && (
+      {/* Subfiltros de Atraso Cíclico (>5d, >10d, >15d, >30d) - APENAS QUANDO MODO CARÊNCIA ESTIVER DESATIVADO */}
+      {!modoCarencia && statusFilter === "atrasados" && (
         <div className="flex flex-wrap items-center gap-2 p-2.5 bg-rose-50/80 border border-rose-200 rounded-2xl text-xs animate-in fade-in duration-150">
           <span className="text-rose-800 font-extrabold flex items-center gap-1.5 pl-1">
             <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
@@ -1005,9 +1145,29 @@ export default function EmprestimosListWrapper({
               ? `${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`
               : `${grupos.length} cliente${grupos.length !== 1 ? "s" : ""} · ${emprestimosFiltrados.length} empréstimo${emprestimosFiltrados.length !== 1 ? "s" : ""}`}
           </span>
-          {statusFilter === "atrasados" && diasAtraso !== "0" && (
+          {!modoCarencia && statusFilter === "atrasados" && diasAtraso !== "0" && (
             <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md font-black">
               Atrasados &gt; {diasAtraso} dias
+            </span>
+          )}
+          {modoCarencia && statusFilter === "carencia_5" && (
+            <span className="bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md font-black">
+              Carência &gt; 5 dias
+            </span>
+          )}
+          {modoCarencia && statusFilter === "carencia_10" && (
+            <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-black">
+              Carência &gt; 10 dias
+            </span>
+          )}
+          {modoCarencia && statusFilter === "carencia_15" && (
+            <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded-md font-black">
+              Carência &gt; 15 dias
+            </span>
+          )}
+          {modoCarencia && statusFilter === "atrasados_30" && (
+            <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md font-black">
+              Atrasados (30+ dias de carência)
             </span>
           )}
           {sortOption !== "padrao" && (

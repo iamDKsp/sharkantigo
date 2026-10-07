@@ -32,6 +32,15 @@ export default function ValorTotalDividaCard({
   clienteNome,
 }: Props) {
   const [modalAberto, setModalAberto] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const fecharModal = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      setModalAberto(false);
+    }, 150);
+  };
 
   const formatBRL = (val: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -44,16 +53,17 @@ export default function ValorTotalDividaCard({
     <>
       {/* Card no Resumo Financeiro — em harmonia com os outros cards da grade */}
       <div
-        onClick={() => setModalAberto(true)}
+        onClick={() => { setIsClosing(false); setModalAberto(true); }}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
+            setIsClosing(false);
             setModalAberto(true);
           }
         }}
-        className="premium-card p-4 bg-white border border-slate-200 hover:border-slate-300 shadow-sm rounded-2xl transition-all duration-200 cursor-pointer group flex flex-col justify-between"
+        className="premium-card p-4 bg-white border border-slate-200 hover:border-slate-300 shadow-sm rounded-2xl transition-all duration-200 cursor-pointer group flex flex-col justify-between active:scale-[0.98]"
         title="Clique para ver os detalhes da Dívida Total"
       >
         <div>
@@ -86,12 +96,16 @@ export default function ValorTotalDividaCard({
       {/* Modal Limpo e Harmonizado com o Sistema */}
       {modalAberto && (
         <div 
-          onClick={() => setModalAberto(false)}
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={fecharModal}
+          className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 ${
+            isClosing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+          }`}
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-white border border-slate-200 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+            className={`bg-white border border-slate-200 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col ${
+              isClosing ? "motion-modal-card-out" : "motion-modal-card-in"
+            }`}
           >
             {/* Header */}
             <div className="p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/70">
@@ -110,8 +124,8 @@ export default function ValorTotalDividaCard({
               </div>
               <button
                 type="button"
-                onClick={() => setModalAberto(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer shrink-0 ml-2"
+                onClick={fecharModal}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer shrink-0 ml-2 active:scale-95"
                 title="Fechar"
               >
                 <X className="w-4 h-4" />

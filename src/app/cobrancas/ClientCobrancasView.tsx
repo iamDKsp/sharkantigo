@@ -32,6 +32,7 @@ interface ClientCobrancasViewProps {
   cobradasHoje: string[];
   /** false = chave Pix não cadastrada (rodapé de pagamento não é enviado). */
   pixConfigurado: boolean;
+  modoCarencia?: boolean;
 }
 
 type Ordem = "vencimento" | "valor" | "nome";
@@ -44,7 +45,7 @@ const ORDENS: { id: Ordem; label: string }[] = [
 
 const semAcento = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriores, hojeLista, aVencer, initialFiltro, cobradasHoje, pixConfigurado }: ClientCobrancasViewProps) {
+export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriores, hojeLista, aVencer, initialFiltro, cobradasHoje, pixConfigurado, modoCarencia = false }: ClientCobrancasViewProps) {
   // Combina ontem + anteriores para a aba "Todos"
   const atrasados = useMemo(
     () =>
@@ -123,11 +124,11 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     : atrasados;
 
   const titulo =
-    activeTab === "ontem" ? "Atrasados Ontem"
-    : activeTab === "anteriores" ? "Atrasados Anteriores (2+ dias)"
+    activeTab === "ontem" ? (modoCarencia ? "Carência: Vencidos Ontem" : "Atrasados Ontem")
+    : activeTab === "anteriores" ? (modoCarencia ? "Carência / Atrasados Anteriores (2+ dias)" : "Atrasados Anteriores (2+ dias)")
     : activeTab === "hoje" ? "Grupo: Vencendo Hoje"
     : activeTab === "aVencer" ? "Grupo: A Vencer (em até 3 dias)"
-    : "Todos Atrasados / Vencidos";
+    : (modoCarencia ? "Todos em Carência / Atrasados" : "Todos Atrasados / Vencidos");
   const corTema: CorTema =
     activeTab === "ontem" ? "orange"
     : activeTab === "anteriores" ? "red"
@@ -289,8 +290,8 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
       {/* Tabs de Filtro — grade 2 colunas mobile, 3 sm, 5 md */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
         {([
-          { id: "atrasados" as TabId, label: "Todos",    sublabel: "Atrasados", count: atrasados.length,           color: "rose"    },
-          { id: "ontem" as TabId,     label: "Ontem",    sublabel: "Atrasados", count: atrasadosOntem.length,      color: "orange"  },
+          { id: "atrasados" as TabId, label: "Todos",    sublabel: modoCarencia ? "Carência / Atraso" : "Atrasados", count: atrasados.length,           color: "rose"    },
+          { id: "ontem" as TabId,     label: "Ontem",    sublabel: modoCarencia ? "Carência" : "Atrasados",          count: atrasadosOntem.length,      color: "orange"  },
           { id: "anteriores" as TabId,label: "Anteriores",sublabel: "+ 2 dias", count: atrasadosAnteriores.length, color: "red"     },
           { id: "hoje" as TabId,      label: "Hoje",     sublabel: "Vencem",    count: hojeLista.length,           color: "amber"   },
           { id: "aVencer" as TabId,   label: "A Vencer", sublabel: "3 dias",    count: aVencer.length,             color: "emerald" },
@@ -508,6 +509,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                   onToggle={onToggle}
                   onCobrar={onCobrar}
                   onCopiar={onCopiar}
+                  modoCarencia={modoCarencia}
                 />
               ))
             )}

@@ -181,7 +181,7 @@ export interface Severidade {
 }
 
 /** Gradiente de urgência: verde (a vencer) → âmbar (hoje) → laranja → vermelho → vermelho forte. */
-export function severidade(dias: number): Severidade {
+export function severidade(dias: number, modoCarencia = false): Severidade {
   if (dias < 0) {
     const n = -dias;
     return {
@@ -192,6 +192,20 @@ export function severidade(dias: number): Severidade {
   }
   if (dias === 0) {
     return { texto: "Vence hoje", badge: "bg-amber-50 text-amber-700 border-amber-200", barra: "bg-amber-400" };
+  }
+  if (modoCarencia) {
+    if (dias <= 30) {
+      return {
+        texto: `${dias} ${dias === 1 ? "dia" : "dias"} de carência`,
+        badge: "bg-amber-50 text-amber-800 border-amber-200",
+        barra: "bg-amber-400",
+      };
+    }
+    return {
+      texto: `${dias} dias de atraso (+30d carência)`,
+      badge: "bg-red-600 text-white border-red-600",
+      barra: "bg-red-700",
+    };
   }
   const texto = `${dias} ${dias === 1 ? "dia" : "dias"} de atraso`;
   if (dias <= 7) return { texto, badge: "bg-orange-50 text-orange-700 border-orange-200", barra: "bg-orange-400" };

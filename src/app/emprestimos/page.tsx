@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import EmprestimosListWrapper from "@/components/EmprestimosListWrapper";
 import ExportarEmprestimosButton from "@/components/ExportarEmprestimosButton";
+import { obterConfiguracoesSistema } from "@/app/configuracoes/actions";
 
 export const revalidate = 0;
 
@@ -19,9 +20,14 @@ export default async function EmprestimosPage({
     dias_atraso?: string;
   }>;
 }) {
-  const params = await searchParams;
+  const [params, config] = await Promise.all([
+    searchParams,
+    obterConfiguracoesSistema(),
+  ]);
+  const modoCarencia = config.regra_carencia_30_dias;
   // ?status= tem prioridade sobre o legado ?filtro=
-  const statusInicial      = params?.status      ?? params?.filtro ?? "ativos";
+  const statusPadrao       = modoCarencia ? "carencia" : "ativos";
+  const statusInicial      = params?.status      ?? params?.filtro ?? statusPadrao;
   const searchInicial      = params?.q           ?? "";
   const parceiroInicial    = params?.parceiro    ?? "todos";
   const sortInicial        = params?.sort        ?? "padrao";
@@ -124,6 +130,7 @@ export default async function EmprestimosPage({
         initialSort={sortInicial}
         initialPagina={paginaInicial}
         initialDiasAtraso={diasAtrasoInicial}
+        modoCarencia={modoCarencia}
       />
     </div>
   );

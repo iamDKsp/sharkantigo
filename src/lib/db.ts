@@ -6,12 +6,14 @@ const connectionString = process.env.DATABASE_URL;
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
+const isLocal = !connectionString || connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({ 
     adapter: new PrismaPg(new Pool({ 
       connectionString,
-      ssl: process.env.NODE_ENV === "production" ? undefined : { rejectUnauthorized: false }
+      ssl: isLocal ? undefined : { rejectUnauthorized: false }
     })) 
   });
 

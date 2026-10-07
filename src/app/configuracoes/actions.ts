@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 export interface ConfiguracoesSistema {
   perguntar_whatsapp_renovacao: boolean;
   preservar_dia_base_reprogramacao: boolean;
+  regra_carencia_30_dias: boolean;
 }
 
 export async function obterConfiguracoesSistema(): Promise<ConfiguracoesSistema> {
@@ -13,7 +14,11 @@ export async function obterConfiguracoesSistema(): Promise<ConfiguracoesSistema>
     const configs = await prisma.configuracao.findMany({
       where: {
         chave: {
-          in: ["perguntar_whatsapp_renovacao", "preservar_dia_base_reprogramacao"],
+          in: [
+            "perguntar_whatsapp_renovacao",
+            "preservar_dia_base_reprogramacao",
+            "regra_carencia_30_dias",
+          ],
         },
       },
     });
@@ -23,18 +28,20 @@ export async function obterConfiguracoesSistema(): Promise<ConfiguracoesSistema>
     return {
       perguntar_whatsapp_renovacao: mapa.get("perguntar_whatsapp_renovacao") === "true",
       preservar_dia_base_reprogramacao: mapa.get("preservar_dia_base_reprogramacao") === "true",
+      regra_carencia_30_dias: mapa.get("regra_carencia_30_dias") === "true",
     };
   } catch (error) {
     console.error("Erro ao carregar configurações do sistema:", error);
     return {
       perguntar_whatsapp_renovacao: false,
       preservar_dia_base_reprogramacao: false,
+      regra_carencia_30_dias: false,
     };
   }
 }
 
 export async function salvarConfiguracaoSistema(
-  chave: "perguntar_whatsapp_renovacao" | "preservar_dia_base_reprogramacao",
+  chave: "perguntar_whatsapp_renovacao" | "preservar_dia_base_reprogramacao" | "regra_carencia_30_dias",
   valor: boolean
 ): Promise<{ ok: boolean; erro?: string }> {
   try {
@@ -52,6 +59,8 @@ export async function salvarConfiguracaoSistema(
     revalidatePath("/configuracoes");
     revalidatePath("/perfil");
     revalidatePath("/emprestimos");
+    revalidatePath("/cobrancas");
+    revalidatePath("/");
     return { ok: true };
   } catch (error: any) {
     console.error(`Erro ao salvar configuração ${chave}:`, error);

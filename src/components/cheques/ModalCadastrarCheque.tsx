@@ -22,8 +22,17 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
   const [observacoes, setObservacoes] = useState("");
   const [fotoBase64, setFotoBase64] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [closing, setClosing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      onClose();
+    }, 150);
+  };
 
   // Efeito para preencher o telefone e calcular o líquido automaticamente
   useEffect(() => {
@@ -126,11 +135,25 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div
+      onClick={handleClose}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 ${
+        closing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
+      }`}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className={`bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${
+          closing ? "motion-modal-card-out" : "motion-modal-card-in"
+        }`}
+      >
         <div className="flex justify-between items-center p-6 border-b border-slate-100">
           <h2 className="text-xl font-bold text-slate-900">Cadastrar cheque</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer active:scale-95"
+          >
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -296,8 +319,8 @@ export default function ModalCadastrarCheque({ isOpen, onClose, clientes, parcei
         <div className="p-6 border-t border-slate-100 bg-white flex justify-end space-x-3">
           <button
             type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 transition-colors cursor-pointer"
+            onClick={handleClose}
+            className="px-5 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-800 transition-colors cursor-pointer active:scale-95"
           >
             Cancelar
           </button>

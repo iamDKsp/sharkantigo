@@ -218,6 +218,55 @@ export default function ConfiguracoesView({ initialConfig }: Props) {
             </button>
           </div>
         </div>
+
+        {/* Card Toggle: Regra de Carência de 30 Dias (Tolerância de Atraso) */}
+        <div className="premium-card p-6 bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5 flex-1">
+              <div className="flex items-center space-x-2">
+                <span className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
+                  <Clock className="w-4.5 h-4.5" />
+                </span>
+                <span className="font-bold text-slate-900 text-base">
+                  Regra de Carência de 30 Dias para Atrasos
+                </span>
+                <span
+                  className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                    config.regra_carencia_30_dias
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  {config.regra_carencia_30_dias ? "Habilitado" : "Desabilitado (Padrão)"}
+                </span>
+              </div>
+              <p className="text-sm text-slate-500 leading-relaxed pt-1">
+                <strong>Quando desabilitado (Padrão):</strong> O sistema opera normalmente, marcando como atrasado a partir do 1º dia após o vencimento (filtros: Ativos, Atrasados com ciclo, Ontem, Hoje, Quitados, Pausados).
+              </p>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                <strong>Quando habilitado:</strong> Aplica a régua de tolerância/carência concedida pelo credor. Na tela de empréstimos, os filtros mudam para: <em>Todos, Carência (até 30d), +5 dias de carência, +10 dias de carência, +15 dias de carência, (Atrasados) 30 dias de carência, Quitados e Pausados</em>. Empréstimos só são considerados de fato &quot;Atrasados&quot; após ultrapassarem os 30 dias.
+              </p>
+            </div>
+
+            {/* Toggle Switch */}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={config.regra_carencia_30_dias}
+              onClick={() => handleToggle("regra_carencia_30_dias")}
+              disabled={isPending}
+              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 mt-1 ${
+                config.regra_carencia_30_dias ? "bg-emerald-600" : "bg-slate-300"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  config.regra_carencia_30_dias ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
