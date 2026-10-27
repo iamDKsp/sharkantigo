@@ -336,7 +336,7 @@ export default function EmprestimoDetalhesView({
 
 
   const freqLabel: Record<string, string> = { diario: "Diário", semanal: "Semanal", quinzenal: "Quinzenal", mensal: "Mensal" };
-  const tipoLabel: Record<string, string> = { a_vista: "À Vista", a_vista_juros: "À Vista + Juros", juros_compostos: "Juros Compostos", parcelado: "Parcelado", juros_mensais: "Juros Mensais" };
+  const tipoLabel: Record<string, string> = { a_vista: "À Vista", a_vista_juros: "À Vista + Juros", juros_compostos: "Juros Compostos", parcelado: "Parcelado", parcela_juros_mes: "Parcela + Juros/Mês" };
 
   // ── Handlers ──
   // ── Juros de atraso (por dia) ──

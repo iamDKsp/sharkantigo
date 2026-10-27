@@ -30,7 +30,6 @@ type TipoPagamento =
   | "a_vista_juros" 
   | "juros_compostos" 
   | "parcelado" 
-  | "juros_mensais" 
   | "parcela_juros_mes";
 
 type Frequencia = "diario" | "semanal" | "quinzenal" | "mensal";
@@ -143,17 +142,6 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         });
       }
     } 
-    else if (tipoPagamento === "juros_mensais") {
-      const valorJuros = Number((valor * (taxaJuros / 100)).toFixed(2));
-      for (let i = 0; i < periodos; i++) {
-        const isLast = i === periodos - 1;
-        list.push({
-          numero: i + 1,
-          valor: isLast ? Number((valor + valorJuros).toFixed(2)) : valorJuros,
-          data_vencimento: addPeriod(vencimentoPrimeira, i),
-        });
-      }
-    } 
     else if (tipoPagamento === "parcela_juros_mes") {
       const valorParcela = Number(((valor / periodos) + (valor * (taxaJuros / 100))).toFixed(2));
       for (let i = 0; i < periodos; i++) {
@@ -210,8 +198,6 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
         return "Juros compostos por período. Ex: R$ 200.000 a 10% por 3 meses → R$ 266.200 no vencimento. Quando usar: juros capitalizados a cada período.";
       case "parcelado":
         return "Parcelado em parcelas iguais (juros opcional). Ex: R$ 600 em 3x mensais. Quando usar: deseja receber em parcelas fixas.";
-      case "juros_mensais":
-        return "Juros por período + principal no final. Ex: R$ 200 a 10% → R$ 20 no 1º e 2º mês; no 3º mês R$ 220. Quando usar: quer receber juros mensais e o principal no final.";
       case "parcela_juros_mes":
         return "Parcela mensal com juros por mês embutido em todas as parcelas. Ex: R$ 1.000 a 10% por 10 meses → 10x de R$ 200. Quando usar: quer receber principal + juros todo mês.";
     }
@@ -424,7 +410,6 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                     { id: "a_vista_juros", label: "À Vista + Juros" },
                     { id: "juros_compostos", label: "Juros Compostos" },
                     { id: "parcelado", label: "Parcelado" },
-                    { id: "juros_mensais", label: "Juros Mensais" },
                     { id: "parcela_juros_mes", label: "Parcela + Juros/Mês" },
                   ].map((tipo) => (
                     <button
@@ -548,7 +533,7 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
               {tipoPagamento !== "a_vista" && (
                 <div className="space-y-2 col-span-1 animate-in fade-in duration-200">
                   <label htmlFor="taxaJuros" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
-                    {tipoPagamento === "juros_compostos" || tipoPagamento === "juros_mensais" || tipoPagamento === "parcela_juros_mes"
+                    {tipoPagamento === "juros_compostos" || tipoPagamento === "parcela_juros_mes"
                       ? "Taxa de Juros por Período (%) *"
                       : "Taxa de Juros (%) - Opcional"}
                   </label>
@@ -576,8 +561,6 @@ export default function FormNovoEmprestimo({ clientes, parceiros, clienteIdParam
                   <label htmlFor="periodos" className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1">
                     {tipoPagamento === "juros_compostos"
                       ? "Número de Períodos *"
-                      : tipoPagamento === "juros_mensais"
-                      ? "Número de Meses *"
                       : "Número de Parcelas *"}
                   </label>
                   <input

@@ -20,7 +20,7 @@ interface EmprestimoEditar {
   observacoes: string | null; status: string; parcelas: ParcelaEmp[];
 }
 interface Props { emprestimo: EmprestimoEditar; clientes: Cliente[]; parceiros: Parceiro[]; }
-type TipoPagamento = "a_vista" | "a_vista_juros" | "juros_compostos" | "parcelado" | "juros_mensais" | "parcela_juros_mes";
+type TipoPagamento = "a_vista" | "a_vista_juros" | "juros_compostos" | "parcelado" | "parcela_juros_mes";
 type Frequencia = "diario" | "semanal" | "quinzenal" | "mensal";
 
 const toInputDate = (d: Date | string | null | undefined): string => {
@@ -74,7 +74,6 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
     else if (tipoPagamento === "a_vista_juros") list.push({ numero: 1, valor: Number((valor * (1 + taxaJuros / 100)).toFixed(2)), data_vencimento: vencBaseUnica });
     else if (tipoPagamento === "juros_compostos") list.push({ numero: 1, valor: Number((valor * Math.pow(1 + taxaJuros / 100, periodos)).toFixed(2)), data_vencimento: vencimentoPrimeira || addPeriod(dataInicio, periodos) });
     else if (tipoPagamento === "parcelado") { const vp = Number((valor * (1 + taxaJuros / 100) / periodos).toFixed(2)); for (let i = 0; i < periodos; i++) list.push({ numero: i+1, valor: vp, data_vencimento: addPeriod(vencimentoPrimeira, i) }); }
-    else if (tipoPagamento === "juros_mensais") { const vj = Number((valor * (taxaJuros / 100)).toFixed(2)); for (let i = 0; i < periodos; i++) { const il = i === periodos - 1; list.push({ numero: i+1, valor: il ? Number((valor + vj).toFixed(2)) : vj, data_vencimento: addPeriod(vencimentoPrimeira, i) }); } }
     else if (tipoPagamento === "parcela_juros_mes") { const vp = Number(((valor / periodos) + (valor * (taxaJuros / 100))).toFixed(2)); for (let i = 0; i < periodos; i++) list.push({ numero: i+1, valor: vp, data_vencimento: addPeriod(vencimentoPrimeira, i) }); }
     return list;
   };
@@ -82,7 +81,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
   const dataVencimentoFinal = parcelasSimuladas.length > 0 ? parcelasSimuladas[parcelasSimuladas.length - 1].data_vencimento : vencimentoPrimeira || toInputDate(emprestimo.data_vencimento);
   const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
   const formatDataBr = (ds: string | Date) => { const s = typeof ds === "string" ? ds : toInputDate(ds); const p = s.split("-"); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s; };
-  const getDescricaoTipo = () => { switch (tipoPagamento) { case "a_vista": return "Pagamento único sem juros."; case "a_vista_juros": return "Pagamento único com juros simples."; case "juros_compostos": return "Juros compostos por período."; case "parcelado": return "Parcelado em parcelas iguais."; case "juros_mensais": return "Juros mensais + principal no final."; case "parcela_juros_mes": return "Parcela com juros embutido todo mês."; } };
+  const getDescricaoTipo = () => { switch (tipoPagamento) { case "a_vista": return "Pagamento único sem juros."; case "a_vista_juros": return "Pagamento único com juros simples."; case "juros_compostos": return "Juros compostos por período."; case "parcelado": return "Parcelado em parcelas iguais."; case "parcela_juros_mes": return "Parcela com juros embutido todo mês."; } };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -180,7 +179,7 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
               <div className="space-y-3">
                 <label className="text-sm font-bold text-slate-600 uppercase tracking-wider">Tipo de Pagamento</label>
                 <div className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
-                  {[{ id: "a_vista", label: "À Vista" }, { id: "a_vista_juros", label: "À Vista + Juros" }, { id: "juros_compostos", label: "Juros Compostos" }, { id: "parcelado", label: "Parcelado" }, { id: "juros_mensais", label: "Juros Mensais" }, { id: "parcela_juros_mes", label: "Parcela + Juros/Mês" }].map((tipo) => (
+                  {[{ id: "a_vista", label: "À Vista" }, { id: "a_vista_juros", label: "À Vista + Juros" }, { id: "juros_compostos", label: "Juros Compostos" }, { id: "parcelado", label: "Parcelado" }, { id: "parcela_juros_mes", label: "Parcela + Juros/Mês" }].map((tipo) => (
                     <button key={tipo.id} type="button" onClick={() => setTipoPagamento(tipo.id as TipoPagamento)} className={`relative py-3.5 px-4 rounded-xl border text-sm font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer ${tipoPagamento === tipo.id ? "bg-emerald-600 text-white border-emerald-600 shadow-md scale-[1.02]" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}>
                       {tipoPagamento === tipo.id && <CheckCircle2 className="w-4 h-4 absolute left-3 opacity-50" />}{tipo.label}
                     </button>
