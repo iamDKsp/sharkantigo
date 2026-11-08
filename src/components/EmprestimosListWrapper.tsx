@@ -8,12 +8,14 @@ import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, Chevr
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
 import { enviarMensagemManual, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
+import ClienteAvatar from "@/components/ClienteAvatar";
 
 interface Cliente {
   id: string;
   nome: string;
   telefone: string;
   cidade: string;
+  foto_src?: string | null;
 }
 
 interface Parcela {
@@ -693,6 +695,15 @@ export default function EmprestimosListWrapper({
         {/* Accent Line Left */}
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
 
+        {/* Foto do cliente (só no celular, canto superior direito); sem foto mostra a inicial */}
+        {!sub && (
+          <ClienteAvatar
+            nome={emp.cliente.nome}
+            src={emp.cliente.foto_src}
+            className="md:hidden absolute top-3 right-4 z-10 w-12 h-12 text-base"
+          />
+        )}
+
         <Link
           href={`/emprestimos/${emp.id}`}
           onClick={() => {
@@ -704,7 +715,7 @@ export default function EmprestimosListWrapper({
         />
 
         <div className="space-y-2 z-10 pointer-events-none pl-2 min-w-0 flex-1">
-          <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1 min-w-0">
+          <div className={`flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1 min-w-0 ${sub ? "" : "pr-14 md:pr-0"}`}>
             <span className="text-sm font-black text-slate-900 tracking-tight">{emp.cliente.nome}</span>
             {isPausado ? (
               <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
@@ -850,8 +861,15 @@ export default function EmprestimosListWrapper({
         >
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
 
+          {/* Foto do cliente (só no celular, canto superior direito); sem foto mostra a inicial */}
+          <ClienteAvatar
+            nome={cliente.nome}
+            src={cliente.foto_src}
+            className="md:hidden absolute top-3 right-4 z-10 w-12 h-12 text-base"
+          />
+
           <div className="space-y-2 pl-2">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pr-14 md:pr-0">
               <span className="text-sm font-black text-slate-900 tracking-tight">{cliente.nome}</span>
               {temAtrasado ? (
                 <span className="flex items-center gap-1 bg-rose-100 text-rose-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">

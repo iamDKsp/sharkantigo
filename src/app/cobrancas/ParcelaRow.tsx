@@ -22,6 +22,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { linkWhatsapp } from "@/lib/mensagens/render";
+import ClienteAvatar from "@/components/ClienteAvatar";
 import {
   formatBRL,
   formatData,
@@ -316,8 +317,11 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
         <StatusBlock p={p} cobradoHoje={cobradoHoje} ultimoEnvio={ultimoEnvio} modoCarencia={modoCarencia} modoCarencia10={modoCarencia10} />
       </div>
 
-      {/* Valor */}
-      <span className="text-sm font-black text-slate-900 tabular-nums text-right">{formatBRL(p.valor)}</span>
+      {/* Valor (no celular, a foto do cliente fica logo acima, no canto superior direito) */}
+      <div className="flex flex-col items-end gap-1.5 self-start md:self-center">
+        {!sub && <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="md:hidden w-11 h-11 text-base" />}
+        <span className="text-sm font-black text-slate-900 tabular-nums text-right">{formatBRL(p.valor)}</span>
+      </div>
 
       {/* Ações: no celular ocupam a 2ª linha, com Cobrar em largura total */}
       <div className="col-start-2 col-span-2 md:col-start-auto md:col-span-1 flex items-center gap-2 md:justify-end">
@@ -514,10 +518,13 @@ export function GrupoParcelaRow({
           {statusGrupoBlock}
         </div>
 
-        {/* Valor Total do Grupo */}
-        <div className="text-right">
-          <div className="text-sm font-black text-slate-900 tabular-nums">{formatBRL(totalGrupo)}</div>
-          <div className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total</div>
+        {/* Valor Total do Grupo (no celular, a foto do cliente fica logo acima, no canto superior direito) */}
+        <div className="flex flex-col items-end gap-1.5 self-start md:self-center text-right">
+          <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="md:hidden w-11 h-11 text-base" />
+          <div>
+            <div className="text-sm font-black text-slate-900 tabular-nums">{formatBRL(totalGrupo)}</div>
+            <div className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total</div>
+          </div>
         </div>
 
         {/* Botão de expandir/recolher subparcelas */}

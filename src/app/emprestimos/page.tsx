@@ -4,6 +4,7 @@ import Link from "next/link";
 import EmprestimosListWrapper from "@/components/EmprestimosListWrapper";
 import ExportarEmprestimosButton from "@/components/ExportarEmprestimosButton";
 import { obterConfiguracoesSistema } from "@/app/configuracoes/actions";
+import { fotosDosClientes } from "@/lib/clienteFotos";
 
 export const revalidate = 0;
 
@@ -20,9 +21,10 @@ export default async function EmprestimosPage({
     dias_atraso?: string;
   }>;
 }) {
-  const [params, config] = await Promise.all([
+  const [params, config, fotos] = await Promise.all([
     searchParams,
     obterConfiguracoesSistema(),
+    fotosDosClientes(),
   ]);
   const modoCarencia = config.regra_carencia_30_dias;
   const modoCarencia10 = config.regra_carencia_10_dias;
@@ -89,6 +91,8 @@ export default async function EmprestimosPage({
 
   const serializedEmprestimos = emprestimos.map((emp) => ({
     ...emp,
+    // URL da foto (só quando o cliente tem foto); a imagem é carregada à parte, sem pesar a listagem
+    cliente: { ...emp.cliente, foto_src: fotos.get(emp.cliente.id) ?? null },
     valor_emprestado: Number(emp.valor_emprestado),
     taxa_juros: Number(emp.taxa_juros),
     taxa_multa: Number(emp.taxa_multa),

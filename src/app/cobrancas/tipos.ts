@@ -41,6 +41,8 @@ export interface Parcela {
       id: string;
       nome: string;
       telefone: string;
+      /** URL da foto do cliente (null = sem foto cadastrada). */
+      foto_src?: string | null;
     };
   };
 }

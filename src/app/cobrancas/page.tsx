@@ -11,6 +11,7 @@ import {
   ultimasCobrancas,
 } from "@/lib/mensagens/servidor";
 import { obterConfiguracoesSistema } from "@/app/configuracoes/actions";
+import { fotosDosClientes } from "@/lib/clienteFotos";
 
 export const revalidate = 0;
 
@@ -37,11 +38,12 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
   });
 
   // Modelos de mensagem + dados da base (Pix etc.): carregados UMA vez para todas as parcelas
-  const [templates, cfg, cobradasHoje, configSistema] = await Promise.all([
+  const [templates, cfg, cobradasHoje, configSistema, fotos] = await Promise.all([
     carregarTemplates(),
     carregarConfiguracoes(),
     parcelasCobradasHoje(),
     obterConfiguracoesSistema(),
+    fotosDosClientes(),
   ]);
   const modoCarencia = configSistema.regra_carencia_30_dias;
   const modoCarencia10 = configSistema.regra_carencia_10_dias;
@@ -141,6 +143,7 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
             id: emp.cliente.id,
             nome: emp.cliente.nome,
             telefone: emp.cliente.telefone,
+            foto_src: fotos.get(emp.cliente.id) ?? null,
           },
         },
       };
