@@ -14,10 +14,11 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
 
   const fechar = useCallback(() => {
     setClosing(true);
+    // Tempo ligeiramente maior que a animação CSS (150ms)
     setTimeout(() => {
-      setClosing(false);
       setAberto(null);
-    }, 150);
+      setClosing(false);
+    }, 200);
   }, []);
 
   const anterior = useCallback(() => {
@@ -52,14 +53,34 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
 
   const handleDownload = async (url: string, idx: number) => {
     try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      const ext = url.split(".").pop()?.split("?")[0] || "jpg";
-      a.download = `documento-${idx + 1}.${ext}`;
-      a.click();
-      URL.revokeObjectURL(a.href);
+      if (url.startsWith("data:")) {
+        // Tratar Data URL (Base64) para download seguro
+        const arr = url.split(",");
+        const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        const ext = mime.split("/")[1] || "jpg";
+        a.download = `documento-${idx + 1}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } else {
+        // Tratar URL normal
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        const ext = url.split(".").pop()?.split("?")[0] || "jpg";
+        a.download = `documento-${idx + 1}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
     } catch {
       // fallback: abre em nova aba
       window.open(url, "_blank");
@@ -113,7 +134,7 @@ export default function DocumentosLightbox({ documentos }: DocumentosLightboxPro
           className={`fixed inset-0 z-[9999] flex items-center justify-center ${
             closing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
           }`}
-          style={{ background: "rgba(0,0,0,0.95)" }}
+          style={{ background: closing ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.95)", transition: "background 0.15s ease-out" }}
           onClick={fechar}
         >
           {/* Botão fechar */}
