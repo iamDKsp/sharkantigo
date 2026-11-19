@@ -11,7 +11,8 @@ export type TipoAcaoEmprestimo =
   | "reprogramar"
   | "renegociar"
   | "data_prevista"
-  | "pausar";
+  | "pausar"
+  | "passar_funcionario";
 
 export interface Parcela {
   id: string;
@@ -37,6 +38,9 @@ export interface Parcela {
     atraso_tipo: string | null;
     atraso_valor: number | null;
     data_prevista_pagamento: string | null;
+    /** Funcionário com quem a cobrança foi compartilhada (null = só o ADM). */
+    funcionario?: { id: string; nome: string; foto_url: string | null } | null;
+    podeDispararWhatsapp?: boolean;
     cliente: {
       id: string;
       nome: string;

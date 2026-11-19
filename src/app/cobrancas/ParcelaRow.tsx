@@ -19,6 +19,7 @@ import {
   RefreshCw,
   TrendingUp,
   User,
+  UserPlus,
   Wallet,
 } from "lucide-react";
 import { linkWhatsapp } from "@/lib/mensagens/render";
@@ -226,6 +227,13 @@ function MenuLinha({
               <PauseCircle className="w-4 h-4 text-yellow-600 shrink-0" />
               <span>Pausar (Acordo)</span>
             </button>
+
+            <button role="menuitem" type="button" onClick={() => disparar("passar_funcionario")} className={itemCls}>
+              <UserPlus className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="flex-1 truncate">
+                {p.emprestimo.funcionario ? "Trocar funcionário" : "Passar p/ funcionário"}
+              </span>
+            </button>
           </div>
 
           {/* Seção 2: Contato & Cliente */}
@@ -289,6 +297,23 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
             {cliente.nome}
           </Link>
           <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${tema.chip}`}>{totalLabel}</span>
+          {p.emprestimo.funcionario && (
+            <span
+              title={`Compartilhado com ${p.emprestimo.funcionario.nome}${p.emprestimo.podeDispararWhatsapp ? " (pode cobrar no WhatsApp)" : ""}`}
+              className="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[9px] font-black text-indigo-700"
+            >
+              {p.emprestimo.funcionario.foto_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.emprestimo.funcionario.foto_url} alt="" className="w-4 h-4 rounded-full object-cover" />
+              ) : (
+                <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px]">
+                  {p.emprestimo.funcionario.nome.charAt(0).toUpperCase()}
+                </span>
+              )}
+              {p.emprestimo.funcionario.nome.split(" ")[0]}
+              {p.emprestimo.podeDispararWhatsapp && <MessageCircle className="w-2.5 h-2.5" />}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
           <span className="flex items-center gap-0.5">

@@ -896,6 +896,21 @@ export async function salvarDataPrevistaPagamento(
 }
 
 // Funcionalidade de Delegação de Funcionários
+/** Compartilha (ou remove) vários empréstimos com um funcionário de uma vez — usado na tela de Cobranças. */
+export async function passarEmprestimos(emprestimoIds: string[], funcionarioId: string | null, podeDispararWhatsapp: boolean) {
+  const ids = Array.from(new Set(emprestimoIds)).filter((id) => id && !id.startsWith("legacy-"));
+  if (ids.length === 0) throw new Error("Nenhum empréstimo selecionado.");
+  if (funcionarioId) {
+    const f = await prisma.funcionario.findUnique({ where: { id: funcionarioId }, select: { ativo: true } });
+    if (!f?.ativo) throw new Error("Funcionário não encontrado ou desativado.");
+  }
+  await prisma.emprestimo.updateMany({
+    where: { id: { in: ids } },
+    data: { funcionario_id: funcionarioId, podeDispararWhatsapp: funcionarioId ? podeDispararWhatsapp : false },
+  });
+  revalidatePath("/cobrancas");
+  return { success: true, total: ids.length };
+}
 export async function atribuirFuncionario(emprestimoId: string, funcionarioId: string | null, podeDispararWhatsapp: boolean) {
   await prisma.emprestimo.update({
     where: { id: emprestimoId },

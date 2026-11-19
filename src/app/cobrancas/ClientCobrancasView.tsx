@@ -15,6 +15,7 @@ import {
   Send,
   Settings,
   SearchX,
+  UserPlus,
   Users,
   X,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import { registrarCobrancaManual } from "./actions";
 import ParcelaRow, { GrupoParcelaRow } from "./ParcelaRow";
 import DisparoModal from "./DisparoModal";
 import AcaoEmprestimoModal from "./AcaoEmprestimoModal";
+import PassarFuncionarioModal from "./PassarFuncionarioModal";
 import { TEMAS, formatBRL, type CorTema, type Parcela, type TabId, type TipoAcaoEmprestimo, type TipoCobranca } from "./tipos";
 
 interface ClientCobrancasViewProps {
@@ -122,6 +124,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
 
   const [alvoModal, setAlvoModal] = useState<Parcela[] | null>(null);
   const [acaoModal, setAcaoModal] = useState<{ parcela: Parcela; acao: TipoAcaoEmprestimo } | null>(null);
+  const [passarAlvo, setPassarAlvo] = useState<Parcela[] | null>(null);
   const [toast, setToast] = useState<{ id: number; texto: string; erro?: boolean } | null>(null);
   const [toastClosing, setToastClosing] = useState(false);
 
@@ -350,6 +353,10 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   );
 
   const onAcaoEmprestimo = useCallback((parcela: Parcela, acao: TipoAcaoEmprestimo) => {
+    if (acao === "passar_funcionario") {
+      setPassarAlvo([parcela]);
+      return;
+    }
     setAcaoModal({ parcela, acao });
   }, []);
 
@@ -723,6 +730,15 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
             </button>
             <button
               type="button"
+              onClick={() => setPassarAlvo(selecionadasVisiveis)}
+              title="Passar os selecionados para um funcionário"
+              className="btn-press flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-all cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Funcionário</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setAlvoModal(selecionadasVisiveis)}
               className="btn-press flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all text-white shadow-md shadow-emerald-950/30 cursor-pointer"
             >
@@ -752,6 +768,20 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
           onClose={() => setAcaoModal(null)}
           onSuccess={(msg) => {
             setAcaoModal(null);
+            mostrarToast(msg);
+            router.refresh();
+          }}
+        />
+      )}
+
+      {/* Passar empréstimo(s) para um funcionário */}
+      {passarAlvo && (
+        <PassarFuncionarioModal
+          parcelas={passarAlvo}
+          onClose={() => setPassarAlvo(null)}
+          onSuccess={(msg) => {
+            setPassarAlvo(null);
+            setSelecionados(new Set());
             mostrarToast(msg);
             router.refresh();
           }}

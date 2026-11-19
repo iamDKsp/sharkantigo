@@ -31,6 +31,7 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
     },
     include: {
       cliente: true,
+      funcionario: { select: { id: true, nome: true, foto_url: true } },
       parcelas: {
         orderBy: { numero: "asc" },
       },
@@ -139,6 +140,8 @@ export default async function CobrancasPage({ searchParams }: { searchParams: Pr
           data_prevista_pagamento: emp.data_prevista_pagamento
             ? emp.data_prevista_pagamento.toISOString().split("T")[0]
             : null,
+          funcionario: emp.funcionario ?? null,
+          podeDispararWhatsapp: emp.podeDispararWhatsapp,
           cliente: {
             id: emp.cliente.id,
             nome: emp.cliente.nome,

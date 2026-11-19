@@ -123,6 +123,11 @@ export default function AcaoEmprestimoModal({
       titulo: "Pausar Empréstimo",
       subtitulo: `Acordo com cobrador — ${cliente.nome}`,
     },
+    // Tratado pelo PassarFuncionarioModal (nunca chega aqui)
+    passar_funcionario: {
+      titulo: "Passar para funcionário",
+      subtitulo: cliente.nome,
+    },
   };
 
   const handleConfirmarRenovacao = (enviarWhatsapp = enviarWa) => {
