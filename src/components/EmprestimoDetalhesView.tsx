@@ -14,9 +14,9 @@ import {
   payNextInstallment, payFullLoan, renegociarEmprestimo,
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
   receberSoJurosEmprestimo, salvarDataPrevistaPagamento,
-  atualizarDataPagamentoParcela, payInstallmentById,
-  togglePausarEmprestimo, atribuirFuncionario // <-- Import added
+  payInstallmentById, togglePausarEmprestimo, atribuirFuncionario, atualizarDataPagamentoParcela // Added back
 } from "@/app/emprestimos/[id]/actions";
+
 import { listarFuncionarios } from "@/app/configuracoes/funcionarios/actions"; // <-- Import added
 
 import { enviarMensagemManual, legendaCronograma, listarRespostasRapidas } from "@/app/mensagens/actions";
@@ -1633,7 +1633,7 @@ export default function EmprestimoDetalhesView({
                 onClick={async () => {
                   setIsSavingParcelaData(true);
                   try {
-                    await atualizarDataPagamentoParcela(editingParcela.id, emprestimo.id, editingParcela.data);
+                    await atualizarDataPagamentoParcela(editingParcela.id, new Date(editingParcela.data));
                     closeEditingParcela();
                   } catch (err: any) {
                     alert(err.message || "Erro ao atualizar data");

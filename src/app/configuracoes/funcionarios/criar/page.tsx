@@ -1,4 +1,4 @@
-import { criarFuncionario } from "./actions";
+import { criarFuncionario } from "../actions";
 import { redirect } from "next/navigation";
 
 export default function CriarFuncionarioPage() {

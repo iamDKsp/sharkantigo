@@ -713,7 +713,16 @@ export async function receberSoJurosEmprestimo(emprestimoId: string, enviarWhats
   };
 }
 
-// 8. Editar Empréstimo Completo
+export async function togglePausarEmprestimo(emprestimoId: string, statusAtual: string) {
+  const novoStatus = statusAtual === "pausado" ? "ativo" : "pausado";
+  await prisma.emprestimo.update({
+    where: { id: emprestimoId },
+    data: { status: novoStatus },
+  });
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  return { success: true };
+}
+
 export async function updateEmprestimo(emprestimoId: string, formData: FormData) {
   const clienteId    = formData.get("clienteId") as string;
   const parceiroId   = (formData.get("parceiroId") as string) || null;
@@ -827,6 +836,15 @@ export async function updateEmprestimo(emprestimoId: string, formData: FormData)
   revalidatePath("/emprestimos");
   revalidatePath("/clientes");
   return { success: true, redirectUrl: `/emprestimos/${emprestimoId}` };
+}
+
+export async function atualizarDataPagamentoParcela(parcelaId: string, novaData: Date) {
+  await prisma.parcela.update({
+    where: { id: parcelaId },
+    data: { data_pagamento: novaData },
+  });
+  revalidatePath(`/emprestimos/`);
+  return { success: true };
 }
 
 // ── Data Prevista de Pagamento ──
