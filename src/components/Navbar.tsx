@@ -20,9 +20,11 @@ import NotificacoesMenu from "@/components/NotificacoesMenu";
 export default function Navbar() {
   const pathname = usePathname();
   const [userName, setUserName] = useState<string | null>(null);
+  // Painel do funcionário (/<slug>/cliente) não mostra o menu do ADM
+  const ocultar = pathname === "/login" || /^\/[^/]+\/cliente\/?$/.test(pathname);
 
   useEffect(() => {
-    if (pathname === "/login") return;
+    if (ocultar) return;
     fetch("/api/perfil")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -51,7 +53,7 @@ export default function Navbar() {
     }
   };
 
-  if (pathname === "/login") {
+  if (ocultar) {
     return null;
   }
 
