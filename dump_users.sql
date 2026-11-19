@@ -1,0 +1,1 @@
+SELECT email, senha FROM perfis;

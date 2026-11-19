@@ -202,9 +202,14 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     let lista = listaBase.filter((p) => {
       if (soNaoCobrados && cobradas.has(p.id)) return false;
       if (!q) return true;
-      const c = p.emprestimo.cliente;
-      if (semAcento(c.nome).includes(q)) return true;
-      return qDigitos.length >= 3 && c.telefone.replace(/\D/g, "").includes(qDigitos);
+      const c = p.emprestimo?.cliente;
+      if (!c) return false;
+      
+      const nomeMatch = c.nome ? semAcento(c.nome).includes(q) : false;
+      if (nomeMatch) return true;
+      
+      const telefoneLimpo = c.telefone ? c.telefone.replace(/\D/g, "") : "";
+      return qDigitos.length >= 3 && telefoneLimpo.includes(qDigitos);
     });
     if (ordem === "valor") lista = [...lista].sort((a, b) => b.valor - a.valor);
     else if (ordem === "nome") lista = [...lista].sort((a, b) => a.emprestimo.cliente.nome.localeCompare(b.emprestimo.cliente.nome, "pt-BR"));

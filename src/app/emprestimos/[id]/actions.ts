@@ -62,7 +62,7 @@ async function dispararEventoEmprestimo(chave: string, emprestimoId: string) {
 }
 
 // 1. Pagar Próxima Parcela (com ou sem atraso)
-export async function payNextInstallment(emprestimoId: string, withDelay: boolean, cobrarJurosAtraso = true) {
+export async function payNextInstallment(emprestimoId: string, withDelay: boolean, cobrarJurosAtraso = true, enviarWhatsapp = true) {
   const hoje = hojeEmBrasilia();
 
   // Buscar empréstimo com dados do cliente
@@ -117,12 +117,14 @@ export async function payNextInstallment(emprestimoId: string, withDelay: boolea
   // Se esta foi a última parcela em aberto, o empréstimo foi quitado.
   const clienteTelefone = emprestimo?.cliente?.telefone || "";
   const clienteNome = emprestimo?.cliente?.nome || "";
-  const wa = await dispararEvento(
-    parcelasRestantes === 0 ? "pagamento.quitacao" : "pagamento.parcela",
-    { emprestimoId, parcelaId: proximaParcela.id },
-    clienteTelefone,
-    emprestimo?.cliente?.id
-  );
+  const wa = enviarWhatsapp
+    ? await dispararEvento(
+        parcelasRestantes === 0 ? "pagamento.quitacao" : "pagamento.parcela",
+        { emprestimoId, parcelaId: proximaParcela.id },
+        clienteTelefone,
+        emprestimo?.cliente?.id
+      )
+    : { whatsappEnviado: false as boolean, whatsappErro: undefined as string | undefined, whatsappTexto: undefined as string | undefined, whatsappIgnorado: undefined as boolean | undefined };
 
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/emprestimos");
@@ -867,72 +869,23 @@ export async function salvarDataPrevistaPagamento(
     });
   } catch (err: any) {
     const msg = String(err?.message ?? "");
-    // Se o erro for "coluna não existe", aplica a migration e tenta de novo
-    if (
-      msg.includes("data_prevista_pagamento") ||
-      msg.includes("Unknown column") ||
-      msg.includes("column") ||
-      msg.includes("does not exist")
-    ) {
+    if (msg.includes("Unknown column")) {
       await ensureColumnExists();
-      await prisma.emprestimo.update({
-        where: { id: emprestimoId },
-        data: {
-          data_prevista_pagamento: data ? new Date(data) : null,
-        },
-      });
-    } else {
-      throw err;
+      return await salvarDataPrevistaPagamento(emprestimoId, data);
     }
+    throw err;
   }
-
-  revalidatePath(`/emprestimos/${emprestimoId}`);
-  revalidatePath("/emprestimos");
-  revalidatePath("/cobrancas");
-  return { success: true };
 }
 
-// ── Editar Data do Pagamento de Parcela ──
-export async function atualizarDataPagamentoParcela(
-  parcelaId: string,
-  emprestimoId: string,
-  novaDataStr: string
-) {
-  if (!novaDataStr) {
-    throw new Error("Data de pagamento inválida.");
-  }
-
-  const [year, month, day] = novaDataStr.split("-").map(Number);
-  const dataPagamentoUTC = new Date(Date.UTC(year, month - 1, day));
-
-  await prisma.parcela.update({
-    where: { id: parcelaId },
-    data: {
-      data_pagamento: dataPagamentoUTC,
-    },
-  });
-
-  revalidatePath(`/emprestimos/${emprestimoId}`);
-  revalidatePath("/emprestimos");
-  revalidatePath("/clientes");
-  return { success: true };
-}
-
-// ── Pausar / Despausar Empréstimo ──
-// Um empréstimo pausado sai das cobranças e do dashboard.
-// É usado quando foi feito um acordo com o cobrador.
-export async function togglePausarEmprestimo(emprestimoId: string, statusAtual: string) {
-  const novoStatus = statusAtual === "pausado" ? "ativo" : "pausado";
-
+// Funcionalidade de Delegação de Funcionários
+export async function atribuirFuncionario(emprestimoId: string, funcionarioId: string | null, podeDispararWhatsapp: boolean) {
   await prisma.emprestimo.update({
     where: { id: emprestimoId },
-    data: { status: novoStatus },
+    data: {
+      funcionario_id: funcionarioId,
+      podeDispararWhatsapp: podeDispararWhatsapp,
+    },
   });
-
   revalidatePath(`/emprestimos/${emprestimoId}`);
-  revalidatePath("/emprestimos");
-  revalidatePath("/cobrancas");
-  revalidatePath("/");
-  return { success: true, novoStatus };
+  return { success: true };
 }
-

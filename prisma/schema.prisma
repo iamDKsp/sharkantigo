@@ -52,6 +52,11 @@ model Emprestimo {
   cliente_id       String
   cliente          Cliente  @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
   
+  // Delegação
+  funcionario_id          String?
+  funcionario             Funcionario? @relation(fields: [funcionario_id], references: [id], onDelete: SetNull)
+  podeDispararWhatsapp    Boolean      @default(false)
+
   // Novos campos
   tipo_pagamento   String    @default("a_vista")
   frequencia       String    @default("mensal")
@@ -70,6 +75,21 @@ model Emprestimo {
   criado_em        DateTime @default(now())
 
   @@map("emprestimos")
+}
+
+model Funcionario {
+  id                  String       @id @default(uuid())
+  nome                String
+  slug                String       @unique // Usado na URL
+  senha               String       // Hash da senha
+  telefone            String?
+  foto_url            String?      @db.Text
+  ativo               Boolean      @default(true)
+  criado_em           DateTime     @default(now())
+  
+  emprestimos         Emprestimo[] // Relação 1:N
+
+  @@map("funcionarios")
 }
 
 model Parceiro {

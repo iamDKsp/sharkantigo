@@ -10,13 +10,15 @@ import {
   BadgeCheck, AlertTriangle, ChevronRight, Wallet, DollarSign, Pencil,
   FileDown, Send, PauseCircle, PlayCircle
 } from "lucide-react";
-import {
+import { 
   payNextInstallment, payFullLoan, renegociarEmprestimo,
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
   receberSoJurosEmprestimo, salvarDataPrevistaPagamento,
   atualizarDataPagamentoParcela, payInstallmentById,
-  togglePausarEmprestimo
+  togglePausarEmprestimo, atribuirFuncionario // <-- Import added
 } from "@/app/emprestimos/[id]/actions";
+import { listarFuncionarios } from "@/app/configuracoes/funcionarios/actions"; // <-- Import added
+
 import { enviarMensagemManual, legendaCronograma, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 import { calcularJurosAtraso, descreverRegraAtraso, regraAtiva } from "@/lib/jurosAtraso";
@@ -30,6 +32,8 @@ interface Emprestimo {
   data_vencimento: any; status: string; tipo_pagamento: string; frequencia: string;
   categoria: string; observacoes: string | null; cliente: Cliente; parcelas: Parcela[]; parceiro?: Parceiro | null;
   data_prevista_pagamento: string | null;
+  funcionario_id?: string | null;
+  podeDispararWhatsapp?: boolean;
   atraso_tipo?: string | null; atraso_valor?: number | null;
 }
 
@@ -378,9 +382,12 @@ export default function EmprestimoDetalhesView({
       proximaParcelaAberta ? [proximaParcelaAberta] : []
     );
     if (!dec.ok) return;
+    
+    const enviarWa = confirm("Deseja enviar notificação pelo WhatsApp?");
+    
     startTransition(async () => {
       try {
-        const res = await payNextInstallment(emprestimo.id, withDelay, dec.cobrar);
+        const res = await payNextInstallment(emprestimo.id, withDelay, dec.cobrar, enviarWa);
         if (res?.whatsappEnviado) {
           alert(`Pagamento confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
@@ -399,9 +406,12 @@ export default function EmprestimoDetalhesView({
       emprestimo.parcelas.filter((x) => x.status === "aberto")
     );
     if (!dec.ok) return;
+    
+    const enviarWa = confirm("Deseja enviar notificação pelo WhatsApp?");
+
     startTransition(async () => {
       try {
-        const res = await payFullLoan(emprestimo.id, withDelay, dec.cobrar);
+        const res = await payFullLoan(emprestimo.id, withDelay, dec.cobrar, enviarWa);
         if (res?.whatsappEnviado) {
           alert(`Quitação confirmada com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
@@ -421,9 +431,12 @@ export default function EmprestimoDetalhesView({
       alvo ? [alvo] : []
     );
     if (!dec.ok) return;
+    
+    const enviarWa = confirm("Deseja enviar notificação pelo WhatsApp?");
+    
     startTransition(async () => {
       try {
-        const res = await payInstallmentById(parcelaId, withDelay, dec.cobrar);
+        const res = await payInstallmentById(parcelaId, withDelay, dec.cobrar, enviarWa);
         if (res?.whatsappEnviado) {
           alert(`Pagamento da Parcela ${parcelaNumero} confirmado com sucesso!\nMensagem enviada para ${emprestimo.cliente.nome} no WhatsApp:\n\n"${res.whatsappTexto}"`);
         } else if (res?.whatsappErro) {
@@ -517,7 +530,10 @@ export default function EmprestimoDetalhesView({
 
   const [isSendingPdfWa, setIsSendingPdfWa] = useState(false);
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const handleBaixarPdf = () => {
+    setIsDownloading(true);
     try {
       baixarCronogramaPdfCliente({
         clienteNome: emprestimo.cliente.nome,
@@ -541,6 +557,8 @@ export default function EmprestimoDetalhesView({
     } catch (err: any) {
       console.error("Erro ao gerar PDF:", err);
       alert("Erro ao gerar PDF do cronograma.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -632,10 +650,39 @@ export default function EmprestimoDetalhesView({
     router.back();
   };
 
+  // ... inside component ...
+  const [funcionarios, setFuncionarios] = useState<any[]>([]);
+  useEffect(() => {
+    listarFuncionarios().then(setFuncionarios);
+  }, []);
+
+  const [funcId, setFuncId] = useState(emprestimo.funcionario_id || "");
+  const [podeWa, setPodeWa] = useState(emprestimo.podeDispararWhatsapp || false);
+
+  const handleAtribuir = async () => {
+    await atribuirFuncionario(emprestimo.id, funcId || null, podeWa);
+    alert("Atribuição atualizada!");
+  };
+
   return (
     <div className="w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto pb-12 space-y-4">
+      {/* --- Delegação UI --- */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <h3 className="font-bold text-sm mb-3">Delegação de Cobrança</h3>
+        <div className="flex gap-4 items-end">
+          <select value={funcId} onChange={e => setFuncId(e.target.value)} className={inputCls}>
+            <option value="">Nenhum (ADM)</option>
+            {funcionarios.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+          </select>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={podeWa} onChange={e => setPodeWa(e.target.checked)} />
+            Pode cobrar via WA
+          </label>
+          <button onClick={handleAtribuir} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm">Salvar</button>
+        </div>
+      </div>
+      {/* ... rest of the component ... */}
 
-      {/* Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 py-1">
         <button
           onClick={handleVoltar}
@@ -647,10 +694,12 @@ export default function EmprestimoDetalhesView({
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <button
             onClick={handleBaixarPdf}
-            className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer"
+            disabled={isDownloading}
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-60"
             title="Baixar Cronograma de Parcelas em PDF"
           >
-            <FileDown className="w-3.5 h-3.5 text-emerald-600" /> <span className="hidden min-[380px]:inline">Baixar</span> PDF
+            {isDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" /> : <FileDown className="w-3.5 h-3.5 text-emerald-600" />}
+            <span className="hidden min-[380px]:inline">Baixar</span> PDF
           </button>
           <Link
             href={`/emprestimos/${emprestimo.id}/editar`}

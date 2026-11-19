@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 /**
  * Sincroniza um valor de estado com um query param da URL.
@@ -9,8 +10,7 @@ import { useEffect, useState, useRef } from "react";
  *     para não resetar o estado quando o usuário volta (browser back ou router.back).
  *  2. Ouve o evento 'popstate' para atualizar o estado caso o usuário use os botões
  *     de voltar/avançar do navegador.
- *  3. Atualiza a URL via history.replaceState sem disparar re-render no Next.js
- *     e sem remover parâmetros no primeiro render.
+ *  3. Atualiza a URL via router.replace do Next.js para manter o roteador sincronizado.
  *
  * @param key          Nome do query param na URL (ex: "status", "q")
  * @param initial      Valor inicial lido pelo servidor via searchParams
@@ -23,6 +23,8 @@ export function useUrlState<T extends string>(
   defaultValue: T,
   sanitize?: (val: string) => T
 ): [T, (next: T) => void] {
+  const router = useRouter();
+
   // Inicializa priorizando o valor real presente na URL do navegador
   const [value, setValue] = useState<T>(() => {
     if (typeof window !== "undefined") {
@@ -83,10 +85,11 @@ export function useUrlState<T extends string>(
       window.location.pathname + (window.location.search || "");
 
     if (currentUrl !== targetUrl) {
-      window.history.replaceState(window.history.state, "", targetUrl);
+      router.replace(targetUrl, { scroll: false });
     }
-  }, [value, key, defaultValue]);
+  }, [value, key, defaultValue, router]);
 
   return [value, setValue];
 }
+
 
