@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# dumps de banco (dados de clientes - nunca versionar)
+*.sql
+!prisma/migrations/**/*.sql

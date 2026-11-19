@@ -9,6 +9,17 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Painel do funcionário (/<slug>/cliente) e sua API têm autenticação própria (senha do funcionário).
+  // Bloqueia Server Actions nessa rota para que ações do ADM não possam ser invocadas por ela.
+  const RESERVADOS = ["api", "login", "clientes", "emprestimos", "parceiros", "cobrancas", "configuracoes", "cheques", "mensagens", "perfil"];
+  const painel = pathname.match(/^\/([^/]+)\/cliente\/?$/);
+  if (painel && !RESERVADOS.includes(painel[1]) && !request.headers.has("next-action")) {
+    return NextResponse.next();
+  }
+  if (pathname.startsWith("/api/funcionario/")) {
+    return NextResponse.next();
+  }
+
   // Rotas públicas que não precisam de autenticação
   if (
     pathname.startsWith("/api/auth/login") ||
