@@ -109,7 +109,9 @@ export async function GET() {
 
   const notifsRelatos = relatosRecentes.map((r) => ({
     id: `relato:${r.id}`,
-    tipo: "relato_funcionario" as const,
+    tipo: (r.tipo === "devolucao" ? "devolucao_funcionario" : "relato_funcionario") as
+      | "devolucao_funcionario"
+      | "relato_funcionario",
     url: `/emprestimos/${r.emprestimo.id}`,
     clienteNome: r.emprestimo.cliente.nome,
     clienteId: r.emprestimo.cliente.id,

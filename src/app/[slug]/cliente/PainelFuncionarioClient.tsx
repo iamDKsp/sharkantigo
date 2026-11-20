@@ -26,6 +26,7 @@ import {
   RefreshCw,
   Search,
   Send,
+  Undo2,
   User,
   Wallet,
   X,
@@ -77,6 +78,7 @@ const FORMAS_PAG = [
 ];
 
 function labelTipoRelato(tipo: string) {
+  if (tipo === "devolucao") return "Devolução ao ADM";
   return TIPOS_RELATO.find((t) => t.id === tipo)?.label || "Relato";
 }
 
@@ -201,6 +203,9 @@ export default function PainelFuncionarioClient({
   const [cobrarEmp, setCobrarEmp] = useState<EmprestimoFuncionarioCard | null>(null);
   const [relatoEmp, setRelatoEmp] = useState<EmprestimoFuncionarioCard | null>(null);
   const [receberEmp, setReceberEmp] = useState<EmprestimoFuncionarioCard | null>(null);
+  const [devolverEmp, setDevolverEmp] = useState<EmprestimoFuncionarioCard | null>(null);
+  const [devolverMotivo, setDevolverMotivo] = useState("");
+  const [devolvendo, setDevolvendo] = useState(false);
   const [expandidos, setExpandidos] = useState<Record<string, boolean>>({});
 
   // Documentos sob demanda no detalhe
@@ -469,6 +474,40 @@ export default function PainelFuncionarioClient({
     }
   };
 
+  const abrirDevolver = (emp: EmprestimoFuncionarioCard) => {
+    setDevolverEmp(emp);
+    setDevolverMotivo("");
+  };
+
+  const confirmarDevolucao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!devolverEmp) return;
+    setDevolvendo(true);
+    try {
+      const res = await fetch("/api/funcionario/devolver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emprestimoId: devolverEmp.id,
+          motivo: devolverMotivo,
+        }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (d.ok) {
+        showToast(`Empréstimo de ${devolverEmp.cliente.nome.split(" ")[0]} devolvido ao ADM!`);
+        setDevolverEmp(null);
+        setDetalheEmp(null);
+        router.refresh();
+      } else {
+        showToast(d.erro || "Não foi possível devolver o empréstimo.", "erro");
+      }
+    } catch {
+      showToast("Falha de conexão ao devolver empréstimo.", "erro");
+    } finally {
+      setDevolvendo(false);
+    }
+  };
+
   const sair = async () => {
     await fetch("/api/funcionario/sair", { method: "POST" });
     router.refresh();
@@ -650,20 +689,34 @@ export default function PainelFuncionarioClient({
           </div>
         </div>
 
-        {/* Próximas parcelas em aberto */}
+        {/* Próximas parcelas em aberto + atalho Devolver */}
         {!quitado && abertas.length > 0 && (
           <div className="pl-5 pr-4 py-2 border-t border-slate-100 bg-slate-50/50 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="text-slate-600 font-semibold flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              {emp.isAVista
-                ? `Vencimento: ${fmtDataUTC(abertas[0].data_vencimento)}`
-                : `Próxima: Parcela ${abertas[0].numero} · ${fmtDataUTC(abertas[0].data_vencimento)} (${brl(abertas[0].valor)})`}
-            </span>
-            {emp.relatos[0] && (
-              <span className="text-[11px] text-slate-400 truncate max-w-[260px]">
-                Último relato: {emp.relatos[0].texto}
+            <span className="text-slate-600 font-semibold flex items-center gap-1.5 min-w-0">
+              <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="truncate">
+                {emp.isAVista
+                  ? `Vencimento: ${fmtDataUTC(abertas[0].data_vencimento)}`
+                  : `Próxima: Parcela ${abertas[0].numero} · ${fmtDataUTC(abertas[0].data_vencimento)} (${brl(abertas[0].valor)})`}
               </span>
-            )}
+            </span>
+            <div className="flex items-center gap-2 ml-auto shrink-0">
+              {emp.relatos[0] && (
+                <span className="hidden sm:inline text-[11px] text-slate-400 truncate max-w-[200px]">
+                  {emp.relatos[0].texto}
+                </span>
+              )}
+              <Tooltip content="Devolver este empréstimo ao ADM sem alterar nada">
+                <button
+                  type="button"
+                  onClick={() => abrirDevolver(emp)}
+                  className="btn-press inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white hover:bg-amber-50 text-slate-500 hover:text-amber-800 border border-slate-200 hover:border-amber-200 text-[11px] font-bold cursor-pointer"
+                >
+                  <Undo2 className="w-3 h-3" />
+                  <span>Devolver</span>
+                </button>
+              </Tooltip>
+            </div>
           </div>
         )}
 
@@ -1453,16 +1506,34 @@ export default function PainelFuncionarioClient({
           maxWidth="max-w-2xl"
           onClose={() => setDetalheEmp(null)}
           headerExtra={
-            <Tooltip content="Baixar cronograma completo em PDF" side="bottom">
-              <a
-                href={`/api/funcionario/emprestimo/${detalheEmp.id}/pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-press inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black"
-              >
-                <FileDown className="w-3.5 h-3.5" /> PDF
-              </a>
-            </Tooltip>
+            <div className="flex items-center gap-1.5">
+              {detalheEmp.status !== "quitado" && detalheEmp.status !== "quitado_com_atraso" && (
+                <Tooltip content="Devolver contrato ao ADM sem alterar parcelas" side="bottom">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const emp = detalheEmp;
+                      setDetalheEmp(null);
+                      abrirDevolver(emp);
+                    }}
+                    className="btn-press inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-black cursor-pointer"
+                  >
+                    <Undo2 className="w-3.5 h-3.5" />
+                    <span className="hidden min-[380px]:inline">Devolver</span>
+                  </button>
+                </Tooltip>
+              )}
+              <Tooltip content="Baixar cronograma completo em PDF" side="bottom">
+                <a
+                  href={`/api/funcionario/emprestimo/${detalheEmp.id}/pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-press inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black"
+                >
+                  <FileDown className="w-3.5 h-3.5" /> PDF
+                </a>
+              </Tooltip>
+            </div>
           }
         >
           <div className="space-y-5">
@@ -1685,6 +1756,85 @@ export default function PainelFuncionarioClient({
               )}
             </div>
           </div>
+        </SheetModal>
+      )}
+
+      {/* ── MODAL: DEVOLVER EMPRÉSTIMO AO ADM ── */}
+      {devolverEmp && (
+        <SheetModal
+          title="Devolver Empréstimo ao ADM"
+          subtitle={devolverEmp.cliente.nome}
+          busy={devolvendo}
+          onClose={() => setDevolverEmp(null)}
+        >
+          <form onSubmit={confirmarDevolucao} className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
+              <Undo2 className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                O contrato de <strong>{devolverEmp.cliente.nome}</strong> voltará para o administrador{" "}
+                <strong>exatamente como está agora</strong> — nenhuma parcela, valor ou status será alterado.
+              </p>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-2">
+                Motivo rápido (opcional)
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Passado por engano",
+                  "Cliente pediu p/ falar direto com ADM",
+                  "Não consegui contato",
+                  "Sem retorno no endereço",
+                ].map((sug) => (
+                  <button
+                    key={sug}
+                    type="button"
+                    onClick={() => setDevolverMotivo(sug)}
+                    className={`btn-press px-2.5 py-1.5 rounded-xl text-[11px] font-bold border cursor-pointer ${
+                      devolverMotivo === sug
+                        ? "bg-amber-600 text-white border-amber-600"
+                        : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">
+                Observação para o ADM (opcional)
+              </label>
+              <textarea
+                rows={2}
+                value={devolverMotivo}
+                onChange={(e) => setDevolverMotivo(e.target.value)}
+                placeholder="Ex: Devolvendo porque o cliente vai acertar direto com você..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-y"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setDevolverEmp(null)}
+                disabled={devolvendo}
+                className="btn-press flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={devolvendo}
+                className="btn-press flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-60"
+              >
+                {devolvendo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Undo2 className="w-4 h-4" />}
+                {devolvendo ? "Devolvendo..." : "Devolver ao ADM"}
+              </button>
+            </div>
+          </form>
         </SheetModal>
       )}
     </div>

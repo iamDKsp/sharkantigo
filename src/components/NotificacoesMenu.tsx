@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, X, ExternalLink, CheckCheck, Calendar, AlertCircle, Clock, Wallet, MessageSquare } from "lucide-react";
+import { Bell, X, ExternalLink, CheckCheck, Calendar, AlertCircle, Clock, Wallet, MessageSquare, Undo2 } from "lucide-react";
 
 interface Notificacao {
   id: string;
-  tipo?: "data_prevista" | "baixa_pendente" | "relato_funcionario";
+  tipo?: "data_prevista" | "baixa_pendente" | "relato_funcionario" | "devolucao_funcionario";
   url?: string;
   clienteNome: string;
   clienteId: string;
@@ -354,11 +354,18 @@ function NotificacaoCard({
 }) {
   const tipo = notificacao.tipo || "data_prevista";
   const isBaixa = tipo === "baixa_pendente";
-  const isRelato = tipo === "relato_funcionario";
+  const isDevolucao = tipo === "devolucao_funcionario";
+  const isRelato = tipo === "relato_funcionario" || isDevolucao;
   const urg = getUrgencia(notificacao.diasRestantes);
-  const Icon = isBaixa ? Wallet : isRelato ? MessageSquare : urg.icon;
-  const label = isBaixa ? "Aprovar Baixa" : isRelato ? `Relato · ${notificacao.funcionarioNome || "Cobrador"}` : urg.label;
-  const cor = isBaixa ? "amber" : isRelato ? "indigo" : urg.cor;
+  const Icon = isBaixa ? Wallet : isDevolucao ? Undo2 : isRelato ? MessageSquare : urg.icon;
+  const label = isBaixa
+    ? "Aprovar Baixa"
+    : isDevolucao
+      ? `Devolvido · ${notificacao.funcionarioNome || "Cobrador"}`
+      : isRelato
+        ? `Relato · ${notificacao.funcionarioNome || "Cobrador"}`
+        : urg.label;
+  const cor = isBaixa ? "amber" : isDevolucao ? "orange" : isRelato ? "indigo" : urg.cor;
 
   const corClasses: Record<string, string> = {
     rose:   "bg-rose-50 text-rose-700 border-rose-200",
