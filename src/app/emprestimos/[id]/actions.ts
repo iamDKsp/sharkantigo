@@ -838,12 +838,170 @@ export async function updateEmprestimo(emprestimoId: string, formData: FormData)
   return { success: true, redirectUrl: `/emprestimos/${emprestimoId}` };
 }
 
-export async function atualizarDataPagamentoParcela(parcelaId: string, novaData: Date) {
-  await prisma.parcela.update({
+function parseDateUTC(input: string | Date): Date {
+  if (input instanceof Date) {
+    return new Date(Date.UTC(input.getUTCFullYear(), input.getUTCMonth(), input.getUTCDate()));
+  }
+  const clean = String(input).split("T")[0];
+  const [y, m, d] = clean.split("-").map(Number);
+  if (!y || !m || !d) {
+    throw new Error("Data inválida.");
+  }
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+function revalidarRotasEmprestimo(emprestimoId: string, clienteId?: string | null) {
+  revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/clientes");
+  if (clienteId) {
+    revalidatePath(`/clientes/${clienteId}`);
+  }
+  revalidatePath("/cobrancas");
+  revalidatePath("/");
+}
+
+export async function atualizarDataPagamentoParcela(parcelaId: string, novaData: Date | string) {
+  const dataUTC = parseDateUTC(novaData);
+  const atualizada = await prisma.parcela.update({
     where: { id: parcelaId },
-    data: { data_pagamento: novaData },
+    data: { data_pagamento: dataUTC },
+    include: { emprestimo: { select: { id: true, cliente_id: true } } },
   });
-  revalidatePath(`/emprestimos/`);
+  revalidarRotasEmprestimo(atualizada.emprestimo_id, atualizada.emprestimo?.cliente_id);
+  return { success: true };
+}
+
+// Estornar / desfazer o pagamento de uma parcela específica (volta para "aberto" sem alterar o cronograma)
+export async function estornarPagamentoParcela(parcelaId: string) {
+  const parcela = await prisma.parcela.findUnique({
+    where: { id: parcelaId },
+    include: {
+      emprestimo: {
+        select: { id: true, status: true, cliente_id: true },
+      },
+    },
+  });
+
+  if (!parcela) {
+    throw new Error("Parcela não encontrada.");
+  }
+
+  if (parcela.status === "aberto") {
+    throw new Error("Esta parcela já está em aberto.");
+  }
+
+  const st = parcela.status.toLowerCase();
+  if (st === "pago_renovacao" || st.includes("renovacao") || st === "renovado") {
+    throw new Error("Renovações de juros não podem ser estornadas individualmente porque geraram um novo vencimento.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.parcela.update({
+      where: { id: parcelaId },
+      data: {
+        status: "aberto",
+        data_pagamento: null,
+        valor_pago: null,
+      },
+    });
+
+    // Se o empréstimo estava marcado como quitado, volta a ficar ativo
+    if (
+      parcela.emprestimo.status === "quitado" ||
+      parcela.emprestimo.status === "quitado_com_atraso"
+    ) {
+      await tx.emprestimo.update({
+        where: { id: parcela.emprestimo_id },
+        data: { status: "ativo" },
+      });
+    }
+  });
+
+  revalidarRotasEmprestimo(parcela.emprestimo_id, parcela.emprestimo.cliente_id);
+  return { success: true, numeroParcela: parcela.numero };
+}
+
+// Editar pontualmente UMA parcela (vencimento, valor e, se paga, data de pagamento) sem mexer no restante do cronograma
+export async function editarParcelaIndividual(
+  parcelaId: string,
+  dados: {
+    dataVencimento: string;
+    valor: number;
+    dataPagamento?: string | null;
+  }
+) {
+  const valorNum = Number(dados.valor);
+  if (!Number.isFinite(valorNum) || valorNum <= 0) {
+    throw new Error("Informe um valor válido maior que zero.");
+  }
+  if (!dados.dataVencimento) {
+    throw new Error("A data de vencimento é obrigatória.");
+  }
+
+  const novaDataVencUTC = parseDateUTC(dados.dataVencimento);
+  const novaDataPagUTC = dados.dataPagamento ? parseDateUTC(dados.dataPagamento) : null;
+
+  const parcela = await prisma.parcela.findUnique({
+    where: { id: parcelaId },
+    include: {
+      emprestimo: {
+        select: { id: true, cliente_id: true },
+      },
+    },
+  });
+
+  if (!parcela) {
+    throw new Error("Parcela não encontrada.");
+  }
+
+  const estaPaga = parcela.status.startsWith("pago");
+  const valorArredondado = Number(valorNum.toFixed(2));
+
+  await prisma.$transaction(async (tx) => {
+    const updateData: {
+      data_vencimento: Date;
+      valor: number;
+      data_pagamento?: Date;
+      valor_pago?: number;
+    } = {
+      data_vencimento: novaDataVencUTC,
+      valor: valorArredondado,
+    };
+
+    if (estaPaga) {
+      if (novaDataPagUTC) {
+        updateData.data_pagamento = novaDataPagUTC;
+      }
+      const valorAntigo = Number(parcela.valor);
+      if (Math.abs(valorAntigo - valorArredondado) > 0.001) {
+        const valorPagoAntigo = parcela.valor_pago !== null ? Number(parcela.valor_pago) : valorAntigo;
+        const jurosExtraAnterior = Math.max(0, valorPagoAntigo - valorAntigo);
+        updateData.valor_pago = Number((valorArredondado + jurosExtraAnterior).toFixed(2));
+      }
+    }
+
+    await tx.parcela.update({
+      where: { id: parcelaId },
+      data: updateData,
+    });
+
+    // Mantém o vencimento final do empréstimo sincronizado com a maior data de vencimento das parcelas
+    const ultimaParcelaPorVenc = await tx.parcela.findFirst({
+      where: { emprestimo_id: parcela.emprestimo_id },
+      orderBy: { data_vencimento: "desc" },
+      select: { data_vencimento: true },
+    });
+
+    if (ultimaParcelaPorVenc) {
+      await tx.emprestimo.update({
+        where: { id: parcela.emprestimo_id },
+        data: { data_vencimento: ultimaParcelaPorVenc.data_vencimento },
+      });
+    }
+  });
+
+  revalidarRotasEmprestimo(parcela.emprestimo_id, parcela.emprestimo.cliente_id);
   return { success: true };
 }
 

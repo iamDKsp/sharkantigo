@@ -8,13 +8,14 @@ import {
   Clock, CheckCircle2, X, Loader2, Phone, TrendingUp,
   RefreshCw, CalendarClock, ShieldOff, Shield, Layers,
   BadgeCheck, AlertTriangle, ChevronRight, Wallet, DollarSign, Pencil,
-  FileDown, Send, PauseCircle, PlayCircle
+  FileDown, Send, PauseCircle, PlayCircle, RotateCcw
 } from "lucide-react";
 import { 
   payNextInstallment, payFullLoan, renegociarEmprestimo,
   reprogramarEmprestimo, toggleClientBlacklist, deleteLoan,
   receberSoJurosEmprestimo, salvarDataPrevistaPagamento,
-  payInstallmentById, togglePausarEmprestimo, atribuirFuncionario, atualizarDataPagamentoParcela // Added back
+  payInstallmentById, togglePausarEmprestimo, atribuirFuncionario,
+  estornarPagamentoParcela, editarParcelaIndividual
 } from "@/app/emprestimos/[id]/actions";
 
 import { listarFuncionarios } from "@/app/configuracoes/funcionarios/actions"; // <-- Import added
@@ -156,8 +157,18 @@ export default function EmprestimoDetalhesView({
     setIsSavingData(false);
   };
 
-  // ── Editar Data do Pagamento da Parcela ──
-  const [editingParcela, setEditingParcela] = useState<{ id: string; numero: number; data: string } | null>(null);
+  // ── Editar Parcela Individual (vencimento, valor, data de pagamento e estorno) ──
+  type EditingParcelaState = {
+    id: string;
+    numero: number;
+    label: string;
+    valor: string;
+    dataVencimento: string;
+    dataPagamento: string;
+    estaPaga: boolean;
+    isRenov: boolean;
+  };
+  const [editingParcela, setEditingParcela] = useState<EditingParcelaState | null>(null);
   const [editingParcelaClosing, setEditingParcelaClosing] = useState(false);
 
   const closeEditingParcela = useCallback(() => {
@@ -168,7 +179,7 @@ export default function EmprestimoDetalhesView({
     }, 150);
   }, []);
 
-  const openEditingParcela = useCallback((p: { id: string; numero: number; data: string }) => {
+  const openEditingParcela = useCallback((p: EditingParcelaState) => {
     setEditingParcelaClosing(false);
     setEditingParcela(p);
   }, []);
@@ -374,9 +385,10 @@ export default function EmprestimoDetalhesView({
   };
 
   const pay = (withDelay: boolean) => {
+    const vencInfo = proximaParcelaAberta ? ` (vence ${fmtDate(proximaParcelaAberta.data_vencimento)})` : "";
     const acaoLabel = isAVista || !multiplas
-      ? "QUITAÇÃO"
-      : `recebimento da Parcela ${proximaParcelaAberta?.numero || ""}`;
+      ? `QUITAÇÃO${vencInfo}`
+      : `recebimento da Parcela ${proximaParcelaAberta?.numero || ""}${vencInfo}`;
     const dec = confirmarRecebimento(
       `${acaoLabel} como ${withDelay ? "atrasado" : "pago"}`,
       proximaParcelaAberta ? [proximaParcelaAberta] : []
@@ -426,8 +438,25 @@ export default function EmprestimoDetalhesView({
   };
   const paySpecific = (parcelaId: string, parcelaNumero: number, withDelay = false) => {
     const alvo = emprestimo.parcelas.find((x) => x.id === parcelaId);
+    if (alvo) {
+      const anterioresAbertas = emprestimo.parcelas.filter(
+        (x) => x.status === "aberto" && x.numero < alvo.numero
+      );
+      if (anterioresAbertas.length > 0) {
+        const primeiraAnterior = anterioresAbertas[0];
+        const confirmarForaDeOrdem = confirm(
+          `⚠️ ATENÇÃO: PAGAMENTO FORA DE ORDEM!\n\n` +
+          `A Parcela ${primeiraAnterior.numero} (vence ${fmtDate(primeiraAnterior.data_vencimento)}) ainda está em aberto.\n` +
+          `Você clicou para pagar a Parcela ${parcelaNumero} (vence ${fmtDate(alvo.data_vencimento)}).\n\n` +
+          `Deseja realmente pular a Parcela ${primeiraAnterior.numero} e pagar a Parcela ${parcelaNumero}?`
+        );
+        if (!confirmarForaDeOrdem) return;
+      }
+    }
+
+    const vencInfo = alvo ? ` (vence ${fmtDate(alvo.data_vencimento)})` : "";
     const dec = confirmarRecebimento(
-      `recebimento da Parcela ${parcelaNumero} como ${withDelay ? "atrasada" : "paga"}`,
+      `recebimento da Parcela ${parcelaNumero}${vencInfo} como ${withDelay ? "atrasada" : "paga"}`,
       alvo ? [alvo] : []
     );
     if (!dec.ok) return;
@@ -446,6 +475,26 @@ export default function EmprestimoDetalhesView({
         }
       } catch (err: any) {
         alert(err?.message || "Erro ao registrar pagamento.");
+      }
+    });
+  };
+  const estornarParcela = (parcelaId: string, label: string, dataVencimento: any, onDone?: () => void) => {
+    const vencTexto = dataVencimento && !Number.isNaN(new Date(dataVencimento).getTime())
+      ? ` (vence ${fmtDate(dataVencimento)})`
+      : "";
+    const ok = confirm(
+      `Desfazer o pagamento da ${label}${vencTexto}?\n\n` +
+      `Ela voltará para "Em aberto" sem alterar nenhuma outra parcela do cronograma.`
+    );
+    if (!ok) return;
+
+    startTransition(async () => {
+      try {
+        await estornarPagamentoParcela(parcelaId);
+        onDone?.();
+        router.refresh();
+      } catch (err: any) {
+        alert(err?.message || "Erro ao desfazer pagamento da parcela.");
       }
     });
   };
@@ -973,9 +1022,20 @@ export default function EmprestimoDetalhesView({
                             {p.data_pagamento && (
                               <button
                                 type="button"
-                                onClick={() => openEditingParcela({ id: p.id, numero: p.numero, data: toInputDate(p.data_pagamento) })}
+                                onClick={() =>
+                                  openEditingParcela({
+                                    id: p.id,
+                                    numero: p.numero,
+                                    label: p.label,
+                                    valor: String(p.valor),
+                                    dataVencimento: toInputDate(p.data_vencimento),
+                                    dataPagamento: toInputDate(p.data_pagamento),
+                                    estaPaga: pPago,
+                                    isRenov,
+                                  })
+                                }
                                 className="text-emerald-600 hover:text-emerald-700 font-bold inline-flex items-center gap-1 hover:underline cursor-pointer group"
-                                title="Clique para editar a data de pagamento"
+                                title="Clique para editar esta parcela ou desfazer o pagamento"
                               >
                                 <span>· Pago {fmtDate(p.data_pagamento)}</span>
                                 <Pencil className="w-3 h-3 text-emerald-500 opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -985,7 +1045,7 @@ export default function EmprestimoDetalhesView({
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t border-slate-100 sm:border-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t border-slate-100 sm:border-0">
                         <div className="text-left sm:text-right">
                           <span className="text-sm font-black text-slate-900">{fmt(p.valor)}</span>
                           {isAv && p.status === "aberto" && (
@@ -1007,13 +1067,47 @@ export default function EmprestimoDetalhesView({
                             </span>
                           ) : null;
                         })()}
-                        {p.status === "aberto" && (
-                          <div className="flex gap-1">
-                            {isAVista && valorJurosCalculado > 0 ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openEditingParcela({
+                                id: p.id,
+                                numero: p.numero,
+                                label: p.label,
+                                valor: String(p.valor),
+                                dataVencimento: toInputDate(p.data_vencimento),
+                                dataPagamento: toInputDate(p.data_pagamento),
+                                estaPaga: pPago,
+                                isRenov,
+                              })
+                            }
+                            disabled={isPending}
+                            title={`Editar ${p.label} (sem alterar o resto do cronograma)`}
+                            className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+
+                          {pPago && !isRenov && (
+                            <button
+                              type="button"
+                              onClick={() => estornarParcela(p.id, p.label, p.data_vencimento)}
+                              disabled={isPending}
+                              title={`Desfazer pagamento da ${p.label} (voltar para em aberto)`}
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-[11px] font-black rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>Desfazer</span>
+                            </button>
+                          )}
+
+                          {p.status === "aberto" && (
+                            isAVista && valorJurosCalculado > 0 ? (
                               <button
                                 onClick={receiveJuros}
                                 disabled={isPending}
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer disabled:opacity-50"
                               >
                                 Renovação
                               </button>
@@ -1021,13 +1115,17 @@ export default function EmprestimoDetalhesView({
                               <button
                                 onClick={() => paySpecific(p.id, p.numero)}
                                 disabled={isPending}
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors shadow-sm cursor-pointer"
+                                className={`px-2.5 py-1 text-xs font-black rounded-lg transition-colors cursor-pointer disabled:opacity-50 ${
+                                  isAVista || isMaisAtual
+                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                                    : "bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                }`}
                               >
                                 {isAVista ? "Quitar" : "Pagar"}
                               </button>
-                            )}
-                          </div>
-                        )}
+                            )
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -1606,19 +1704,74 @@ export default function EmprestimoDetalhesView({
         </div>
       )}
 
-      {/* MODAL EDITAR DATA PAGAMENTO */}
+      {/* MODAL EDITAR PARCELA INDIVIDUAL */}
       {editingParcela && (
-        <Modal isClosing={editingParcelaClosing} onClose={closeEditingParcela} title="Editar Data do Pagamento" subtitle={`Parcela ${editingParcela.numero}`}>
+        <Modal
+          isClosing={editingParcelaClosing}
+          onClose={closeEditingParcela}
+          title={`Editar ${editingParcela.label}`}
+          subtitle="Altera somente esta parcela, sem mudar o resto do cronograma"
+        >
           <div className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-slate-600 block mb-1.5">Data em que o pagamento foi realizado</label>
-              <input
-                type="date"
-                className={inputCls}
-                value={editingParcela.data}
-                onChange={(e) => setEditingParcela({ ...editingParcela, data: e.target.value })}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1.5">Data de Vencimento</label>
+                <input
+                  type="date"
+                  className={inputCls}
+                  value={editingParcela.dataVencimento}
+                  onChange={(e) => setEditingParcela({ ...editingParcela, dataVencimento: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1.5">Valor (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  className={inputCls}
+                  value={editingParcela.valor}
+                  onChange={(e) => setEditingParcela({ ...editingParcela, valor: e.target.value })}
+                />
+              </div>
             </div>
+
+            {editingParcela.estaPaga && (
+              <div>
+                <label className="text-xs font-bold text-slate-600 block mb-1.5">Data em que o pagamento foi realizado</label>
+                <input
+                  type="date"
+                  className={inputCls}
+                  value={editingParcela.dataPagamento}
+                  onChange={(e) => setEditingParcela({ ...editingParcela, dataPagamento: e.target.value })}
+                />
+              </div>
+            )}
+
+            {editingParcela.estaPaga && !editingParcela.isRenov && (
+              <div className="p-3 bg-rose-50/70 border border-rose-200/80 rounded-2xl space-y-2">
+                <p className="text-[11px] font-bold text-rose-800">
+                  Marcou esta parcela como paga por engano?
+                </p>
+                <button
+                  type="button"
+                  disabled={isPending || isSavingParcelaData}
+                  onClick={() =>
+                    estornarParcela(
+                      editingParcela.id,
+                      editingParcela.label,
+                      editingParcela.dataVencimento,
+                      closeEditingParcela
+                    )
+                  }
+                  className="w-full py-2 px-3 bg-white hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 text-xs font-black rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Desfazer Pagamento (Voltar para Em Aberto)
+                </button>
+              </div>
+            )}
+
             <div className="flex gap-2 justify-end pt-2 border-t border-slate-100">
               <button
                 type="button"
@@ -1629,14 +1782,24 @@ export default function EmprestimoDetalhesView({
               </button>
               <button
                 type="button"
-                disabled={isSavingParcelaData || !editingParcela.data}
+                disabled={
+                  isSavingParcelaData ||
+                  !editingParcela.dataVencimento ||
+                  !editingParcela.valor ||
+                  Number(editingParcela.valor) <= 0
+                }
                 onClick={async () => {
                   setIsSavingParcelaData(true);
                   try {
-                    await atualizarDataPagamentoParcela(editingParcela.id, new Date(editingParcela.data));
+                    await editarParcelaIndividual(editingParcela.id, {
+                      dataVencimento: editingParcela.dataVencimento,
+                      valor: Number(editingParcela.valor),
+                      dataPagamento: editingParcela.estaPaga ? editingParcela.dataPagamento || null : null,
+                    });
                     closeEditingParcela();
+                    router.refresh();
                   } catch (err: any) {
-                    alert(err.message || "Erro ao atualizar data");
+                    alert(err.message || "Erro ao salvar parcela");
                   } finally {
                     setIsSavingParcelaData(false);
                   }
@@ -1644,7 +1807,7 @@ export default function EmprestimoDetalhesView({
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 {isSavingParcelaData ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                Salvar Data
+                Salvar Parcela
               </button>
             </div>
           </div>

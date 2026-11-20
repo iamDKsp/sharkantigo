@@ -78,7 +78,16 @@ export default function FormEditarEmprestimo({ emprestimo, clientes, parceiros }
     return list;
   };
   const parcelasSimuladas = recriarParcelas ? gerarParcelas() : [];
-  const dataVencimentoFinal = parcelasSimuladas.length > 0 ? parcelasSimuladas[parcelasSimuladas.length - 1].data_vencimento : vencimentoPrimeira || toInputDate(emprestimo.data_vencimento);
+  const isModalidadeUnica =
+    tipoPagamento === "a_vista" ||
+    tipoPagamento === "a_vista_juros" ||
+    tipoPagamento === "juros_compostos";
+  const dataVencimentoFinal =
+    parcelasSimuladas.length > 0
+      ? parcelasSimuladas[parcelasSimuladas.length - 1].data_vencimento
+      : isModalidadeUnica
+        ? vencimentoPrimeira || toInputDate(emprestimo.data_vencimento)
+        : toInputDate(emprestimo.data_vencimento);
   const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
   const formatDataBr = (ds: string | Date) => { const s = typeof ds === "string" ? ds : toInputDate(ds); const p = s.split("-"); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s; };
   const getDescricaoTipo = () => { switch (tipoPagamento) { case "a_vista": return "Pagamento único sem juros."; case "a_vista_juros": return "Pagamento único com juros simples."; case "juros_compostos": return "Juros compostos por período."; case "parcelado": return "Parcelado em parcelas iguais."; case "parcela_juros_mes": return "Parcela com juros embutido todo mês."; } };
