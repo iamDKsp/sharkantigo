@@ -55,6 +55,7 @@ export default async function EmprestimosPage({
       data_prevista_pagamento: true,
       parceiro_id: true,
       funcionario_id: true,
+      podeDispararWhatsapp: true,
       criado_em: true,
       cliente: {
         select: {
@@ -85,6 +86,7 @@ export default async function EmprestimosPage({
         select: {
           id: true,
           nome: true,
+          foto_url: true,
         },
       },
     },

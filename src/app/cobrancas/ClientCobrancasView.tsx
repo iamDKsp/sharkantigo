@@ -218,9 +218,11 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     let lista = listaBase.filter((p) => {
       if (soNaoCobrados && cobradas.has(p.id)) return false;
       if (funcionarioFiltro === "adm" && p.emprestimo.funcionario) return false;
+      if (funcionarioFiltro === "repassados" && !p.emprestimo.funcionario) return false;
       if (
         funcionarioFiltro !== "todos" &&
         funcionarioFiltro !== "adm" &&
+        funcionarioFiltro !== "repassados" &&
         p.emprestimo.funcionario?.id !== funcionarioFiltro
       ) {
         return false;
@@ -639,7 +641,8 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                   }`}
                 >
                   <option value="todos">Todos os cobradores</option>
-                  <option value="adm">Somente ADM (sem cobrador)</option>
+                  <option value="adm">Somente ADM (não repassados)</option>
+                  <option value="repassados">Apenas repassados</option>
                   {funcionariosNaLista.map((f) => (
                     <option key={f.id} value={f.id}>
                       Cobrador: {f.nome}

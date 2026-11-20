@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { linkWhatsapp } from "@/lib/mensagens/render";
 import ClienteAvatar from "@/components/ClienteAvatar";
+import Tooltip from "@/components/Tooltip";
 import {
   formatBRL,
   formatData,
@@ -271,7 +272,7 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
   return (
     <div
       style={{ ["--i" as string]: Math.min(index, 12) }}
-      className={`${sub ? "" : "animate-row-in"} group relative grid grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_11.5rem] xl:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_16.5rem] items-center gap-x-3 gap-y-2.5 pl-4 pr-3 sm:pr-4 py-3 transition-colors duration-200 ${
+      className={`${sub ? "" : "animate-row-in"} group relative grid grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[auto_minmax(0,1fr)_10.5rem_6.5rem_11rem] lg:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_11.5rem] xl:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_16.5rem] items-center gap-x-3 gap-y-2.5 pl-4 pr-3 sm:pr-4 py-3 transition-colors duration-200 ${
         selecionado ? tema.selectedBg : "hover:bg-slate-50/70"
       }`}
     >
@@ -287,54 +288,70 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
       />
 
       {/* Cliente */}
-      <div className="min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="min-w-0 flex items-center gap-2.5 lg:gap-3">
+        {!sub && (
           <Link
             href={`/clientes/${cliente.id}`}
-            title="Abrir perfil do cliente"
-            className="font-bold text-sm text-slate-900 truncate hover:text-emerald-700 hover:underline underline-offset-2 decoration-emerald-300 transition-colors"
+            title={`Abrir perfil de ${cliente.nome}`}
+            className="hidden md:block shrink-0 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            {cliente.nome}
+            <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="w-10 h-10 lg:w-11 lg:h-11 text-sm lg:text-base" />
           </Link>
-          <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${tema.chip}`}>{totalLabel}</span>
-          {p.emprestimo.funcionario && (
-            <span
-              title={`Compartilhado com ${p.emprestimo.funcionario.nome}${p.emprestimo.podeDispararWhatsapp ? " (pode cobrar no WhatsApp)" : ""}`}
-              className="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[9px] font-black text-indigo-700"
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Link
+              href={`/clientes/${cliente.id}`}
+              title="Abrir perfil do cliente"
+              className="font-bold text-sm text-slate-900 truncate hover:text-emerald-700 hover:underline underline-offset-2 decoration-emerald-300 transition-colors"
             >
-              {p.emprestimo.funcionario.foto_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.emprestimo.funcionario.foto_url} alt="" className="w-4 h-4 rounded-full object-cover" />
-              ) : (
-                <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px]">
-                  {p.emprestimo.funcionario.nome.charAt(0).toUpperCase()}
+              {cliente.nome}
+            </Link>
+            <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase border ${tema.chip}`}>{totalLabel}</span>
+            {p.emprestimo.funcionario && (
+              <Tooltip
+                content={`Repassado para ${p.emprestimo.funcionario.nome}${p.emprestimo.podeDispararWhatsapp ? " (pode cobrar no WhatsApp)" : ""}`}
+              >
+                <span className="inline-flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 cursor-default">
+                  {p.emprestimo.funcionario.foto_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.emprestimo.funcionario.foto_url}
+                      alt={p.emprestimo.funcionario.nome}
+                      className="w-4 h-4 rounded-full object-cover border border-indigo-200 shrink-0"
+                    />
+                  ) : (
+                    <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[9px] font-black shrink-0">
+                      {p.emprestimo.funcionario.nome.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="truncate max-w-[110px]">{p.emprestimo.funcionario.nome}</span>
+                  {p.emprestimo.podeDispararWhatsapp && <MessageCircle className="w-2.5 h-2.5 text-emerald-600 shrink-0" />}
                 </span>
-              )}
-              {p.emprestimo.funcionario.nome.split(" ")[0]}
-              {p.emprestimo.podeDispararWhatsapp && <MessageCircle className="w-2.5 h-2.5" />}
+              </Tooltip>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+            <span className="flex items-center gap-0.5">
+              <Calendar className="w-3 h-3" />
+              {formatData(p.data_vencimento)}
             </span>
+            <span className="text-slate-300">·</span>
+            <span className="tabular-nums">{formatTelefone(cliente.telefone)}</span>
+          </div>
+          {/* Status — versão celular (no desktop vira coluna própria) */}
+          <div className="mt-1.5 flex items-center gap-1.5 flex-wrap md:hidden">
+            <StatusBlock p={p} cobradoHoje={cobradoHoje} ultimoEnvio={ultimoEnvio} modoCarencia={modoCarencia} modoCarencia10={modoCarencia10} />
+          </div>
+          {p.emprestimo.data_prevista_pagamento && (
+            <div className="mt-1 flex items-center gap-1">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[9px] font-black text-amber-700">
+                <CalendarClock className="w-3 h-3" />
+                Previsto: {formatData(p.emprestimo.data_prevista_pagamento)}
+              </span>
+            </div>
           )}
         </div>
-        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
-          <span className="flex items-center gap-0.5">
-            <Calendar className="w-3 h-3" />
-            {formatData(p.data_vencimento)}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className="tabular-nums">{formatTelefone(cliente.telefone)}</span>
-        </div>
-        {/* Status — versão celular (no desktop vira coluna própria) */}
-        <div className="mt-1.5 flex items-center gap-1.5 flex-wrap md:hidden">
-          <StatusBlock p={p} cobradoHoje={cobradoHoje} ultimoEnvio={ultimoEnvio} modoCarencia={modoCarencia} modoCarencia10={modoCarencia10} />
-        </div>
-        {p.emprestimo.data_prevista_pagamento && (
-          <div className="mt-1 flex items-center gap-1">
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[9px] font-black text-amber-700">
-              <CalendarClock className="w-3 h-3" />
-              Previsto: {formatData(p.emprestimo.data_prevista_pagamento)}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Status — versão desktop */}
@@ -344,7 +361,11 @@ function ParcelaRowBase({ p, index, tema, tipo, selecionado, cobradoHoje, ultimo
 
       {/* Valor (no celular, a foto do cliente fica logo acima, no canto superior direito) */}
       <div className="flex flex-col items-end gap-1.5 self-start md:self-center">
-        {!sub && <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="md:hidden w-11 h-11 text-base" />}
+        {!sub && (
+          <div className="md:hidden">
+            <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="w-11 h-11 text-base" />
+          </div>
+        )}
         <span className="text-sm font-black text-slate-900 tabular-nums text-right">{formatBRL(p.valor)}</span>
       </div>
 
@@ -497,7 +518,7 @@ export function GrupoParcelaRow({
       {/* Cabeçalho do grupo (clicável para expandir/recolher, igual ao módulo Empréstimos) */}
       <div
         onClick={() => onToggleExpand(clienteId)}
-        className={`group relative grid grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_11.5rem] xl:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_16.5rem] items-center gap-x-3 gap-y-2.5 pl-4 pr-3 sm:pr-4 py-3.5 transition-colors duration-200 cursor-pointer ${
+        className={`group relative grid grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[auto_minmax(0,1fr)_10.5rem_6.5rem_11rem] lg:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_11.5rem] xl:grid-cols-[auto_minmax(0,1fr)_13rem_7.5rem_16.5rem] items-center gap-x-3 gap-y-2.5 pl-4 pr-3 sm:pr-4 py-3.5 transition-colors duration-200 cursor-pointer ${
           todasSelecionadas ? tema.selectedBg : aberto ? "bg-slate-50/80" : "hover:bg-slate-50/70"
         }`}
       >
@@ -517,24 +538,54 @@ export function GrupoParcelaRow({
         />
 
         {/* Cliente + Selo de Agrupamento */}
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-black text-sm text-slate-900 truncate">{cliente.nome}</span>
-            <span className="inline-flex items-center gap-1 bg-slate-800 text-white text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
-              <Layers className="w-3 h-3" /> {parcelas.length} parcelas
-            </span>
+        <div className="min-w-0 flex items-center gap-2.5 lg:gap-3">
+          <div className="hidden md:block shrink-0">
+            <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="w-10 h-10 lg:w-11 lg:h-11 text-sm lg:text-base" />
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
-            <span className="flex items-center gap-0.5">
-              <Calendar className="w-3 h-3" />
-              Mais antigo: {formatData(vencMaisAntigo)}
-            </span>
-            <span className="text-slate-300">·</span>
-            <span className="tabular-nums">{formatTelefone(cliente.telefone)}</span>
-          </div>
-          {/* Status — versão celular */}
-          <div className="mt-1.5 flex items-center gap-1.5 flex-wrap md:hidden">
-            {statusGrupoBlock}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-black text-sm text-slate-900 truncate">{cliente.nome}</span>
+              <span className="inline-flex items-center gap-1 bg-slate-800 text-white text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <Layers className="w-3 h-3" /> {parcelas.length} parcelas
+              </span>
+              {(() => {
+                const funcsMap = new Map<string, { id: string; nome: string; foto_url: string | null }>();
+                parcelas.forEach((p) => {
+                  if (p.emprestimo.funcionario) funcsMap.set(p.emprestimo.funcionario.id, p.emprestimo.funcionario);
+                });
+                return Array.from(funcsMap.values()).map((f) => (
+                  <Tooltip key={f.id} content={`Repassado para ${f.nome}`}>
+                    <span className="inline-flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-black text-indigo-700 cursor-default">
+                      {f.foto_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={f.foto_url}
+                          alt={f.nome}
+                          className="w-4 h-4 rounded-full object-cover border border-indigo-200 shrink-0"
+                        />
+                      ) : (
+                        <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[9px] font-black shrink-0">
+                          {f.nome.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      <span className="truncate max-w-[110px]">{f.nome}</span>
+                    </span>
+                  </Tooltip>
+                ));
+              })()}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+              <span className="flex items-center gap-0.5">
+                <Calendar className="w-3 h-3" />
+                Mais antigo: {formatData(vencMaisAntigo)}
+              </span>
+              <span className="text-slate-300">·</span>
+              <span className="tabular-nums">{formatTelefone(cliente.telefone)}</span>
+            </div>
+            {/* Status — versão celular */}
+            <div className="mt-1.5 flex items-center gap-1.5 flex-wrap md:hidden">
+              {statusGrupoBlock}
+            </div>
           </div>
         </div>
 
@@ -545,7 +596,9 @@ export function GrupoParcelaRow({
 
         {/* Valor Total do Grupo (no celular, a foto do cliente fica logo acima, no canto superior direito) */}
         <div className="flex flex-col items-end gap-1.5 self-start md:self-center text-right">
-          <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="md:hidden w-11 h-11 text-base" />
+          <div className="md:hidden">
+            <ClienteAvatar nome={cliente.nome} src={cliente.foto_src} className="w-11 h-11 text-base" />
+          </div>
           <div>
             <div className="text-sm font-black text-slate-900 tabular-nums">{formatBRL(totalGrupo)}</div>
             <div className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total</div>

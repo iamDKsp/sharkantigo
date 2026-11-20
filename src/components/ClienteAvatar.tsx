@@ -11,7 +11,8 @@ interface Props {
 }
 
 export default function ClienteAvatar({ nome, src, className = "w-12 h-12 text-base" }: Props) {
-  const [falhou, setFalhou] = useState(false);
+  const [falhouSrc, setFalhouSrc] = useState<string | null>(null);
+  const falhou = !!src && falhouSrc === src;
   const letra = (nome.trim().charAt(0) || "?").toUpperCase();
 
   if (src && !falhou) {
@@ -22,7 +23,7 @@ export default function ClienteAvatar({ nome, src, className = "w-12 h-12 text-b
         alt=""
         loading="lazy"
         decoding="async"
-        onError={() => setFalhou(true)}
+        onError={() => setFalhouSrc(src)}
         className={`rounded-2xl object-cover border border-slate-200 bg-slate-100 pointer-events-none select-none shrink-0 ${className}`}
       />
     );

@@ -38,6 +38,7 @@ const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnviados }: DisparoModalProps) {
   const [fase, setFase] = useState<Fase>("confirmar");
   const [pularCobrados, setPularCobrados] = useState(true);
+  const [pularRepassados, setPularRepassados] = useState(true);
   const [logs, setLogs] = useState<LogLinha[]>([]);
   const [progresso, setProgresso] = useState(0);
   const [resumo, setResumo] = useState<Resumo>({ enviados: 0, falhas: 0, ignorados: 0, cancelado: false });
@@ -47,7 +48,15 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
   const logRef = useRef<HTMLDivElement>(null);
 
   const jaCobrados = itens.filter((p) => cobradasHoje.has(p.id));
-  const alvo = pularCobrados ? itens.filter((p) => !cobradasHoje.has(p.id)) : itens;
+  const repassados = itens.filter((p) => Boolean(p.emprestimo.funcionario));
+  const nomesFuncionariosRepassados = Array.from(
+    new Set(repassados.map((p) => p.emprestimo.funcionario?.nome.split(" ")[0]).filter(Boolean))
+  );
+  const alvo = itens.filter((p) => {
+    if (pularCobrados && cobradasHoje.has(p.id)) return false;
+    if (pularRepassados && p.emprestimo.funcionario) return false;
+    return true;
+  });
   const previa = alvo[0] ?? itens[0];
   const minutos = Math.max(1, Math.round((alvo.length * 1.6) / 60));
 
@@ -192,6 +201,24 @@ export default function DisparoModal({ itens, tipo, cobradasHoje, onClose, onEnv
                   <strong className="font-bold">Pular quem já foi cobrado hoje</strong>
                   <span className="block text-amber-700/90 mt-0.5">
                     {jaCobrados.length} {jaCobrados.length === 1 ? "cliente já recebeu" : "clientes já receberam"} cobrança hoje.
+                  </span>
+                </span>
+              </label>
+            )}
+
+            {repassados.length > 0 && (
+              <label className="flex items-start gap-2.5 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3.5 py-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={pularRepassados}
+                  onChange={(e) => setPularRepassados(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-indigo-600 cursor-pointer"
+                />
+                <span className="text-xs text-indigo-950">
+                  <strong className="font-bold">Não cobrar de quem foi repassado</strong>
+                  <span className="block text-indigo-700/90 mt-0.5">
+                    {repassados.length} {repassados.length === 1 ? "parcela está repassada" : "parcelas estão repassadas"} para{" "}
+                    {nomesFuncionariosRepassados.length > 0 ? nomesFuncionariosRepassados.join(", ") : "funcionário"}.
                   </span>
                 </span>
               </label>

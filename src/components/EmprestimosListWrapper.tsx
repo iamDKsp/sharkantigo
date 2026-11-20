@@ -579,6 +579,8 @@ export default function EmprestimosListWrapper({
       if (funcionarioFilter !== "todos") {
         if (funcionarioFilter === "adm") {
           if (emp.funcionario_id) return false;
+        } else if (funcionarioFilter === "repassados") {
+          if (!emp.funcionario_id) return false;
         } else {
           if (emp.funcionario_id !== funcionarioFilter) return false;
         }
@@ -717,12 +719,12 @@ export default function EmprestimosListWrapper({
         {/* Accent Line Left */}
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
 
-        {/* Foto do cliente (só no celular, canto superior direito); sem foto mostra a inicial */}
+        {/* Foto do cliente (no celular no canto superior direito; no PC à esquerda do nome); sem foto mostra a inicial */}
         {!sub && (
           <ClienteAvatar
             nome={emp.cliente.nome}
             src={emp.cliente.foto_src}
-            className="md:hidden absolute top-3 right-4 z-10 w-12 h-12 text-base"
+            className="absolute top-3 right-4 md:relative md:top-auto md:right-auto md:ml-2 z-10 w-12 h-12 text-base"
           />
         )}
 
@@ -736,7 +738,7 @@ export default function EmprestimosListWrapper({
           className="absolute inset-0 z-0"
         />
 
-        <div className="space-y-2 z-10 pointer-events-none pl-2 min-w-0 flex-1">
+        <div className={`space-y-2 z-10 pointer-events-none min-w-0 flex-1 ${sub ? "pl-2" : "pl-2 md:pl-0"}`}>
           <div className={`flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1 min-w-0 ${sub ? "" : "pr-14 md:pr-0"}`}>
             <span className="text-sm font-black text-slate-900 tracking-tight">{emp.cliente.nome}</span>
             {isPausado ? (
@@ -766,6 +768,27 @@ export default function EmprestimosListWrapper({
             ) : (
               <span className="flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
                 Em dia
+              </span>
+            )}
+            {emp.funcionario && (
+              <span
+                title={`Repassado para ${emp.funcionario.nome}${emp.podeDispararWhatsapp ? " (pode cobrar no WhatsApp)" : ""}`}
+                className="inline-flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[11px] font-black text-indigo-700"
+              >
+                {emp.funcionario.foto_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={emp.funcionario.foto_url}
+                    alt={emp.funcionario.nome}
+                    className="w-5 h-5 rounded-full object-cover border border-indigo-200 shrink-0"
+                  />
+                ) : (
+                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                    {emp.funcionario.nome.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span className="truncate max-w-[130px]">{emp.funcionario.nome}</span>
+                {emp.podeDispararWhatsapp && <MessageCircle className="w-3 h-3 shrink-0 text-emerald-600" />}
               </span>
             )}
           </div>
@@ -883,14 +906,14 @@ export default function EmprestimosListWrapper({
         >
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
 
-          {/* Foto do cliente (só no celular, canto superior direito); sem foto mostra a inicial */}
+          {/* Foto do cliente (no celular no canto superior direito; no PC à esquerda do nome); sem foto mostra a inicial */}
           <ClienteAvatar
             nome={cliente.nome}
             src={cliente.foto_src}
-            className="md:hidden absolute top-3 right-4 z-10 w-12 h-12 text-base"
+            className="absolute top-3 right-4 md:relative md:top-auto md:right-auto md:ml-2 z-10 w-12 h-12 text-base"
           />
 
-          <div className="space-y-2 pl-2">
+          <div className="space-y-2 pl-2 md:pl-0 min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pr-14 md:pr-0">
               <span className="text-sm font-black text-slate-900 tracking-tight">{cliente.nome}</span>
               {temAtrasado ? (
@@ -925,6 +948,34 @@ export default function EmprestimosListWrapper({
               <span className="flex items-center gap-1 bg-slate-800 text-white text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider">
                 <Layers className="w-3 h-3" /> {emps.length} empréstimos
               </span>
+              {(() => {
+                const funcsMap = new Map<string, { id: string; nome: string; foto_url?: string | null }>();
+                emps.forEach((e: any) => {
+                  if (e.funcionario) funcsMap.set(e.funcionario.id, e.funcionario);
+                });
+                const funcs = Array.from(funcsMap.values());
+                return funcs.map((f) => (
+                  <span
+                    key={f.id}
+                    title={`Repassado para ${f.nome}`}
+                    className="inline-flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[11px] font-black text-indigo-700"
+                  >
+                    {f.foto_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={f.foto_url}
+                        alt={f.nome}
+                        className="w-5 h-5 rounded-full object-cover border border-indigo-200 shrink-0"
+                      />
+                    ) : (
+                      <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                        {f.nome.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <span className="truncate max-w-[130px]">{f.nome}</span>
+                  </span>
+                ));
+              })()}
             </div>
 
             <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
@@ -1032,7 +1083,13 @@ export default function EmprestimosListWrapper({
             <span className="truncate">
               {modoCarencia10 && ["todos", "ativos", "quitados", "pausados"].includes(statusFilter)
                 ? (statusFilter === "todos" ? "Todos" : statusFilter === "ativos" ? "Ativos" : statusFilter === "quitados" ? "Quitados" : "Pausados")
-                : parceiroFilter !== "todos"
+                : funcionarioFilter !== "todos"
+                  ? (funcionarioFilter === "adm"
+                      ? "Somente ADM"
+                      : funcionarioFilter === "repassados"
+                        ? "Repassados"
+                        : funcionariosList.find((f) => f.id === funcionarioFilter)?.nome || "Cobrador")
+                  : parceiroFilter !== "todos"
                   ? (parceiroFilter === "sem_parceiro" ? "Sem Parceiro" : parceirosList.find(p => p.id === parceiroFilter)?.nome || "Parceiro")
                   : sortLabels[sortOption]}
             </span>
@@ -1181,8 +1238,19 @@ export default function EmprestimosListWrapper({
                         : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
-                    Somente ADM
+                    Somente ADM (Não Repassados)
                     {funcionarioFilter === "adm" && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />}
+                  </button>
+                  <button
+                    onClick={() => { setFuncionarioAndReset("repassados"); setSortOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
+                      funcionarioFilter === "repassados"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    Apenas Repassados
+                    {funcionarioFilter === "repassados" && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />}
                   </button>
                   {funcionariosList.map((f) => {
                     const isActive = funcionarioFilter === f.id;
