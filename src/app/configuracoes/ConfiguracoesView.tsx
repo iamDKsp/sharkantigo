@@ -174,9 +174,9 @@ export default function ConfiguracoesView({ initialConfig }: Props) {
           <span className="text-emerald-600 font-semibold text-xs uppercase tracking-wider">Acessar</span>
         </Link>
 
-        {/* Link para funcionários (acesso restrito às cobranças compartilhadas) */}
+        {/* Link para funcionários (também acessível direto na tela de Parceiros) */}
         <Link
-          href="/configuracoes/funcionarios"
+          href="/parceiros?aba=funcionarios"
           className="premium-card p-5 bg-white border border-slate-200 shadow-sm rounded-2xl flex items-center justify-between hover:border-emerald-300 transition-colors"
         >
           <div className="flex items-center space-x-3.5">

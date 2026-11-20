@@ -89,6 +89,7 @@ export async function POST(req: Request) {
       revalidatePath(`/emprestimos/${emp.id}`);
       revalidatePath(`/configuracoes/funcionarios/${func.id}`);
       revalidatePath("/configuracoes/funcionarios");
+      revalidatePath("/parceiros");
 
       return NextResponse.json({
         ok: true,
@@ -131,6 +132,7 @@ export async function POST(req: Request) {
     revalidatePath("/");
     revalidatePath(`/configuracoes/funcionarios/${func.id}`);
     revalidatePath("/configuracoes/funcionarios");
+    revalidatePath("/parceiros");
 
     return NextResponse.json({
       ok: true,

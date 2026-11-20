@@ -102,7 +102,10 @@ export default function Navbar() {
             <nav className="hidden md:flex space-x-1 bg-[#043e2f] p-1.5 rounded-full">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.path || (item.path !== "/" && pathname.startsWith(item.path));
+                const isActive =
+                  pathname === item.path ||
+                  (item.path !== "/" && pathname.startsWith(item.path)) ||
+                  (item.path === "/parceiros" && pathname.startsWith("/configuracoes/funcionarios"));
                 return (
                   <Link
                     key={item.path}
@@ -179,7 +182,10 @@ export default function Navbar() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around items-center min-h-[4rem] z-50 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
         {mobileNavItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.path || (item.path !== "/" && pathname.startsWith(item.path));
+          const isActive =
+            pathname === item.path ||
+            (item.path !== "/" && pathname.startsWith(item.path)) ||
+            (item.path === "/parceiros" && pathname.startsWith("/configuracoes/funcionarios"));
           return (
             <Link
               key={item.path}

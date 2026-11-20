@@ -46,6 +46,7 @@ export async function criarFuncionario(data: {
     select: { id: true },
   });
 
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   return { ok: true as const, id: criado.id };
 }
@@ -98,6 +99,7 @@ export async function editarFuncionario(
 
   await prisma.funcionario.update({ where: { id }, data: updateData });
 
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   revalidatePath(`/configuracoes/funcionarios/${id}`);
   revalidatePath(`/${slug}/cliente`);
@@ -106,6 +108,7 @@ export async function editarFuncionario(
 
 export async function excluirFuncionario(id: string) {
   await prisma.funcionario.delete({ where: { id } });
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   revalidatePath("/cobrancas");
   revalidatePath("/emprestimos");
@@ -133,6 +136,7 @@ export async function listarFuncionarios() {
 
 export async function alternarAtivoFuncionario(id: string, ativo: boolean) {
   await prisma.funcionario.update({ where: { id }, data: { ativo } });
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   revalidatePath(`/configuracoes/funcionarios/${id}`);
 }
@@ -166,6 +170,7 @@ export async function aprovarBaixaFuncionario(baixaId: string, enviarWhatsapp = 
     },
   });
 
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   revalidatePath(`/configuracoes/funcionarios/${baixa.funcionario_id}`);
   revalidatePath(`/emprestimos/${baixa.emprestimo_id}`);
@@ -198,6 +203,7 @@ export async function recusarBaixaFuncionario(baixaId: string, motivo: string) {
     },
   });
 
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   revalidatePath(`/configuracoes/funcionarios/${baixa.funcionario_id}`);
   revalidatePath(`/emprestimos/${baixa.emprestimo_id}`);
@@ -210,6 +216,7 @@ export async function removerDelegacaoEmprestimo(emprestimoId: string, funcionar
     data: { funcionario_id: null, podeDispararWhatsapp: false },
   });
   revalidatePath(`/configuracoes/funcionarios/${funcionarioId}`);
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   revalidatePath(`/emprestimos/${emprestimoId}`);
   revalidatePath("/cobrancas");

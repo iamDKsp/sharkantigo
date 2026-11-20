@@ -222,7 +222,7 @@ export default function FuncionarioDetalhesAdmClient({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
-          href="/configuracoes/funcionarios"
+          href="/parceiros?aba=funcionarios"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-800 group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Todos os Funcionários

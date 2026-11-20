@@ -160,7 +160,7 @@ export default function FormFuncionario({
             setErro(r.erro);
             return;
           }
-          router.push("/configuracoes/funcionarios");
+          router.push("/parceiros?aba=funcionarios");
           router.refresh();
         }
       } catch (err: any) {
@@ -177,7 +177,7 @@ export default function FormFuncionario({
     if (!ok) return;
     startTransition(async () => {
       await excluirFuncionario(inicial.id);
-      router.push("/configuracoes/funcionarios");
+      router.push("/parceiros?aba=funcionarios");
       router.refresh();
     });
   };
@@ -185,7 +185,7 @@ export default function FormFuncionario({
   return (
     <div className="max-w-2xl mx-auto space-y-5 pb-12 motion-page-enter">
       <Link
-        href={isEdicao && inicial ? `/configuracoes/funcionarios/${inicial.id}` : "/configuracoes/funcionarios"}
+        href={isEdicao && inicial ? `/configuracoes/funcionarios/${inicial.id}` : "/parceiros?aba=funcionarios"}
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-800"
       >
         <ArrowLeft className="w-4 h-4" />

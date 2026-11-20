@@ -69,6 +69,7 @@ export async function POST(req: Request) {
   revalidatePath(`/emprestimos/${emp.id}`);
   revalidatePath("/emprestimos");
   revalidatePath("/cobrancas");
+  revalidatePath("/parceiros");
   revalidatePath("/configuracoes/funcionarios");
   revalidatePath(`/configuracoes/funcionarios/${func.id}`);
   revalidatePath(`/${func.slug}/cliente`);
