@@ -98,18 +98,21 @@ export default function ModalDecisaoBaixa({
   return (
     <div
       onClick={(e) => e.target === e.currentTarget && fechar()}
-      className={`fixed inset-0 z-[70] p-3 sm:p-4 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm ${
+      className={`fixed inset-0 z-[70] p-0 sm:p-4 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm ${
         closing ? "motion-modal-backdrop-out" : "motion-modal-backdrop-in"
       }`}
     >
       <div
-        className={`bg-white border border-slate-200 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden ${
+        className={`bg-white border border-slate-200 rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90dvh] flex flex-col shadow-2xl overflow-hidden ${
           closing
             ? "motion-drawer-out sm:motion-modal-card-out"
             : "motion-drawer-in sm:motion-modal-card-in"
         }`}
       >
-        <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/70 flex items-start justify-between gap-3">
+        <div className="sm:hidden flex justify-center pt-2.5 pb-0.5 bg-slate-50/70 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-slate-300/80" />
+        </div>
+        <div className="px-5 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/70 flex items-start justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <div
               className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
@@ -139,7 +142,7 @@ export default function ModalDecisaoBaixa({
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 overflow-y-auto pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           {erro && (
             <div className="animate-pop bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl px-3.5 py-2.5">
               {erro}

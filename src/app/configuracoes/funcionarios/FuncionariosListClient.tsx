@@ -323,12 +323,12 @@ export default function FuncionariosListClient({
                   </div>
 
                   {/* Ações */}
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <Tooltip content="Copiar link de acesso para mandar ao funcionário">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+                    <Tooltip content="Copiar link de acesso para mandar ao funcionário" className="flex sm:inline-flex">
                       <button
                         type="button"
                         onClick={() => copiarLink(f)}
-                        className="btn-press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold cursor-pointer"
+                        className="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold cursor-pointer"
                       >
                         {copiadoId === f.id ? (
                           <Check className="w-3.5 h-3.5 text-emerald-600 animate-pop" />
@@ -340,33 +340,33 @@ export default function FuncionariosListClient({
                     </Tooltip>
 
                     {f.telefone && (
-                      <Tooltip content="Abrir WhatsApp com o link de acesso pronto">
+                      <Tooltip content="Abrir WhatsApp com o link de acesso pronto" className="flex sm:inline-flex">
                         <a
                           href={linkEnvioWhatsapp(f)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn-press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold"
+                          className="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold"
                         >
                           <MessageCircle className="w-3.5 h-3.5" /> Enviar acesso
                         </a>
                       </Tooltip>
                     )}
 
-                    <Tooltip content="Editar dados, foto, senha e permissões">
+                    <Tooltip content="Editar dados, foto, senha e permissões" className="flex sm:inline-flex">
                       <Link
                         href={`/configuracoes/funcionarios/${f.id}/editar`}
-                        className="btn-press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold"
+                        className="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold"
                       >
                         <Pencil className="w-3.5 h-3.5" /> Editar
                       </Link>
                     </Tooltip>
 
-                    <Tooltip content={f.ativo ? "Bloquear login imediatamente" : "Liberar acesso novamente"}>
+                    <Tooltip content={f.ativo ? "Bloquear login imediatamente" : "Liberar acesso novamente"} className="flex sm:inline-flex">
                       <button
                         type="button"
                         disabled={isPending && processandoId === f.id}
                         onClick={() => toggleAtivo(f)}
-                        className={`btn-press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer disabled:opacity-50 ${
+                        className={`btn-press w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold cursor-pointer disabled:opacity-50 ${
                           f.ativo
                             ? "bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 border-slate-200 hover:border-rose-200"
                             : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
@@ -377,10 +377,10 @@ export default function FuncionariosListClient({
                       </button>
                     </Tooltip>
 
-                    <Tooltip content="Ver prestação de contas, carteira e relatos">
+                    <Tooltip content="Ver prestação de contas, carteira e relatos" className="col-span-2 sm:col-span-1 flex sm:inline-flex">
                       <Link
                         href={`/configuracoes/funcionarios/${f.id}`}
-                        className="btn-press inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm"
+                        className="btn-press w-full sm:w-auto inline-flex items-center justify-center gap-1 px-3.5 py-2.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm"
                       >
                         Painel <ChevronRight className="w-3.5 h-3.5" />
                       </Link>

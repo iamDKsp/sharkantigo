@@ -538,10 +538,10 @@ export default function PainelFuncionarioClient({
                 <img
                   src={emp.cliente.foto_src}
                   alt={emp.cliente.nome}
-                  className="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs"
+                  className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl object-cover border border-slate-200 shrink-0 shadow-xs"
                 />
               ) : (
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-black text-xs sm:text-sm flex items-center justify-center shrink-0 shadow-xs">
                   {emp.cliente.nome
                     .split(" ")
                     .slice(0, 2)
@@ -711,7 +711,7 @@ export default function PainelFuncionarioClient({
               setDetalheEmp(emp);
               if (docsData?.clienteId !== emp.cliente.id) setDocsData(null);
             }}
-            className="btn-press flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl cursor-pointer"
+            className="btn-press last:odd:col-span-2 sm:last:odd:col-span-1 flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5 text-slate-500" />
             Detalhes
@@ -796,28 +796,32 @@ export default function PainelFuncionarioClient({
 
       <main className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 space-y-4">
         {/* KPIs */}
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
           <div
             style={{ ["--i" as string]: 0 }}
-            className="animate-row-in bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-xs hover:shadow-md transition-shadow"
+            className="animate-row-in col-span-2 sm:col-span-1 bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow flex sm:block items-center justify-between gap-2"
           >
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-              Carteira Aberta
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Carteira Aberta
+              </p>
+              <p className="text-lg font-black text-slate-900 mt-0.5 sm:mt-1 tabular-nums">
+                {brl(totalCarteira)}
+              </p>
+            </div>
+            <p className="text-[11px] sm:text-[10px] text-slate-400 font-semibold sm:font-normal sm:mt-0.5 shrink-0">
+              {ativos.length} contrato{ativos.length === 1 ? "" : "s"}
             </p>
-            <p className="text-sm sm:text-lg font-black text-slate-900 mt-1 tabular-nums truncate">
-              {brl(totalCarteira)}
-            </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">{ativos.length} contratos</p>
           </div>
 
           <div
             style={{ ["--i" as string]: 1 }}
-            className="animate-row-in bg-white border border-rose-200/80 rounded-2xl p-3 sm:p-4 shadow-xs hover:shadow-md transition-shadow"
+            className="animate-row-in bg-white border border-rose-200/80 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow"
           >
             <p className="text-[10px] font-black uppercase tracking-wider text-rose-500">
               Em Atraso
             </p>
-            <p className="text-sm sm:text-lg font-black text-rose-600 mt-1 tabular-nums truncate">
+            <p className="text-base sm:text-lg font-black text-rose-600 mt-1 tabular-nums">
               {brl(totalAtrasadoValor)}
             </p>
             <p className="text-[10px] text-rose-400 mt-0.5">{atrasados.length} clientes</p>
@@ -825,12 +829,12 @@ export default function PainelFuncionarioClient({
 
           <div
             style={{ ["--i" as string]: 2 }}
-            className="animate-row-in bg-white border border-emerald-200/80 rounded-2xl p-3 sm:p-4 shadow-xs hover:shadow-md transition-shadow"
+            className="animate-row-in bg-white border border-emerald-200/80 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-shadow"
           >
             <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600">
               Recebido (Mês)
             </p>
-            <p className="text-sm sm:text-lg font-black text-emerald-700 mt-1 tabular-nums truncate">
+            <p className="text-base sm:text-lg font-black text-emerald-700 mt-1 tabular-nums">
               {brl(recebidoMes)}
             </p>
             <p className="text-[10px] text-slate-500 mt-0.5">

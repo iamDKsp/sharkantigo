@@ -632,7 +632,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                   value={funcionarioFiltro}
                   onChange={(e) => setFuncionarioFiltro(e.target.value)}
                   aria-label="Filtrar por funcionário"
-                  className={`h-9 px-3 rounded-xl border text-xs font-bold outline-none cursor-pointer transition-all focus:ring-4 ${tema.ring} ${
+                  className={`h-9 max-w-full flex-1 sm:flex-none min-w-0 px-3 rounded-xl border text-xs font-bold outline-none cursor-pointer transition-all focus:ring-4 ${tema.ring} ${
                     funcionarioFiltro !== "todos"
                       ? "bg-indigo-50 border-indigo-300 text-indigo-800"
                       : "border-slate-200 bg-white text-slate-600"

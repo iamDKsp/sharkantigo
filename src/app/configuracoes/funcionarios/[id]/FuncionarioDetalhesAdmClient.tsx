@@ -408,7 +408,7 @@ export default function FuncionarioDetalhesAdmClient({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 shrink-0">
                   <span className="font-black text-base text-emerald-700 mr-2 tabular-nums">
                     {brl(b.valor)}
                   </span>
@@ -577,7 +577,7 @@ export default function FuncionarioDetalhesAdmClient({
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 shrink-0">
                     <Tooltip
                       content={
                         c.podeDispararWhatsapp
