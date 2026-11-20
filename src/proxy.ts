@@ -9,10 +9,10 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Painel do funcionário (/<slug>/cliente) e sua API têm autenticação própria (senha do funcionário).
-  // Bloqueia Server Actions nessa rota para que ações do ADM não possam ser invocadas por ela.
+  // Painel do funcionário (/<slug>/cliente e redirect de /<slug>) e sua API têm autenticação própria.
+  // Bloqueia Server Actions nessas rotas para que ações do ADM não possam ser invocadas por elas.
   const RESERVADOS = ["api", "login", "clientes", "emprestimos", "parceiros", "cobrancas", "configuracoes", "cheques", "mensagens", "perfil"];
-  const painel = pathname.match(/^\/([^/]+)\/cliente\/?$/);
+  const painel = pathname.match(/^\/([a-z0-9-]{3,40})(?:\/cliente)?\/?$/);
   if (painel && !RESERVADOS.includes(painel[1]) && !request.headers.has("next-action")) {
     return NextResponse.next();
   }

@@ -69,6 +69,8 @@ model Emprestimo {
   observacoes              String?   @db.Text
   data_prevista_pagamento  DateTime? @db.Date
   parcelas                 Parcela[]
+  baixas                   BaixaFuncionario[]
+  relatos                  CobrancaRelato[]
   parceiro_id      String?
   parceiro         Parceiro? @relation(fields: [parceiro_id], references: [id], onDelete: SetNull)
 
@@ -78,18 +80,64 @@ model Emprestimo {
 }
 
 model Funcionario {
-  id                  String       @id @default(uuid())
+  id                  String             @id @default(uuid())
   nome                String
-  slug                String       @unique // Usado na URL
-  senha               String       // Hash da senha
+  slug                String             @unique // Usado na URL
+  senha               String             // Hash da senha
   telefone            String?
-  foto_url            String?      @db.Text
-  ativo               Boolean      @default(true)
-  criado_em           DateTime     @default(now())
+  foto_url            String?            @db.Text
+  ativo               Boolean            @default(true)
+  // Permissões configuráveis pelo ADM
+  modo_baixa          String             @default("aprovacao") // "nenhum" | "aprovacao" | "direto"
+  ocultar_telefone    Boolean            @default(false)       // Oculta telefone e bloqueia wa.me/ligar
+  pode_ver_documentos Boolean            @default(false)       // Libera CPF e documentos anexados
+  criado_em           DateTime           @default(now())
   
-  emprestimos         Emprestimo[] // Relação 1:N
+  emprestimos         Emprestimo[]       // Relação 1:N
+  baixas              BaixaFuncionario[]
+  relatos             CobrancaRelato[]
 
   @@map("funcionarios")
+}
+
+model BaixaFuncionario {
+  id               String      @id @default(uuid())
+  funcionario_id   String
+  funcionario      Funcionario @relation(fields: [funcionario_id], references: [id], onDelete: Cascade)
+  emprestimo_id    String
+  emprestimo       Emprestimo  @relation(fields: [emprestimo_id], references: [id], onDelete: Cascade)
+  parcela_id       String?
+  tipo             String      // "parcela" | "renovacao" | "quitacao"
+  valor            Decimal     @db.Decimal(15, 2)
+  juros_atraso     Decimal     @db.Decimal(15, 2) @default(0.00)
+  cobrar_atraso    Boolean     @default(true)
+  forma_pagamento  String      @default("pix") // "pix" | "dinheiro" | "transferencia" | "outro"
+  observacao       String?     @db.Text
+  status           String      @default("pendente") // "pendente" | "aprovada" | "recusada" | "direta"
+  motivo_recusa    String?     @db.Text
+  criado_em        DateTime    @default(now())
+  decidido_em      DateTime?
+
+  @@index([funcionario_id, criado_em])
+  @@index([status, criado_em])
+  @@index([emprestimo_id])
+  @@map("baixa_funcionarios")
+}
+
+model CobrancaRelato {
+  id               String       @id @default(uuid())
+  emprestimo_id    String
+  emprestimo       Emprestimo   @relation(fields: [emprestimo_id], references: [id], onDelete: Cascade)
+  funcionario_id   String?
+  funcionario      Funcionario? @relation(fields: [funcionario_id], references: [id], onDelete: SetNull)
+  tipo             String       @default("observacao") // "whatsapp" | "ligacao" | "visita" | "promessa" | "sem_resposta" | "observacao"
+  texto            String       @db.Text
+  data_prometida   DateTime?    @db.Date
+  criado_em        DateTime     @default(now())
+
+  @@index([emprestimo_id, criado_em])
+  @@index([funcionario_id, criado_em])
+  @@map("cobranca_relatos")
 }
 
 model Parceiro {

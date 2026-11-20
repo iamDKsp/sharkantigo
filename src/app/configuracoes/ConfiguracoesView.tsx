@@ -12,7 +12,8 @@ import {
   Sparkles,
   RefreshCw,
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  Users
 } from "lucide-react";
 import { salvarConfiguracaoSistema, type ConfiguracoesSistema } from "./actions";
 
@@ -179,12 +180,12 @@ export default function ConfiguracoesView({ initialConfig }: Props) {
           className="premium-card p-5 bg-white border border-slate-200 shadow-sm rounded-2xl flex items-center justify-between hover:border-emerald-300 transition-colors"
         >
           <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/70 flex items-center justify-center">
+              <Users className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 text-sm">Funcionários</p>
-              <p className="text-xs text-slate-500">Cadastre funcionários e compartilhe cobranças com acesso restrito.</p>
+              <p className="font-bold text-slate-900 text-sm">Funcionários & Cobradores</p>
+              <p className="text-xs text-slate-500">Cadastre cobradores, gerencie permissões, aprovações de baixa e prestação de contas.</p>
             </div>
           </div>
           <span className="text-emerald-600 font-semibold text-xs uppercase tracking-wider">Acessar</span>

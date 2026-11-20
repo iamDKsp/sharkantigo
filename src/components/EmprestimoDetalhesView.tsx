@@ -18,7 +18,9 @@ import {
   estornarPagamentoParcela, editarParcelaIndividual
 } from "@/app/emprestimos/[id]/actions";
 
-import { listarFuncionarios } from "@/app/configuracoes/funcionarios/actions"; // <-- Import added
+import { listarFuncionarios } from "@/app/configuracoes/funcionarios/actions";
+import ModalDecisaoBaixa, { type BaixaParaDecisao } from "@/app/configuracoes/funcionarios/ModalDecisaoBaixa";
+import Tooltip from "@/components/Tooltip";
 
 import { enviarMensagemManual, legendaCronograma, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
@@ -36,6 +38,24 @@ interface Emprestimo {
   funcionario_id?: string | null;
   podeDispararWhatsapp?: boolean;
   atraso_tipo?: string | null; atraso_valor?: number | null;
+  relatos?: {
+    id: string;
+    tipo: string;
+    texto: string;
+    data_prometida: string | null;
+    criado_em: string;
+    funcionarioNome: string;
+  }[];
+  baixasPendentes?: {
+    id: string;
+    tipo: string;
+    valor: number;
+    forma_pagamento: string;
+    observacao: string | null;
+    criado_em: string;
+    funcionarioId: string;
+    funcionarioNome: string;
+  }[];
 }
 
 const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all placeholder:text-slate-400";
@@ -699,39 +719,40 @@ export default function EmprestimoDetalhesView({
     router.back();
   };
 
-  // ... inside component ...
   const [funcionarios, setFuncionarios] = useState<any[]>([]);
   useEffect(() => {
-    listarFuncionarios().then(setFuncionarios);
+    listarFuncionarios()
+      .then((lista) => setFuncionarios(lista.filter((f) => f.ativo)))
+      .catch(() => {});
   }, []);
 
   const [funcId, setFuncId] = useState(emprestimo.funcionario_id || "");
   const [podeWa, setPodeWa] = useState(emprestimo.podeDispararWhatsapp || false);
+  const [salvandoDelegacao, setSalvandoDelegacao] = useState(false);
+  const [delegacaoSalva, setDelegacaoSalva] = useState(false);
 
   const handleAtribuir = async () => {
-    await atribuirFuncionario(emprestimo.id, funcId || null, podeWa);
-    alert("Atribuição atualizada!");
+    setSalvandoDelegacao(true);
+    setDelegacaoSalva(false);
+    try {
+      await atribuirFuncionario(emprestimo.id, funcId || null, funcId ? podeWa : false);
+      setDelegacaoSalva(true);
+      router.refresh();
+      setTimeout(() => setDelegacaoSalva(false), 2500);
+    } catch (err: any) {
+      alert(err?.message || "Erro ao atualizar cobrador.");
+    } finally {
+      setSalvandoDelegacao(false);
+    }
   };
+
+  const [baixaDecisao, setBaixaDecisao] = useState<{
+    baixa: BaixaParaDecisao;
+    modo: "aprovar" | "recusar";
+  } | null>(null);
 
   return (
     <div className="w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto pb-12 space-y-4">
-      {/* --- Delegação UI --- */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <h3 className="font-bold text-sm mb-3">Delegação de Cobrança</h3>
-        <div className="flex gap-4 items-end">
-          <select value={funcId} onChange={e => setFuncId(e.target.value)} className={inputCls}>
-            <option value="">Nenhum (ADM)</option>
-            {funcionarios.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
-          </select>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={podeWa} onChange={e => setPodeWa(e.target.checked)} />
-            Pode cobrar via WA
-          </label>
-          <button onClick={handleAtribuir} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm">Salvar</button>
-        </div>
-      </div>
-      {/* ... rest of the component ... */}
-
       <div className="flex flex-wrap items-center justify-between gap-2 py-1">
         <button
           onClick={handleVoltar}
@@ -1133,6 +1154,129 @@ export default function EmprestimoDetalhesView({
               </div>
             </div>
           )}
+
+          {/* BAIXAS PENDENTES DE APROVAÇÃO (FUNCIONÁRIO) */}
+          {emprestimo.baixasPendentes && emprestimo.baixasPendentes.length > 0 && (
+            <div className="rounded-2xl border border-amber-300 bg-amber-50/70 shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-amber-200 flex items-center justify-between">
+                <span className="text-sm font-black text-amber-950 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-700" />
+                  Pagamentos Aguardando Aprovação ({emprestimo.baixasPendentes.length})
+                </span>
+              </div>
+              <div className="divide-y divide-amber-200/70">
+                {emprestimo.baixasPendentes.map((b) => (
+                  <div key={b.id} className="px-5 py-3.5 bg-white/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          href={`/configuracoes/funcionarios/${b.funcionarioId}`}
+                          className="text-xs font-black text-indigo-700 hover:underline"
+                        >
+                          {b.funcionarioNome}
+                        </Link>
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {b.tipo} · {b.forma_pagamento}
+                        </span>
+                      </div>
+                      {b.observacao && (
+                        <p className="text-xs text-slate-600 mt-1 italic">“{b.observacao}”</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-sm font-black text-emerald-700 mr-1">{fmt(b.valor)}</span>
+                      <Tooltip content="Recusar solicitação com motivo">
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() =>
+                            setBaixaDecisao({
+                              baixa: {
+                                id: b.id,
+                                clienteNome: emprestimo.cliente.nome,
+                                funcionarioNome: b.funcionarioNome,
+                                tipo: b.tipo,
+                                valor: b.valor,
+                                forma_pagamento: b.forma_pagamento,
+                                observacao: b.observacao,
+                              },
+                              modo: "recusar",
+                            })
+                          }
+                          className="btn-press px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-black cursor-pointer"
+                        >
+                          Recusar
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Conferir e aprovar baixa">
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() =>
+                            setBaixaDecisao({
+                              baixa: {
+                                id: b.id,
+                                clienteNome: emprestimo.cliente.nome,
+                                funcionarioNome: b.funcionarioNome,
+                                tipo: b.tipo,
+                                valor: b.valor,
+                                forma_pagamento: b.forma_pagamento,
+                                observacao: b.observacao,
+                              },
+                              modo: "aprovar",
+                            })
+                          }
+                          className="btn-press px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black cursor-pointer shadow-sm"
+                        >
+                          Aprovar
+                        </button>
+                      </Tooltip>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* HISTÓRICO DE RELATOS DE COBRANÇA */}
+          {emprestimo.relatos && emprestimo.relatos.length > 0 && (
+            <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                <span className="text-sm font-black text-slate-900 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-emerald-600" />
+                  Relatos de Cobrança ({emprestimo.relatos.length})
+                </span>
+              </div>
+              <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+                {emprestimo.relatos.map((r) => (
+                  <div key={r.id} className="px-5 py-3 space-y-1">
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-slate-800">{r.funcionarioNome}</span>
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {r.tipo}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-400">
+                        {new Intl.DateTimeFormat("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }).format(new Date(r.criado_em))}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700">{r.texto}</p>
+                    {r.data_prometida && (
+                      <p className="text-[11px] font-bold text-amber-700">
+                        Promessa p/ {fmtDate(r.data_prometida)}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* COL DIREITA — 1/3 */}
@@ -1300,6 +1444,69 @@ export default function EmprestimoDetalhesView({
               </div>
             );
           })()}
+
+          {/* DELEGAÇÃO DE COBRANÇA (FUNCIONÁRIO) */}
+          <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Shield className="w-3.5 h-3.5 text-indigo-500" />
+                <span className="text-sm font-black text-slate-900">Cobrador / Delegação</span>
+              </div>
+              {funcId && (
+                <Link
+                  href={`/configuracoes/funcionarios/${funcId}`}
+                  className="text-[11px] font-bold text-emerald-600 hover:underline"
+                >
+                  Ver painel
+                </Link>
+              )}
+            </div>
+            <div className="p-4 space-y-3">
+              <select
+                value={funcId}
+                onChange={(e) => {
+                  setFuncId(e.target.value);
+                  if (!e.target.value) setPodeWa(false);
+                }}
+                className={inputCls}
+              >
+                <option value="">Nenhum (Somente ADM)</option>
+                {funcionarios.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.nome}
+                  </option>
+                ))}
+              </select>
+
+              {funcId && (
+                <label className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 cursor-pointer">
+                  <span className="text-xs font-bold text-slate-700">
+                    Liberar disparo pelo WhatsApp do sistema
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={podeWa}
+                    onChange={(e) => setPodeWa(e.target.checked)}
+                    className="w-4 h-4 accent-emerald-600"
+                  />
+                </label>
+              )}
+
+              <button
+                type="button"
+                disabled={salvandoDelegacao}
+                onClick={handleAtribuir}
+                className="w-full py-2 bg-slate-900 hover:bg-emerald-600 text-white text-xs font-black rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              >
+                {salvandoDelegacao ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : delegacaoSalva ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                ) : null}
+                {salvandoDelegacao ? "Salvando..." : delegacaoSalva ? "Delegação salva!" : "Salvar Delegação"}
+              </button>
+            </div>
+          </div>
 
           {/* AÇÕES */}
           <div className="rounded-2xl border bg-white border-slate-200 shadow-sm overflow-hidden">
@@ -1812,6 +2019,17 @@ export default function EmprestimoDetalhesView({
             </div>
           </div>
         </Modal>
+      )}
+      {baixaDecisao && (
+        <ModalDecisaoBaixa
+          baixa={baixaDecisao.baixa}
+          modo={baixaDecisao.modo}
+          onClose={() => setBaixaDecisao(null)}
+          onDone={() => {
+            setBaixaDecisao(null);
+            router.refresh();
+          }}
+        />
       )}
     </div>
   );

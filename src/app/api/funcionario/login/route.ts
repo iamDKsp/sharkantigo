@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { COOKIE_FUNCIONARIO, criarTokenFuncionario } from "@/lib/funcionarioSession";
+import { COOKIE_FUNCIONARIO, SESSAO_FUNCIONARIO_SEGUNDOS, criarTokenFuncionario } from "@/lib/funcionarioSession";
 
 export async function POST(req: Request) {
   const { slug, senha } = await req.json().catch(() => ({}));
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 12,
+    maxAge: SESSAO_FUNCIONARIO_SEGUNDOS,
   });
   return res;
 }

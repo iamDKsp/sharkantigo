@@ -13,7 +13,7 @@ export const revalidate = 0;
 export default async function EmprestimoDetalhesPage({ params }: PageProps) {
   const { id } = await params;
 
-  // Buscar empréstimo com cliente e parcelas vinculadas
+  // Buscar empréstimo com cliente, parcelas, relatos e baixas pendentes
   const emprestimo = await prisma.emprestimo.findUnique({
     where: { id },
     include: {
@@ -23,6 +23,16 @@ export default async function EmprestimoDetalhesPage({ params }: PageProps) {
         orderBy: {
           numero: "asc",
         },
+      },
+      relatos: {
+        include: { funcionario: { select: { id: true, nome: true } } },
+        orderBy: { criado_em: "desc" },
+        take: 25,
+      },
+      baixas: {
+        where: { status: "pendente" },
+        include: { funcionario: { select: { id: true, nome: true } } },
+        orderBy: { criado_em: "desc" },
       },
     },
   });
@@ -58,6 +68,24 @@ export default async function EmprestimoDetalhesPage({ params }: PageProps) {
       ...p,
       valor: Number(p.valor),
       valor_pago: p.valor_pago ? Number(p.valor_pago) : null,
+    })),
+    relatos: emprestimo.relatos.map((r) => ({
+      id: r.id,
+      tipo: r.tipo,
+      texto: r.texto,
+      data_prometida: r.data_prometida ? r.data_prometida.toISOString().split("T")[0] : null,
+      criado_em: r.criado_em.toISOString(),
+      funcionarioNome: r.funcionario?.nome || "ADM",
+    })),
+    baixasPendentes: emprestimo.baixas.map((b) => ({
+      id: b.id,
+      tipo: b.tipo,
+      valor: Number(b.valor),
+      forma_pagamento: b.forma_pagamento,
+      observacao: b.observacao,
+      criado_em: b.criado_em.toISOString(),
+      funcionarioId: b.funcionario_id,
+      funcionarioNome: b.funcionario.nome,
     })),
     data_prevista_pagamento: emprestimo.data_prevista_pagamento
       ? emprestimo.data_prevista_pagamento.toISOString().split("T")[0]

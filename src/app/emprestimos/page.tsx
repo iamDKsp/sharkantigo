@@ -54,6 +54,7 @@ export default async function EmprestimosPage({
       data_inicio: true,
       data_prevista_pagamento: true,
       parceiro_id: true,
+      funcionario_id: true,
       criado_em: true,
       cliente: {
         select: {
@@ -75,6 +76,12 @@ export default async function EmprestimosPage({
         },
       },
       parceiro: {
+        select: {
+          id: true,
+          nome: true,
+        },
+      },
+      funcionario: {
         select: {
           id: true,
           nome: true,

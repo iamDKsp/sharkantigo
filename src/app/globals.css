@@ -382,6 +382,22 @@ body {
   transform: scale(0.95);
 }
 
+/* Tooltips personalizados */
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translate(-50%, 4px) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes tooltipInBottom {
+  from { opacity: 0; transform: translate(-50%, -4px) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+.animate-tooltip-top {
+  animation: tooltipIn var(--duration-fast, 140ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+.animate-tooltip-bottom {
+  animation: tooltipInBottom var(--duration-fast, 140ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;

@@ -170,15 +170,17 @@ export default function EmprestimosListWrapper({
   const [search, setSearch]                 = useUrlState("q",           initialSearch,   "");
   const [statusFilter, setStatusFilter]     = useUrlState<StatusFilter>("status", parseStatus(initialFiltro), defaultStatus, parseStatus);
   const [parceiroFilter, setParceiroFilter] = useUrlState("parceiro",    initialParceiro, "todos");
+  const [funcionarioFilter, setFuncionarioFilter] = useUrlState<string>("cobrador", "todos", "todos");
   const [sortOption, setSortOption]         = useUrlState<SortOption>("sort", resolveSort(initialSort), "padrao", resolveSort);
   const [currentPage, setCurrentPage]       = useUrlState("pagina",      String(initialPagina), "1");
   const [diasAtraso, setDiasAtraso]         = useUrlState("dias_atraso", resolveDiasAtraso(initialDiasAtraso), "0", resolveDiasAtraso);
 
   // Helper para mudar filtros e resetar página
-  const setStatusAndReset   = (v: StatusFilter) => { setStatusFilter(v);   setCurrentPage("1"); };
-  const setParceiroAndReset = (v: string)       => { setParceiroFilter(v); setCurrentPage("1"); };
-  const setSortAndReset     = (v: SortOption)   => { setSortOption(v);     setCurrentPage("1"); };
-  const setSearchAndReset   = (v: string)       => { setSearch(v);         setCurrentPage("1"); };
+  const setStatusAndReset      = (v: StatusFilter) => { setStatusFilter(v);      setCurrentPage("1"); };
+  const setParceiroAndReset    = (v: string)       => { setParceiroFilter(v);    setCurrentPage("1"); };
+  const setFuncionarioAndReset = (v: string)       => { setFuncionarioFilter(v); setCurrentPage("1"); };
+  const setSortAndReset        = (v: SortOption)   => { setSortOption(v);        setCurrentPage("1"); };
+  const setSearchAndReset      = (v: string)       => { setSearch(v);            setCurrentPage("1"); };
 
   // Handler para cliques nas tabs de status (com ciclo especial para atrasados quando modoCarencia e modoCarencia10 desativados)
   const handleTabClick = (tabId: StatusFilter) => {
@@ -330,6 +332,18 @@ export default function EmprestimosListWrapper({
       }
     });
     return Array.from(map.entries()).map(([id, nome]) => ({ id, nome })).sort((a, b) => a.nome.localeCompare(b.nome));
+  }, [initialEmprestimos]);
+
+  const funcionariosList = useMemo(() => {
+    const map = new Map<string, string>();
+    initialEmprestimos.forEach((emp) => {
+      if (emp.funcionario) {
+        map.set(emp.funcionario.id, emp.funcionario.nome);
+      }
+    });
+    return Array.from(map.entries())
+      .map(([id, nome]) => ({ id, nome }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   }, [initialEmprestimos]);
 
   const hojeUTC = useMemo(() => hojeEmBrasilia(), []);
@@ -562,6 +576,14 @@ export default function EmprestimosListWrapper({
         }
       }
 
+      if (funcionarioFilter !== "todos") {
+        if (funcionarioFilter === "adm") {
+          if (emp.funcionario_id) return false;
+        } else {
+          if (emp.funcionario_id !== funcionarioFilter) return false;
+        }
+      }
+
       return true;
     });
 
@@ -611,7 +633,7 @@ export default function EmprestimosListWrapper({
     }
 
     return lista;
-  }, [emprestimosProcessados, search, statusFilter, sortOption, parceiroFilter, diasAtraso, modoCarencia, modoCarencia10]);
+  }, [emprestimosProcessados, search, statusFilter, sortOption, parceiroFilter, funcionarioFilter, diasAtraso, modoCarencia, modoCarencia10]);
 
   // Agrupar empréstimos filtrados por cliente (a ordem do primeiro empréstimo de cada cliente é mantida)
   const grupos = useMemo(() => {
@@ -1133,6 +1155,54 @@ export default function EmprestimosListWrapper({
                   </button>
                 );
               })}
+
+              {/* Seção de Cobradores / Funcionários */}
+              {funcionariosList.length > 0 && (
+                <>
+                  <div className="px-4 py-2 mt-1 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 border-t border-slate-100">
+                    Cobradores (Funcionários)
+                  </div>
+                  <button
+                    onClick={() => { setFuncionarioAndReset("todos"); setSortOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
+                      funcionarioFilter === "todos"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    Todos os Cobradores
+                    {funcionarioFilter === "todos" && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />}
+                  </button>
+                  <button
+                    onClick={() => { setFuncionarioAndReset("adm"); setSortOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
+                      funcionarioFilter === "adm"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    Somente ADM
+                    {funcionarioFilter === "adm" && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />}
+                  </button>
+                  {funcionariosList.map((f) => {
+                    const isActive = funcionarioFilter === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        onClick={() => { setFuncionarioAndReset(f.id); setSortOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-5 py-3 text-xs font-black uppercase tracking-wider transition-colors text-left cursor-pointer ${
+                          isActive
+                            ? "bg-indigo-50 text-indigo-700"
+                            : "text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {f.nome}
+                        {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500" />}
+                      </button>
+                    );
+                  })}
+                </>
+              )}
             </div>
           )}
         </div>

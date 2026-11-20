@@ -4,69 +4,83 @@ import { hojeEmBrasilia } from "@/lib/dateUtils";
 
 export const revalidate = 0;
 
-/** Garante que a coluna data_prevista_pagamento existe no banco. */
-async function ensureColumn() {
-  try {
-    await prisma.$executeRaw`
-      ALTER TABLE emprestimos
-      ADD COLUMN IF NOT EXISTS data_prevista_pagamento DATE;
-    `;
-  } catch {
-    try {
-      await prisma.$executeRaw`
-        ALTER TABLE \`emprestimos\`
-        ADD COLUMN \`data_prevista_pagamento\` DATE NULL;
-      `;
-    } catch (e2: any) {
-      const msg = String(e2?.message ?? "");
-      if (!msg.includes("Duplicate column") && !msg.includes("1060") && !msg.includes("already exists")) {
-        throw e2;
-      }
-    }
-  }
-}
-
 export async function GET() {
   const hojeUTC = hojeEmBrasilia();
-
-  let emprestimos: any[] = [];
-
-  try {
-    emprestimos = await prisma.emprestimo.findMany({
-      where: {
-        status: "ativo",
-        data_prevista_pagamento: { not: null },
-      },
-      include: {
-        cliente: { select: { id: true, nome: true, telefone: true } },
-      },
-    });
-  } catch (err: any) {
-    const msg = String(err?.message ?? "");
-    // Coluna não existe → aplica migration e retorna lista vazia (próxima req já funciona)
-    if (
-      msg.includes("data_prevista_pagamento") ||
-      msg.includes("Unknown column") ||
-      msg.includes("does not exist") ||
-      msg.includes("column")
-    ) {
-      try { await ensureColumn(); } catch { /* ignora */ }
-      return NextResponse.json([]);
-    }
-    return NextResponse.json({ error: msg }, { status: 500 });
-  }
-
   const limite = new Date(hojeUTC);
   limite.setUTCDate(hojeUTC.getUTCDate() + 2); // faltam até 2 dias
 
-  const notificacoes = emprestimos
+  const limite48h = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
+  const [emprestimos, baixasPendentes, relatosRecentes] = await Promise.all([
+    prisma.emprestimo
+      .findMany({
+        where: {
+          status: "ativo",
+          data_prevista_pagamento: { not: null },
+        },
+        include: {
+          cliente: { select: { id: true, nome: true, telefone: true } },
+        },
+      })
+      .catch(() => []),
+    prisma.baixaFuncionario
+      .findMany({
+        where: { status: "pendente" },
+        include: {
+          funcionario: { select: { id: true, nome: true } },
+          emprestimo: {
+            select: {
+              id: true,
+              cliente: { select: { id: true, nome: true, telefone: true } },
+            },
+          },
+        },
+        orderBy: { criado_em: "desc" },
+        take: 25,
+      })
+      .catch(() => []),
+    prisma.cobrancaRelato
+      .findMany({
+        where: {
+          funcionario_id: { not: null },
+          criado_em: { gte: limite48h },
+        },
+        include: {
+          funcionario: { select: { id: true, nome: true } },
+          emprestimo: {
+            select: {
+              id: true,
+              cliente: { select: { id: true, nome: true, telefone: true } },
+            },
+          },
+        },
+        orderBy: { criado_em: "desc" },
+        take: 20,
+      })
+      .catch(() => []),
+  ]);
+
+  const notifsBaixas = baixasPendentes.map((b) => ({
+    id: `baixa:${b.id}`,
+    tipo: "baixa_pendente" as const,
+    url: `/configuracoes/funcionarios/${b.funcionario.id}`,
+    clienteNome: b.emprestimo.cliente.nome,
+    clienteId: b.emprestimo.cliente.id,
+    clienteTelefone: b.emprestimo.cliente.telefone,
+    funcionarioNome: b.funcionario.nome,
+    descricao: `${b.funcionario.nome} informou ${b.tipo} (${b.forma_pagamento})`,
+    dataPrevista: b.criado_em.toISOString(),
+    diasRestantes: -999,
+    valorEmprestado: Number(b.valor),
+  }));
+
+  const notifsDataPrevista = emprestimos
     .filter((emp) => {
       if (!emp.data_prevista_pagamento) return false;
       const prev = new Date(emp.data_prevista_pagamento);
       const prevUTC = new Date(
         Date.UTC(prev.getUTCFullYear(), prev.getUTCMonth(), prev.getUTCDate())
       );
-      // Aparece quando falta <= 2 dias OU já passou (sem ter sido quitado)
       return prevUTC <= limite;
     })
     .map((emp) => {
@@ -79,9 +93,13 @@ export async function GET() {
       );
       return {
         id: emp.id,
+        tipo: "data_prevista" as const,
+        url: `/emprestimos/${emp.id}`,
         clienteNome: emp.cliente.nome,
         clienteId: emp.cliente.id,
         clienteTelefone: emp.cliente.telefone,
+        funcionarioNome: null,
+        descricao: null,
         dataPrevista: emp.data_prevista_pagamento!.toISOString().split("T")[0],
         diasRestantes,
         valorEmprestado: Number(emp.valor_emprestado),
@@ -89,5 +107,19 @@ export async function GET() {
     })
     .sort((a, b) => a.diasRestantes - b.diasRestantes);
 
-  return NextResponse.json(notificacoes);
+  const notifsRelatos = relatosRecentes.map((r) => ({
+    id: `relato:${r.id}`,
+    tipo: "relato_funcionario" as const,
+    url: `/emprestimos/${r.emprestimo.id}`,
+    clienteNome: r.emprestimo.cliente.nome,
+    clienteId: r.emprestimo.cliente.id,
+    clienteTelefone: r.emprestimo.cliente.telefone,
+    funcionarioNome: r.funcionario?.nome || "Funcionário",
+    descricao: r.texto,
+    dataPrevista: r.criado_em.toISOString(),
+    diasRestantes: 999,
+    valorEmprestado: 0,
+  }));
+
+  return NextResponse.json([...notifsBaixas, ...notifsDataPrevista, ...notifsRelatos]);
 }

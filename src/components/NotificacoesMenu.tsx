@@ -2,14 +2,18 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, X, ExternalLink, CheckCheck, Calendar, AlertCircle, Clock } from "lucide-react";
+import { Bell, X, ExternalLink, CheckCheck, Calendar, AlertCircle, Clock, Wallet, MessageSquare } from "lucide-react";
 
 interface Notificacao {
   id: string;
+  tipo?: "data_prevista" | "baixa_pendente" | "relato_funcionario";
+  url?: string;
   clienteNome: string;
   clienteId: string;
   clienteTelefone: string;
-  dataPrevista: string; // "YYYY-MM-DD"
+  funcionarioNome?: string | null;
+  descricao?: string | null;
+  dataPrevista: string; // "YYYY-MM-DD" ou ISO
   diasRestantes: number;
   valorEmprestado: number;
 }
@@ -130,9 +134,9 @@ export default function NotificacoesMenu() {
     setLidas(getLidas());
   };
 
-  const handleAbrirEmprestimo = (id: string) => {
+  const handleAbrirEmprestimo = (n: Notificacao) => {
     setOpen(false);
-    router.push(`/emprestimos/${id}`);
+    router.push(n.url || `/emprestimos/${n.id}`);
   };
 
   return (
@@ -228,7 +232,7 @@ interface PainelProps {
   loading: boolean;
   onMarcarLida: (id: string) => void;
   onMarcarTodas: () => void;
-  onAbrirEmprestimo: (id: string) => void;
+  onAbrirEmprestimo: (n: Notificacao) => void;
   onClose: () => void;
 }
 
@@ -307,7 +311,7 @@ function PainelConteudo({
                     notificacao={n}
                     lida={false}
                     onMarcarLida={() => onMarcarLida(n.id)}
-                    onAbrir={() => onAbrirEmprestimo(n.id)}
+                    onAbrir={() => onAbrirEmprestimo(n)}
                   />
                 ))}
               </div>
@@ -324,7 +328,7 @@ function PainelConteudo({
                     notificacao={n}
                     lida={true}
                     onMarcarLida={() => onMarcarLida(n.id)}
-                    onAbrir={() => onAbrirEmprestimo(n.id)}
+                    onAbrir={() => onAbrirEmprestimo(n)}
                   />
                 ))}
               </div>
@@ -348,12 +352,19 @@ function NotificacaoCard({
   onMarcarLida: () => void;
   onAbrir: () => void;
 }) {
-  const { label, cor, icon: Icon } = getUrgencia(notificacao.diasRestantes);
+  const tipo = notificacao.tipo || "data_prevista";
+  const isBaixa = tipo === "baixa_pendente";
+  const isRelato = tipo === "relato_funcionario";
+  const urg = getUrgencia(notificacao.diasRestantes);
+  const Icon = isBaixa ? Wallet : isRelato ? MessageSquare : urg.icon;
+  const label = isBaixa ? "Aprovar Baixa" : isRelato ? `Relato · ${notificacao.funcionarioNome || "Cobrador"}` : urg.label;
+  const cor = isBaixa ? "amber" : isRelato ? "indigo" : urg.cor;
 
   const corClasses: Record<string, string> = {
     rose:   "bg-rose-50 text-rose-700 border-rose-200",
     amber:  "bg-amber-50 text-amber-700 border-amber-200",
     orange: "bg-orange-50 text-orange-700 border-orange-200",
+    indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
   };
 
   return (
@@ -361,7 +372,7 @@ function NotificacaoCard({
       <div className="flex items-start gap-3">
         {/* Dot indicador */}
         {!lida && (
-          <div className="mt-1.5 w-2 h-2 rounded-full bg-rose-500 flex-shrink-0 shadow-sm shadow-rose-300" />
+          <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 shadow-sm ${isBaixa ? "bg-amber-500" : isRelato ? "bg-indigo-500" : "bg-rose-500 shadow-rose-300"}`} />
         )}
         {lida && <div className="mt-1.5 w-2 h-2 rounded-full bg-slate-200 flex-shrink-0" />}
 
@@ -373,11 +384,21 @@ function NotificacaoCard({
               {label}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Previsto: <span className="font-semibold text-slate-700">{fmtData(notificacao.dataPrevista)}</span>
-            {" · "}
-            <span className="font-semibold text-emerald-700">{fmtBRL(notificacao.valorEmprestado)}</span>
-          </p>
+
+          {isBaixa ? (
+            <p className="text-xs text-slate-600 mt-0.5">
+              {notificacao.descricao} ·{" "}
+              <span className="font-black text-emerald-700">{fmtBRL(notificacao.valorEmprestado)}</span>
+            </p>
+          ) : isRelato ? (
+            <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">{notificacao.descricao}</p>
+          ) : (
+            <p className="text-xs text-slate-500 mt-0.5">
+              Previsto: <span className="font-semibold text-slate-700">{fmtData(notificacao.dataPrevista)}</span>
+              {" · "}
+              <span className="font-semibold text-emerald-700">{fmtBRL(notificacao.valorEmprestado)}</span>
+            </p>
+          )}
 
           {/* Ações */}
           <div className="flex items-center gap-3 mt-2">
@@ -386,7 +407,7 @@ function NotificacaoCard({
               className="flex items-center gap-1 text-[11px] font-black text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
             >
               <ExternalLink className="w-3 h-3" />
-              Abrir Empréstimo
+              {isBaixa ? "Conferir & Aprovar" : "Abrir Empréstimo"}
             </button>
             {!lida && (
               <button

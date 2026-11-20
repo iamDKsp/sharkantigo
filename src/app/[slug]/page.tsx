@@ -1,15 +1,23 @@
 import { prisma } from "@/lib/db";
-import { notFound } from "next/navigation";
-import FuncionarioDashboardClient from "./Dashboard";
+import { notFound, redirect } from "next/navigation";
+import { slugValido } from "@/lib/funcionarioSession";
 
-export default async function FuncionarioPage({ params }: { params: { slug: string } }) {
+export const dynamic = "force-dynamic";
+
+export default async function FuncionarioSlugRedirectPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
+  if (!slugValido(slug)) notFound();
+
   const funcionario = await prisma.funcionario.findUnique({
     where: { slug },
-    include: { emprestimos: { include: { cliente: true, parcelas: true } } },
+    select: { id: true, ativo: true },
   });
 
   if (!funcionario || !funcionario.ativo) notFound();
 
-  return <FuncionarioDashboardClient funcionario={funcionario} />;
+  redirect(`/${slug}/cliente`);
 }

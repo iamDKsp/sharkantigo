@@ -109,7 +109,19 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
   const buscaAdiada = useDeferredValue(busca);
   const [ordem, setOrdem] = useState<Ordem>("vencimento");
   const [soNaoCobrados, setSoNaoCobrados] = useState(false);
+  const [funcionarioFiltro, setFuncionarioFiltro] = useState<string>("todos");
   const buscaRef = useRef<HTMLInputElement>(null);
+
+  const funcionariosNaLista = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of [...atrasados, ...hojeLista, ...aVencer]) {
+      const f = p.emprestimo.funcionario;
+      if (f) map.set(f.id, f.nome);
+    }
+    return Array.from(map.entries())
+      .map(([id, nome]) => ({ id, nome }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  }, [atrasados, hojeLista, aVencer]);
 
   // Os modelos de mensagem são editados em /configuracoes/mensagens (salvos no banco).
   // O texto final de cada cobrança já vem renderizado do servidor em `p.mensagem`,
@@ -193,10 +205,11 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     : tipoAtual === "hoje" ? "Nenhuma parcela nesta faixa de hoje"
     : "Nenhuma parcela vence nos próximos 3 dias";
 
-  const filtrosAtivos = busca.trim() !== "" || soNaoCobrados;
+  const filtrosAtivos = busca.trim() !== "" || soNaoCobrados || funcionarioFiltro !== "todos";
   const limparFiltros = () => {
     setBusca("");
     setSoNaoCobrados(false);
+    setFuncionarioFiltro("todos");
   };
 
   const visiveis = useMemo(() => {
@@ -204,6 +217,14 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     const qDigitos = buscaAdiada.replace(/\D/g, "");
     let lista = listaBase.filter((p) => {
       if (soNaoCobrados && cobradas.has(p.id)) return false;
+      if (funcionarioFiltro === "adm" && p.emprestimo.funcionario) return false;
+      if (
+        funcionarioFiltro !== "todos" &&
+        funcionarioFiltro !== "adm" &&
+        p.emprestimo.funcionario?.id !== funcionarioFiltro
+      ) {
+        return false;
+      }
       if (!q) return true;
       const c = p.emprestimo?.cliente;
       if (!c) return false;
@@ -217,7 +238,7 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
     if (ordem === "valor") lista = [...lista].sort((a, b) => b.valor - a.valor);
     else if (ordem === "nome") lista = [...lista].sort((a, b) => a.emprestimo.cliente.nome.localeCompare(b.emprestimo.cliente.nome, "pt-BR"));
     return lista; // "vencimento": a lista base já vem do mais antigo para o mais novo
-  }, [listaBase, buscaAdiada, soNaoCobrados, ordem, cobradas]);
+  }, [listaBase, buscaAdiada, soNaoCobrados, funcionarioFiltro, ordem, cobradas]);
 
   // Agrupar parcelas visíveis por cliente (mantendo a ordem da primeira parcela de cada cliente, igual ao módulo Empréstimos)
   const gruposVisiveis = useMemo(() => {
@@ -605,6 +626,27 @@ export default function ClientCobrancasView({ atrasadosOntem, atrasadosAnteriore
                   ))}
                 </select>
               </div>
+
+              {funcionariosNaLista.length > 0 && (
+                <select
+                  value={funcionarioFiltro}
+                  onChange={(e) => setFuncionarioFiltro(e.target.value)}
+                  aria-label="Filtrar por funcionário"
+                  className={`h-9 px-3 rounded-xl border text-xs font-bold outline-none cursor-pointer transition-all focus:ring-4 ${tema.ring} ${
+                    funcionarioFiltro !== "todos"
+                      ? "bg-indigo-50 border-indigo-300 text-indigo-800"
+                      : "border-slate-200 bg-white text-slate-600"
+                  }`}
+                >
+                  <option value="todos">Todos os cobradores</option>
+                  <option value="adm">Somente ADM (sem cobrador)</option>
+                  {funcionariosNaLista.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      Cobrador: {f.nome}
+                    </option>
+                  ))}
+                </select>
+              )}
 
               {modoCarencia10 && (
                 <button
