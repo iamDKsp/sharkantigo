@@ -1054,7 +1054,7 @@ export async function salvarDataPrevistaPagamento(
 }
 
 // Funcionalidade de Delegação de Funcionários
-/** Compartilha (ou remove) vários empréstimos com um funcionário de uma vez — usado na tela de Cobranças. */
+/** Compartilha (ou remove) um ou vários empréstimos com um funcionário de uma vez — usado em Cobranças e Empréstimos. */
 export async function passarEmprestimos(emprestimoIds: string[], funcionarioId: string | null, podeDispararWhatsapp: boolean) {
   const ids = Array.from(new Set(emprestimoIds)).filter((id) => id && !id.startsWith("legacy-"));
   if (ids.length === 0) throw new Error("Nenhum empréstimo selecionado.");
@@ -1067,6 +1067,12 @@ export async function passarEmprestimos(emprestimoIds: string[], funcionarioId: 
     data: { funcionario_id: funcionarioId, podeDispararWhatsapp: funcionarioId ? podeDispararWhatsapp : false },
   });
   revalidatePath("/cobrancas");
+  revalidatePath("/emprestimos");
+  revalidatePath("/parceiros");
+  revalidatePath("/configuracoes/funcionarios");
+  if (ids.length === 1) {
+    revalidatePath(`/emprestimos/${ids[0]}`);
+  }
   return { success: true, total: ids.length };
 }
 export async function atribuirFuncionario(emprestimoId: string, funcionarioId: string | null, podeDispararWhatsapp: boolean) {
@@ -1074,9 +1080,13 @@ export async function atribuirFuncionario(emprestimoId: string, funcionarioId: s
     where: { id: emprestimoId },
     data: {
       funcionario_id: funcionarioId,
-      podeDispararWhatsapp: podeDispararWhatsapp,
+      podeDispararWhatsapp: funcionarioId ? podeDispararWhatsapp : false,
     },
   });
   revalidatePath(`/emprestimos/${emprestimoId}`);
+  revalidatePath("/emprestimos");
+  revalidatePath("/cobrancas");
+  revalidatePath("/parceiros");
+  revalidatePath("/configuracoes/funcionarios");
   return { success: true };
 }

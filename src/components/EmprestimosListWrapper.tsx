@@ -1,14 +1,20 @@
 "use client";
 
 import { useState, useMemo, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useUrlState } from "@/hooks/useUrlState";
 import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import Link from "next/link";
-import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle, Layers, TrendingUp } from "lucide-react";
+import { Search, Calendar, MessageCircle, ArrowUpDown, ArrowDownUp, Clock, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, X, Send, Settings, Plus, Trash2, Loader2, ChevronDown, RefreshCw, PauseCircle, Layers, TrendingUp, UserPlus, UserCheck } from "lucide-react";
 import { receberSoJurosEmprestimo } from "@/app/emprestimos/[id]/actions";
 import { enviarMensagemManual, listarRespostasRapidas } from "@/app/mensagens/actions";
 import { hojeEmBrasilia } from "@/lib/dateUtils";
 import ClienteAvatar from "@/components/ClienteAvatar";
+import PassarFuncionarioModal, {
+  type EmprestimoDelegavel,
+  type FuncionarioDelegacaoItem,
+  type ResultadoDelegacao,
+} from "@/components/PassarFuncionarioModal";
 
 interface Cliente {
   id: string;
@@ -52,6 +58,7 @@ interface EmprestimosListWrapperProps {
   initialDiasAtraso?:  string;
   modoCarencia?:       boolean;
   modoCarencia10?:     boolean;
+  funcionariosAtivos?: FuncionarioDelegacaoItem[];
 }
 
 type StatusFilter = 
@@ -159,7 +166,9 @@ export default function EmprestimosListWrapper({
   initialDiasAtraso = "0",
   modoCarencia      = false,
   modoCarencia10    = false,
+  funcionariosAtivos,
 }: EmprestimosListWrapperProps) {
+  const router = useRouter();
   // ── Scroll restoration ──
   useScrollRestoration("emprestimos-list");
 
@@ -319,24 +328,83 @@ export default function EmprestimosListWrapper({
     }
   };
 
+  // Delegação rápida para funcionário (modal + atualização instantânea + toast)
+  const [passarEmp, setPassarEmp] = useState<EmprestimoDelegavel | null>(null);
+  const [delegacoesLocais, setDelegacoesLocais] = useState<{
+    base: unknown[];
+    map: Record<
+      string,
+      {
+        funcionario_id: string | null;
+        funcionario: { id: string; nome: string; foto_url: string | null } | null;
+        podeDispararWhatsapp: boolean;
+      }
+    >;
+  }>({ base: initialEmprestimos, map: {} });
+  const [toast, setToast] = useState<{ id: number; texto: string } | null>(null);
+  const [toastClosing, setToastClosing] = useState(false);
+
   useEffect(() => {
-    // O currentPage já é resetado pelos helpers setXxxAndReset
-    // Este effect é mantido como safeguard para mudanças externas
-  }, []);
+    if (!toast) return;
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    const t = setTimeout(() => {
+      setToastClosing(true);
+      hideTimer = setTimeout(() => setToast(null), 200);
+    }, 3000);
+    return () => {
+      clearTimeout(t);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
+  }, [toast]);
+
+  const openPassarModal = (e: React.MouseEvent, emp: EmprestimoDelegavel) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPassarEmp(emp);
+  };
+
+  const handlePassarSuccess = (msg: string, resultado: ResultadoDelegacao) => {
+    setDelegacoesLocais((prev) => {
+      const baseAtual = prev.base === initialEmprestimos ? prev.map : {};
+      const next = { ...baseAtual };
+      for (const id of resultado.emprestimoIds) {
+        next[id] = {
+          funcionario_id: resultado.funcionario?.id ?? null,
+          funcionario: resultado.funcionario,
+          podeDispararWhatsapp: resultado.podeDispararWhatsapp,
+        };
+      }
+      return { base: initialEmprestimos, map: next };
+    });
+    setPassarEmp(null);
+    setToastClosing(false);
+    setToast({ id: Date.now(), texto: msg });
+    router.refresh();
+  };
+
+  const emprestimosComDelegacao = useMemo(() => {
+    if (delegacoesLocais.base !== initialEmprestimos) return initialEmprestimos;
+    const keys = Object.keys(delegacoesLocais.map);
+    if (keys.length === 0) return initialEmprestimos;
+    return initialEmprestimos.map((emp) => {
+      const override = delegacoesLocais.map[emp.id];
+      return override ? { ...emp, ...override } : emp;
+    });
+  }, [initialEmprestimos, delegacoesLocais]);
 
   const parceirosList = useMemo(() => {
     const map = new Map<string, string>();
-    initialEmprestimos.forEach(emp => {
+    emprestimosComDelegacao.forEach(emp => {
       if (emp.parceiro) {
         map.set(emp.parceiro.id, emp.parceiro.nome);
       }
     });
     return Array.from(map.entries()).map(([id, nome]) => ({ id, nome })).sort((a, b) => a.nome.localeCompare(b.nome));
-  }, [initialEmprestimos]);
+  }, [emprestimosComDelegacao]);
 
   const funcionariosList = useMemo(() => {
     const map = new Map<string, string>();
-    initialEmprestimos.forEach((emp) => {
+    emprestimosComDelegacao.forEach((emp) => {
       if (emp.funcionario) {
         map.set(emp.funcionario.id, emp.funcionario.nome);
       }
@@ -344,7 +412,7 @@ export default function EmprestimosListWrapper({
     return Array.from(map.entries())
       .map(([id, nome]) => ({ id, nome }))
       .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
-  }, [initialEmprestimos]);
+  }, [emprestimosComDelegacao]);
 
   const hojeUTC = useMemo(() => hojeEmBrasilia(), []);
 
@@ -361,7 +429,7 @@ export default function EmprestimosListWrapper({
 
   // Processar empréstimos com status reais e totais
   const emprestimosProcessados = useMemo(() => {
-    return initialEmprestimos.map((emp) => {
+    return emprestimosComDelegacao.map((emp) => {
       const principal = Number(emp.valor_emprestado);
       const taxaJuros = Number(emp.taxa_juros) || 0;
       const valorJuros = principal * (taxaJuros / 100);
@@ -503,7 +571,7 @@ export default function EmprestimosListWrapper({
         isAVista,
       };
     });
-  }, [initialEmprestimos, hojeUTC]);
+  }, [emprestimosComDelegacao, hojeUTC]);
 
   // Filtrar + Ordenar
   const emprestimosFiltrados = useMemo(() => {
@@ -666,7 +734,11 @@ export default function EmprestimosListWrapper({
 
   // Card individual de um empréstimo (usado solto na lista ou como subcard dentro de um grupo)
   const renderCard = (emp: any, sub = false) => {
-    const isQuitado = emp.statusReal === "quitado";
+    const isQuitado =
+      emp.statusReal === "quitado" ||
+      emp.statusReal === "quitado_com_atraso" ||
+      emp.status === "quitado" ||
+      emp.status === "quitado_com_atraso";
     const isPausado = emp.status === "pausado";
     const isAtrasado = modoCarencia10
       ? (emp.statusReal === "ativo" && emp.diasAtrasado > 10 && !isPausado)
@@ -771,25 +843,49 @@ export default function EmprestimosListWrapper({
               </span>
             )}
             {emp.funcionario && (
-              <span
-                title={`Repassado para ${emp.funcionario.nome}${emp.podeDispararWhatsapp ? " (pode cobrar no WhatsApp)" : ""}`}
-                className="inline-flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[11px] font-black text-indigo-700"
-              >
-                {emp.funcionario.foto_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={emp.funcionario.foto_url}
-                    alt={emp.funcionario.nome}
-                    className="w-5 h-5 rounded-full object-cover border border-indigo-200 shrink-0"
-                  />
-                ) : (
-                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">
-                    {emp.funcionario.nome.charAt(0).toUpperCase()}
-                  </span>
-                )}
-                <span className="truncate max-w-[130px]">{emp.funcionario.nome}</span>
-                {emp.podeDispararWhatsapp && <MessageCircle className="w-3 h-3 shrink-0 text-emerald-600" />}
-              </span>
+              !isQuitado ? (
+                <button
+                  type="button"
+                  onClick={(e) => openPassarModal(e, emp)}
+                  title={`Repassado para ${emp.funcionario.nome}${emp.podeDispararWhatsapp ? " (pode cobrar no WhatsApp)" : ""} — clique para trocar ou remover`}
+                  className="pointer-events-auto relative z-20 inline-flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300 text-[11px] font-black text-indigo-700 transition-colors cursor-pointer"
+                >
+                  {emp.funcionario.foto_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={emp.funcionario.foto_url}
+                      alt={emp.funcionario.nome}
+                      className="w-5 h-5 rounded-full object-cover border border-indigo-200 shrink-0"
+                    />
+                  ) : (
+                    <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                      {emp.funcionario.nome.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="truncate max-w-[130px]">{emp.funcionario.nome}</span>
+                  {emp.podeDispararWhatsapp && <MessageCircle className="w-3 h-3 shrink-0 text-emerald-600" />}
+                </button>
+              ) : (
+                <span
+                  title={`Repassado para ${emp.funcionario.nome}${emp.podeDispararWhatsapp ? " (pode cobrar no WhatsApp)" : ""}`}
+                  className="inline-flex items-center gap-1.5 pl-0.5 pr-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[11px] font-black text-indigo-700"
+                >
+                  {emp.funcionario.foto_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={emp.funcionario.foto_url}
+                      alt={emp.funcionario.nome}
+                      className="w-5 h-5 rounded-full object-cover border border-indigo-200 shrink-0"
+                    />
+                  ) : (
+                    <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                      {emp.funcionario.nome.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="truncate max-w-[130px]">{emp.funcionario.nome}</span>
+                  {emp.podeDispararWhatsapp && <MessageCircle className="w-3 h-3 shrink-0 text-emerald-600" />}
+                </span>
+              )
             )}
           </div>
 
@@ -826,6 +922,35 @@ export default function EmprestimosListWrapper({
           </div>
 
           <div className="flex flex-row items-center gap-2 shrink-0">
+            {/* Botão de Passar para Funcionário (em todos os empréstimos não quitados, incluindo pausados) */}
+            {!isQuitado && (
+              <button
+                type="button"
+                onClick={(e) => openPassarModal(e, emp)}
+                title={
+                  emp.funcionario
+                    ? `Repassado para ${emp.funcionario.nome} (clique para trocar ou remover)`
+                    : "Passar empréstimo para funcionário"
+                }
+                aria-label={
+                  emp.funcionario
+                    ? `Gerenciar cobrador de ${emp.cliente.nome}`
+                    : `Passar empréstimo de ${emp.cliente.nome} para funcionário`
+                }
+                className={`p-2.5 sm:p-3 rounded-xl transition-all shadow-sm shrink-0 group-hover:scale-105 active:scale-90 z-20 cursor-pointer ${
+                  emp.funcionario
+                    ? "bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white hover:border-indigo-600"
+                    : "bg-slate-100 text-slate-400 hover:bg-indigo-600 hover:text-white"
+                }`}
+              >
+                {emp.funcionario ? (
+                  <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
+                ) : (
+                  <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
+                )}
+              </button>
+            )}
+
             {/* Botão de Renovação Rápida (Apenas À Vista com juros configurados) */}
             {!isQuitado && emp.isAVista && emp.valorJuros > 0 && (
               <button
@@ -1768,6 +1893,32 @@ export default function EmprestimosListWrapper({
                 {isWaSending ? "Enviando..." : "Enviar Mensagem"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Passar empréstimo para funcionário (reutilizado da tela de Cobranças) */}
+      {passarEmp && (
+        <PassarFuncionarioModal
+          emprestimos={[passarEmp]}
+          funcionariosIniciais={funcionariosAtivos}
+          onClose={() => setPassarEmp(null)}
+          onSuccess={handlePassarSuccess}
+        />
+      )}
+
+      {/* Toast de feedback */}
+      {toast && (
+        <div className="fixed inset-x-0 top-4 z-[110] flex justify-center px-3 pointer-events-none">
+          <div
+            key={toast.id}
+            role="status"
+            className={`pointer-events-auto flex items-center gap-2 bg-white border border-emerald-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xl shadow-slate-900/10 ${
+              toastClosing ? "animate-toast-out" : "animate-toast-in"
+            }`}
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            {toast.texto}
           </div>
         </div>
       )}

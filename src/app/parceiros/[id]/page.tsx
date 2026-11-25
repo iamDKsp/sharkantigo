@@ -35,6 +35,13 @@ export default async function ParceiroDetailsPage({ params }: { params: Promise<
       cliente: true,
       parcelas: true,
       parceiro: true,
+      funcionario: {
+        select: {
+          id: true,
+          nome: true,
+          foto_url: true,
+        },
+      },
     },
     orderBy: {
       data_vencimento: "asc",

@@ -21,10 +21,20 @@ export default async function EmprestimosPage({
     dias_atraso?: string;
   }>;
 }) {
-  const [params, config, fotos] = await Promise.all([
+  const [params, config, fotos, funcionariosAtivos] = await Promise.all([
     searchParams,
     obterConfiguracoesSistema(),
     fotosDosClientes(),
+    prisma.funcionario.findMany({
+      where: { ativo: true },
+      orderBy: { nome: "asc" },
+      select: {
+        id: true,
+        nome: true,
+        foto_url: true,
+        _count: { select: { emprestimos: true } },
+      },
+    }),
   ]);
   const modoCarencia = config.regra_carencia_30_dias;
   const modoCarencia10 = config.regra_carencia_10_dias;
@@ -146,6 +156,7 @@ export default async function EmprestimosPage({
         initialDiasAtraso={diasAtrasoInicial}
         modoCarencia={modoCarencia}
         modoCarencia10={modoCarencia10}
+        funcionariosAtivos={funcionariosAtivos}
       />
     </div>
   );
